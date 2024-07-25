@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Gltf
       Lib
   other-modules:
       Paths_gltf_builder
@@ -32,9 +33,13 @@ library
       Paths_gltf_builder
   hs-source-dirs:
       src
+  default-extensions:
+      DisambiguateRecordFields
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
+    , bytestring
   default-language: Haskell2010
 
 executable gltf-builder-exe
@@ -45,9 +50,13 @@ executable gltf-builder-exe
       Paths_gltf_builder
   hs-source-dirs:
       app
+  default-extensions:
+      DisambiguateRecordFields
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
+    , bytestring
     , gltf-builder
   default-language: Haskell2010
 
@@ -60,8 +69,12 @@ test-suite gltf-builder-test
       Paths_gltf_builder
   hs-source-dirs:
       test
+  default-extensions:
+      DisambiguateRecordFields
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
+    , bytestring
     , gltf-builder
   default-language: Haskell2010
