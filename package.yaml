@@ -23,6 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - aeson # https://hackage.haskell.org/package/aeson
 - bytestring
+- containers
 
 default-extensions:
 - DisambiguateRecordFields # https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/disambiguate_record_fields.html
