@@ -1,14 +1,14 @@
 {-# LANGUAGE DeriveGeneric, DuplicateRecordFields #-}
 
-module Gltf (
-    module Gltf,
+module Gltf.Json (
+    module Gltf.Json,
     module Data.Aeson
 ) where
 
 import GHC.Generics
 import Data.Aeson
-import qualified Data.ByteString.Lazy as BSL
 import Data.Map (Map)
+import Data.Text (Text)
 
 type Number = Double
 type Index = Int
@@ -43,9 +43,6 @@ instance ToJSON Gltf where
 
 instance FromJSON Gltf where
     parseJSON = genericParseJSON readOptions
-
-readGltf :: FilePath -> IO (Either String Gltf)
-readGltf path = eitherDecode <$> BSL.readFile path
 
 data Accessor = Accessor {
     bufferView :: Maybe Index,
@@ -83,7 +80,7 @@ instance FromJSON Asset where
 data Buffer = Buffer {
     byteLength :: Index,
     name :: Maybe String,
-    uri :: Maybe String
+    uri :: Maybe Text
 } deriving (Generic, Show)
 
 instance ToJSON Buffer where
@@ -109,7 +106,7 @@ instance FromJSON BufferView where
 
 data Image = Image {
     name :: Maybe String,
-    uri :: Maybe String
+    uri :: Maybe Text
 } deriving (Generic, Show)
 
 instance ToJSON Image where
