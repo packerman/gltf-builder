@@ -17,12 +17,15 @@ data Gltf = Gltf {
     accessors :: Maybe [Accessor],
     asset :: Asset,
     buffers :: Maybe [Buffer],
-    bufferViews :: Maybe[BufferView],
+    bufferViews :: Maybe [BufferView],
+    images :: Maybe [Image],
     materials :: Maybe [Material],
     meshes :: Maybe [Mesh],
     nodes :: Maybe [Node],
+    samplers :: Maybe [Sampler],
     scene :: Maybe Index,
-    scenes :: Maybe [Scene]
+    scenes :: Maybe [Scene],
+    textures :: Maybe [Texture]
 } deriving (Generic, Show)
 
 readOptions :: Options
@@ -104,6 +107,17 @@ instance ToJSON BufferView where
 instance FromJSON BufferView where
     parseJSON = genericParseJSON readOptions
 
+data Image = Image {
+    name :: Maybe String,
+    uri :: Maybe String
+} deriving (Generic, Show)
+
+instance ToJSON Image where
+    toEncoding = genericToEncoding writeOptions
+
+instance FromJSON Image where
+    parseJSON = genericParseJSON readOptions
+
 data Material = Material {
     name :: Maybe String,
     pbrMetallicRoughness :: PbrMetallicRoughness
@@ -117,6 +131,7 @@ instance FromJSON Material where
 
 data PbrMetallicRoughness = PbrMetallicRoughness {
     baseColorFactor :: Maybe [Number],
+    baseColorTexture :: Maybe TextureInfo,
     metallicFactor :: Maybe Number
 } deriving (Generic, Show)
 
@@ -163,6 +178,20 @@ instance ToJSON Node where
 instance FromJSON Node where
     parseJSON = genericParseJSON readOptions
 
+data Sampler = Sampler {
+    magFilter :: Maybe Index,
+    minFilter :: Maybe Index,
+    name :: Maybe String,
+    wrapS :: Maybe Index,
+    wrapT :: Maybe Index
+} deriving (Generic, Show)
+
+instance ToJSON Sampler where
+    toEncoding = genericToEncoding writeOptions
+
+instance FromJSON Sampler where
+    parseJSON = genericParseJSON readOptions
+
 data Scene = Scene {
     name :: Maybe String,
     nodes :: Maybe [Index]
@@ -172,4 +201,27 @@ instance ToJSON Scene where
     toEncoding = genericToEncoding writeOptions
 
 instance FromJSON Scene where
+    parseJSON = genericParseJSON readOptions
+
+data Texture = Texture {
+    name :: Maybe String,
+    sampler :: Maybe Index,
+    source :: Maybe Index
+} deriving (Generic, Show)
+
+instance ToJSON Texture where
+    toEncoding = genericToEncoding writeOptions
+
+instance FromJSON Texture where
+    parseJSON = genericParseJSON readOptions
+
+data TextureInfo = TextureInfo {
+    index :: Index,
+    texCoord :: Maybe Index
+} deriving (Generic, Show)
+
+instance ToJSON TextureInfo where
+    toEncoding = genericToEncoding writeOptions
+
+instance FromJSON TextureInfo where
     parseJSON = genericParseJSON readOptions
