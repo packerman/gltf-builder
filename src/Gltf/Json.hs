@@ -1,5 +1,4 @@
 {-# LANGUAGE DeriveGeneric, DuplicateRecordFields #-}
-{-# LANGUAGE InstanceSigs #-}
 
 module Gltf.Json (
     module Gltf.Json,
@@ -189,14 +188,8 @@ instance FromJSON PbrMetallicRoughness where
 
 data Mesh = Mesh {
     name :: Maybe String,
-    primitives :: Maybe [Primitive]
+    primitives :: [Primitive]
 } deriving (Generic, Show)
-
-defaultMesh :: Mesh
-defaultMesh = Mesh {
-    name = Nothing,
-    primitives = Nothing
-}
 
 instance ToJSON Mesh where
     toEncoding = genericToEncoding writeOptions
