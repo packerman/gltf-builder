@@ -21,6 +21,17 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- binary
+- bytestring
+- containers
+- text
+- vector
+- aeson # https://hackage.haskell.org/package/aeson
+- base64
+- linear
+
+default-extensions:
+- DisambiguateRecordFields # https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/disambiguate_record_fields.html
 
 ghc-options:
 - -Wall
