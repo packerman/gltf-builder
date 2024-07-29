@@ -30,9 +30,9 @@ dependencies:
 - base64
 - linear
 
-default-extensions:
-- DuplicateRecordFields
-- DisambiguateRecordFields # https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/disambiguate_record_fields.html
+# default-extensions:
+# - DuplicateRecordFields
+# - DisambiguateRecordFields # https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/disambiguate_record_fields.html
 
 ghc-options:
 - -Wall

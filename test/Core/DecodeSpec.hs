@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DisambiguateRecordFields #-}
 
 module Core.DecodeSpec (spec) where
 
@@ -6,13 +7,15 @@ import qualified Data.Map as M
 
 import Test.Hspec
 
-import Gltf.Json
+import Gltf.Json as TF
+import Core.Decode (decodeScene)
+import Core.Model as M
 
 spec :: Spec
 spec = do
     let gltf = Gltf {
         accessors = gltfList [
-                        Accessor {
+                        TF.Accessor {
                             bufferView = Just 0,
                             byteOffset = Just 0,
                             componentType = 5126,
@@ -24,14 +27,14 @@ spec = do
                         ],
         asset = defaultAsset,
         buffers = gltfList [
-                    Buffer {
+                    TF.Buffer {
                             byteLength = 36,
                             name = Nothing,
                             uri = Just "data:application/octet-stream;base64,AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAA"
                         }
                     ],
         bufferViews = gltfList [
-                            BufferView {
+                            TF.BufferView {
                                 buffer = 0,
                                 byteOffset = Just 0,
                                 byteLength = 36,
@@ -43,10 +46,10 @@ spec = do
         images = Nothing,
         materials = Nothing,
         meshes = gltfList [
-                    Mesh {
+                    TF.Mesh {
                         name = Nothing,
                         primitives = [
-                                Primitive {
+                                TF.Primitive {
                                     attributes = M.fromList [
                                                     ("POSITION", 0)],
                                     indices = Nothing,
@@ -57,7 +60,7 @@ spec = do
                         }
                     ],
         nodes = gltfList [
-                    Node {
+                    TF.Node {
                         children = Nothing,
                         matrix = Nothing,
                         mesh = Just 0,
@@ -67,12 +70,13 @@ spec = do
         samplers = Nothing,
         scene = Just 0,
         scenes = gltfList [
-            Scene {
+            TF.Scene {
                 name = Nothing,
                 nodes = Just [0]
             }],
         textures = Nothing
     }
     describe "Decode triangle without indices" $ do
-        it "simething" $ do
-            2 + 2 `shouldBe` 4
+        it "something" $ do
+            let decoded = decodeScene 0 gltf
+            decoded `shouldBe` Right (M.scene Nothing [])

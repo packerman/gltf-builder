@@ -1,4 +1,5 @@
-{-# LANGUAGE DeriveGeneric, DuplicateRecordFields #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 
 module Gltf.Json (
     module Gltf.Json,
@@ -84,7 +85,7 @@ instance ToJSON Accessor where
 instance FromJSON Accessor where
     parseJSON = genericParseJSON readOptions {
         fieldLabelModifier =
-            \label -> case label of  
+            \label -> case label of
                         "accessorType" -> "type"
                         _ -> label
     }

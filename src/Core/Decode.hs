@@ -1,10 +1,12 @@
-{-# LANGUAGE OverloadedRecordDot #-}
+{-# LANGUAGE DisambiguateRecordFields #-}
+{-# OPTIONS_GHC -Wno-name-shadowing #-}
 
-module Core.Decode where
+module Core.Decode (decodeScene) where
 
 import Data.Vector ((!?))
 
-import qualified Gltf.Json as TF
+import qualified Gltf.Json as Gltf (Gltf(..))
+import qualified Gltf.Json as Scene (Scene(..))
 import Gltf.Json (Gltf, GltfList)
 import Core.Model
 
@@ -16,5 +18,5 @@ getIndexed array index name =
 
 decodeScene :: Int -> Gltf -> Either String Scene
 decodeScene index gltf = do
-    gltfScene <- getIndexed (TF.scenes gltf) index "scene"
-    return $ scene gltfScene.name []
+    gltfScene <- getIndexed (Gltf.scenes gltf) index "scene"
+    return $ scene (Scene.name gltfScene) []

@@ -36,9 +36,6 @@ library
       Paths_gltf_builder
   hs-source-dirs:
       src
-  default-extensions:
-      DuplicateRecordFields
-      DisambiguateRecordFields
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       aeson
@@ -60,9 +57,6 @@ executable gltf-builder-exe
       Paths_gltf_builder
   hs-source-dirs:
       app
-  default-extensions:
-      DuplicateRecordFields
-      DisambiguateRecordFields
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
@@ -87,9 +81,6 @@ test-suite gltf-builder-test
       Paths_gltf_builder
   hs-source-dirs:
       test
-  default-extensions:
-      DuplicateRecordFields
-      DisambiguateRecordFields
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson

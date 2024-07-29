@@ -5,7 +5,7 @@ module Core.Model (module Core.Model) where
 import Data.Map (Map)
 import Data.Word (Word16)
 
-import Linear (M44, V3, V2)
+import Linear (M44, V3, V2, identity)
 
 data VertexArray =
     Vec3Array [V3 Float] |
@@ -42,6 +42,14 @@ data Node = Node {
     name :: Maybe String,
     mesh :: Maybe Mesh
 } deriving (Eq, Show)
+
+defaultNode :: Node
+defaultNode = Node {
+    children = [],
+    matrix = identity,
+    name = Nothing,
+    mesh = Nothing
+}
 
 data Scene = Scene {
     name :: Maybe String,
