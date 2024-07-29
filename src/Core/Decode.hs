@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedRecordDot #-}
+
 module Core.Decode where
 
 import Data.Vector ((!?))
@@ -15,4 +17,4 @@ getIndexed array index name =
 decodeScene :: Int -> Gltf -> Either String Scene
 decodeScene index gltf = do
     gltfScene <- getIndexed (TF.scenes gltf) index "scene"
-    return scene (TF.name gltfScene) []
+    return $ scene gltfScene.name []

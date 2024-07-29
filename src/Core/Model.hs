@@ -48,5 +48,5 @@ data Scene = Scene {
     nodes :: [Node]
 } deriving (Eq, Show)
 
-scene :: String -> [Node] -> Scene
-scene name = Scene (Just name)
+scene :: Maybe String -> [Node] -> Scene
+scene = Scene
