@@ -11,6 +11,7 @@ import Data.Aeson
 import Data.Map (Map)
 import Data.Text (Text)
 import Data.Vector as V
+import Data.Maybe
 
 type Number = Double
 type Index = Int
@@ -20,6 +21,9 @@ type GltfList a = Maybe (Vector a)
 gltfList :: [a] -> GltfList a
 gltfList [] = Nothing
 gltfList xs = Just $ V.fromList xs
+
+toVector :: GltfList a -> Vector a
+toVector = fromMaybe V.empty
 
 data Gltf = Gltf {
     accessors :: GltfList Accessor,
