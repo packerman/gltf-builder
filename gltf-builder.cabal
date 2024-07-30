@@ -30,6 +30,7 @@ library
       Gltf.Decode
       Gltf.Json
       Lib
+      Util
   other-modules:
       Paths_gltf_builder
   autogen-modules:
