@@ -30,6 +30,16 @@ data Attribute =
     TexCoord Int
     deriving (Eq, Show)
 
+data Mode =
+    Points |
+    Lines |
+    LineLoop |
+    LineStrip |
+    Triangles |
+    TriangleStrip |
+    TriangleFan
+    deriving (Eq, Show)
+
 data Primitive = Primitive {
     attributes :: Map Attribute VertexArray,
     indices :: Maybe IndexArray,

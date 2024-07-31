@@ -79,4 +79,4 @@ spec = do
     describe "Decode triangle without indices" $ do
         it "something" $ do
             let decoded = decodeScene 0 gltf
-            decoded `shouldBe` Right (Model.scene Nothing [])
+            decoded `shouldBe` Right (Model.scene Nothing [Model.defaultNode])
