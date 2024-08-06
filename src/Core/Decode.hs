@@ -1,43 +1,27 @@
-{-# LANGUAGE NamedFieldPuns #-}
 {-# OPTIONS_GHC -Wno-name-shadowing #-}
 
-module Core.Decode (decodeScene, decodeBuffer, byteStringLength) where
+module Core.Decode (decodeScene) where
 
 import Data.Vector (Vector, (!?))
-import Data.ByteString (ByteString)
-import qualified Data.ByteString as BS
+import qualified Data.Vector as V
 import Data.Maybe
-import qualified Data.Text as T
-import Data.Text.Encoding (encodeUtf8)
-import Data.ByteString.Base64 (decodeBase64)
+import Linear (V4 (V4), identity)
+import qualified Data.ByteString.Lazy as BSL
 
 import Core.Model as Model
-import Gltf.Json (Gltf, GltfArray, Buffer(..), toVector, Index)
-import Util (maybeToEither, mapLeft, validate)
+import Gltf.Json (Gltf, GltfArray, toVector, Index)
 import qualified Gltf.Json as Gltf (Gltf(..), Node, Mesh(..))
 import qualified Gltf.Json as Scene (Scene(..))
-import Linear (V4 (V4), identity)
-
-byteStringLength = BS.length
+import Gltf.Decode
+import Util (maybeToEither)
 
 decodeScene :: Int -> Gltf -> Either String Scene
 decodeScene index gltf = do
     gltfScene <- getIndexed (Gltf.scenes gltf) index "scene"
-    buffers <- traverse decodeBuffer $ toVector (Gltf.buffers gltf)
+    buffers <- traverse (fmap BSL.fromStrict . decodeBuffer) $ toVector (Gltf.buffers gltf)
+    let bufferViews = toVector (Gltf.bufferViews gltf)
     let nodes = decodeNode <$> toVector (Gltf.nodes gltf)
     scene (Scene.name gltfScene) <$> getByIndices nodes "node" (fromMaybe [] $ Scene.nodes gltfScene)
-
-decodeBuffer :: Buffer -> Either String ByteString
-decodeBuffer (Buffer { uri = maybeUri, byteLength }) =
-    case maybeUri of
-        Just uri -> mapLeft T.unpack $ decodeUri uri
-        Nothing -> error "No uri in buffer"
-    where
-        base64prefix = "data:application/octet-stream;base64,"
-        decodeUri uri | base64prefix `T.isPrefixOf` uri =
-                let dataPart = T.drop (T.length base64prefix) uri
-                in decodeBase64 $ encodeUtf8 dataPart
-            | otherwise = Left "Unsupported uri format"
 
 decodeNode :: Gltf.Node -> Node
 decodeNode _ = Model.defaultNode
@@ -55,6 +39,9 @@ decodeMesh :: Gltf.Mesh -> Mesh
 decodeMesh (Gltf.Mesh name primitives) = Mesh name (decodePrimitive <$> primitives)
     where
         decodePrimitive = undefined
+        decodeAttribute key = case key of
+                                "POSITION" -> Right Position
+                                _ -> Left $ "Unknown attribute: " ++ key
         decodeMode n = case n of
                         0 -> Right Points
                         1 -> Right Lines

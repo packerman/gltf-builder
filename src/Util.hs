@@ -11,5 +11,5 @@ validateEither :: (a -> Bool) -> b -> Either b a -> Either b a
 validateEither _ _ e@(Left _) = e
 validateEither p d e@(Right x) = if p x then e else Left d
 
-validate :: (a -> Bool) -> b -> a -> Either b a
-validate p e x = if p x then Right x else Left e
+validate :: Bool -> b -> a -> Either b a
+validate p e x = if p then Right x else Left e

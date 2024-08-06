@@ -28,6 +28,7 @@ library
       Core.Decode
       Core.Model
       Gltf.Decode
+      Gltf.Decode.Accessor
       Gltf.Json
       Lib
       Util
