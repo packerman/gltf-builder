@@ -27,11 +27,13 @@ library
   exposed-modules:
       Core.Decode
       Core.Model
+      Data.Attribute
+      Data.Index
       Gltf.Decode
-      Gltf.Decode.Accessor
       Gltf.Json
       Lib
-      Util
+      Util.Base64
+      Util.Either
   other-modules:
       Paths_gltf_builder
   autogen-modules:
@@ -86,6 +88,8 @@ test-suite gltf-builder-test
   main-is: Spec.hs
   other-modules:
       Core.DecodeSpec
+      Data.AttributeSpec
+      Util.Base64Spec
       Paths_gltf_builder
   autogen-modules:
       Paths_gltf_builder

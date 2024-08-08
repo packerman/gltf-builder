@@ -3,18 +3,10 @@
 module Core.Model (module Core.Model) where
 
 import Data.Map (Map)
-import Data.Word (Word16)
 
-import Linear (M44, V3, V2, identity)
-
-data VertexArray =
-    Vec3Array [V3 Float] |
-    Vec2Array [V2 Float]
-    deriving (Eq, Show)
-
-newtype IndexArray =
-    ShortIndex [Word16]
-    deriving (Eq, Show)
+import Linear (M44, identity)
+import Data.Attribute (AttributeData)
+import Data.Index (IndexData)
 
 data Material = Material
     deriving (Eq, Show)
@@ -41,8 +33,8 @@ data Mode =
     deriving (Eq, Show)
 
 data Primitive = Primitive {
-    attributes :: Map Attribute VertexArray,
-    indices :: Maybe IndexArray,
+    attributes :: Map Attribute AttributeData,
+    indices :: Maybe IndexData,
     material :: Maybe Material
 } deriving (Eq, Show)
 

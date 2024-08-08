@@ -1,4 +1,4 @@
-module Util (module Util) where
+module Util.Either (module Util.Either) where
 
 maybeToEither :: a -> Maybe b -> Either a b
 maybeToEither def = maybe (Left def) Right

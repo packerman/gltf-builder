@@ -13,7 +13,7 @@ import Gltf.Json (Gltf, GltfArray, toVector, Index)
 import qualified Gltf.Json as Gltf (Gltf(..), Node, Mesh(..))
 import qualified Gltf.Json as Scene (Scene(..))
 import Gltf.Decode
-import Util (maybeToEither)
+import Util.Either (maybeToEither)
 
 decodeScene :: Int -> Gltf -> Either String Scene
 decodeScene index gltf = do
