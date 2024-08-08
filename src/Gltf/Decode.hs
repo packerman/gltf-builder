@@ -2,7 +2,8 @@
 module Gltf.Decode (
     readGltf,
     decodeBuffer,
-    BSL.fromStrict
+    BSL.fromStrict,
+    decodeAccessorData
 ) where
 
 import qualified Data.ByteString as BS
@@ -28,8 +29,8 @@ decodeBuffer (Buffer { uri = maybeUri, byteLength }) =
                         ("Expected buffer length: " ++ show expected ++ ", but actual length is " ++ show actual)
                         value
 
-decodeAccessor :: Vector BSL.ByteString -> Vector BufferView -> Accessor -> Either String AttributeData
-decodeAccessor buffers bufferViews (Accessor {
+decodeAccessorData :: Vector BSL.ByteString -> Vector BufferView -> Accessor -> Either String AttributeData
+decodeAccessorData buffers bufferViews (Accessor {
     bufferView = bufferViewIndex,
     count,
     accessorType,

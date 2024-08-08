@@ -3,13 +3,15 @@
 
 module Core.DecodeSpec (spec) where
 
-import qualified Data.Map as M
-
 import Test.Hspec
+
+import qualified Data.Map as M
+import Linear (V3(..), identity)
 
 import Gltf.Json as Gltf
 import Core.Decode (decodeScene)
 import Core.Model as Model
+import Data.Attribute (fromV3List)
 
 spec :: Spec
 spec = do
@@ -79,4 +81,20 @@ spec = do
     describe "Decode triangle without indices" $ do
         it "something" $ do
             let decoded = decodeScene 0 gltf
-            decoded `shouldBe` Right (Model.scene Nothing [Model.defaultNode])
+            decoded `shouldBe` Right (Model.scene Nothing [Model.Node {
+                mesh = Just $ Model.Mesh Nothing [
+                        Model.Primitive {
+                            attributes = M.fromList [
+                                (Position, fromV3List [
+                                        V3 0 0 0, V3 1 0 0, V3 0 1 0
+                                    ])
+                            ],
+                            indices = Nothing,
+                            material = Nothing,
+                            mode = Triangles
+                        }
+                    ],
+                    children = [],
+                    matrix = identity,
+                    name = Nothing
+                }])

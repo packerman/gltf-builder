@@ -6,7 +6,7 @@ module Util.Base64 (
 
 import qualified Data.Text as T
 import qualified Data.ByteString as B
-import Data.Text.Encoding (encodeUtf8, decodeUtf8)
+import Data.Text.Encoding (encodeUtf8)
 import Data.ByteString.Base64 (decodeBase64, encodeBase64)
 import Util.Either (mapLeft)
 

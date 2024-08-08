@@ -20,7 +20,7 @@ data Attribute =
     Position |
     Normal |
     TexCoord Int
-    deriving (Eq, Show)
+    deriving (Eq, Show, Ord)
 
 data Mode =
     Points |
@@ -35,7 +35,8 @@ data Mode =
 data Primitive = Primitive {
     attributes :: Map Attribute AttributeData,
     indices :: Maybe IndexData,
-    material :: Maybe Material
+    material :: Maybe Material,
+    mode :: Mode
 } deriving (Eq, Show)
 
 data Node = Node {

@@ -34,6 +34,7 @@ library
       Lib
       Util.Base64
       Util.Either
+      Util.Numeric
   other-modules:
       Paths_gltf_builder
   autogen-modules:
