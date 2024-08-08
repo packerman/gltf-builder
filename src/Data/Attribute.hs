@@ -42,10 +42,10 @@ encodeAttributeData :: AttributeData -> ByteString
 encodeAttributeData = runPut . putAttributeData
 
 putAttributeData :: AttributeData -> Put
-putAttributeData (Vec3Attribute vector)= put3dArray putFloatle vector
+putAttributeData (Vec3Attribute vector) = put3dArray putFloatle vector
 
 putV3 :: (a -> Put) -> V3 a -> Put
 putV3 p (V3 x y z) = p x <> p y <> p z
 
 put3dArray :: (a -> Put) -> Vector (V3 a) -> Put
-put3dArray p = V.mapM_ (putV3 p)
+put3dArray = V.mapM_ . putV3
