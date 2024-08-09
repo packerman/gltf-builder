@@ -27,8 +27,7 @@ library
   exposed-modules:
       Core.Decode
       Core.Model
-      Data.Attribute
-      Data.Index
+      Gltf.Accessor
       Gltf.Decode
       Gltf.Json
       Lib
@@ -89,7 +88,7 @@ test-suite gltf-builder-test
   main-is: Spec.hs
   other-modules:
       Core.DecodeSpec
-      Data.AttributeSpec
+      Gltf.AccessorSpec
       Util.Base64Spec
       Paths_gltf_builder
   autogen-modules:
