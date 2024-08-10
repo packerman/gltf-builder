@@ -39,6 +39,9 @@ newtype AttributeData = Vec3Attribute (Vector (V3 Float))
 fromV3List :: [V3 Float] -> AttributeData
 fromV3List = Vec3Attribute . V.fromList
 
+vec3Attribute :: Vector (V3 Float) -> AttributeData
+vec3Attribute = Vec3Attribute
+
 newtype IndexData = ShortIndex (Vector Word16)
   deriving (Eq, Show)
 

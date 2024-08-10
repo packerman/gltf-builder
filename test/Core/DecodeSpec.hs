@@ -86,8 +86,8 @@ spec = do
                 ],
             textures = Nothing
           }
-  describe "Decode triangle without indices" $ do
-    it "something" $ do
+  describe "Decode" $ do
+    it "decode triangle without indices" $ do
       let decoded = decodeScene 0 gltf
       decoded
         `shouldBe` Right

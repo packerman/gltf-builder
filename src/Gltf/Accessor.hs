@@ -1,5 +1,5 @@
 module Gltf.Accessor
-  ( AccessorData,
+  ( AccessorData (..),
     decodeAccessorData,
     encodeAccessorData,
     fromV3List,

@@ -4,18 +4,19 @@
 
 module Core.Decode (decodeScene) where
 
+import Control.Monad ((>=>))
 import Core.Model as Model
 import qualified Data.ByteString.Lazy as BSL
 import Data.Maybe
 import Data.Vector (Vector, (!?))
-import qualified Data.Vector as V
-import Gltf.Accessor (AccessorData)
+import Gltf.Accessor (AccessorData (..))
 import Gltf.Decode
 import Gltf.Json (Gltf, GltfArray, Index, Number, toVector)
 import qualified Gltf.Json as Gltf (Gltf (..), Mesh (..), Node (..), Primitive (..))
 import qualified Gltf.Json as Scene (Scene (..))
 import Linear (M44, V4 (V4), identity)
 import Util.Either (maybeToEither)
+import Util.Map (mapPairsM)
 import Util.Numeric (doubleToFloat)
 
 decodeScene :: Int -> Gltf -> Either String Scene
@@ -49,7 +50,7 @@ decodeNode meshes (Gltf.Node {name, matrix = gltfMatrix, mesh = meshIndex}) = do
     decodeMatrix' _ = Left "Incorrect matrix: expected 16 numbers"
 
 decodeMesh :: Vector AccessorData -> Gltf.Mesh -> Either String Mesh
-decodeMesh attributeData (Gltf.Mesh name primitives) = Mesh name <$> traverse decodePrimitive primitives
+decodeMesh accessorData (Gltf.Mesh name primitives) = Mesh name <$> traverse decodePrimitive primitives
   where
     decodePrimitive :: Gltf.Primitive -> Either String Model.Primitive
     decodePrimitive
@@ -59,11 +60,23 @@ decodeMesh attributeData (Gltf.Mesh name primitives) = Mesh name <$> traverse de
             material,
             mode
           }
-        ) = undefined
+        ) =
+        Model.Primitive
+          <$> mapPairsM
+            decodeAttribute
+            (getByIndex accessorData "accessor" >=> decodeAttributeData)
+            attributes
+          <*> traverse decodeIndexData indices
+          <*> traverse decodeMaterial material
+          <*> decodeMode (fromMaybe 4 mode)
 
     decodeAttribute key = case key of
       "POSITION" -> Right Position
       _ -> Left $ "Unknown attribute: " ++ key
+    decodeAttributeData accessorData = case accessorData of
+      (Vec3Float xs) -> Right $ vec3Attribute xs
+    -- _ -> Left $ "Unsupported accessor data"
+    decodeIndexData _ = Left "Unsupported accessor data"
     decodeMode n = case n of
       0 -> Right Points
       1 -> Right Lines
@@ -73,6 +86,7 @@ decodeMesh attributeData (Gltf.Mesh name primitives) = Mesh name <$> traverse de
       5 -> Right TriangleStrip
       6 -> Right TriangleFan
       _ -> Left $ "Unkown mode: " ++ show n
+    decodeMaterial _ = undefined
 
 getByIndex :: Vector a -> String -> Index -> Either String a
 getByIndex v name index = getOrError name index (v !? index)

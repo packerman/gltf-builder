@@ -33,6 +33,7 @@ library
       Lib
       Util.Base64
       Util.Either
+      Util.Map
       Util.Numeric
   other-modules:
       Paths_gltf_builder
