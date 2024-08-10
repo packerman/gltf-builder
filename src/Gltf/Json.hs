@@ -1,5 +1,5 @@
-{-# LANGUAGE DeriveGeneric, DuplicateRecordFields #-}
-{-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 
 module Gltf.Json (
     module Gltf.Json,
@@ -11,29 +11,33 @@ import Data.Aeson
 import Data.Map (Map)
 import Data.Text (Text)
 import Data.Vector as V
+import Data.Maybe
 
 type Number = Double
 type Index = Int
 
-type GltfList a = Maybe (Vector a)
+type GltfArray a = Maybe (Vector a)
 
-gltfList :: [a] -> GltfList a
+gltfList :: [a] -> GltfArray a
 gltfList [] = Nothing
 gltfList xs = Just $ V.fromList xs
 
+toVector :: GltfArray a -> Vector a
+toVector = fromMaybe V.empty
+
 data Gltf = Gltf {
-    accessors :: GltfList Accessor,
+    accessors :: GltfArray Accessor,
     asset :: Asset,
-    buffers :: GltfList Buffer,
-    bufferViews :: GltfList BufferView,
-    images :: GltfList Image,
-    materials :: GltfList Material,
-    meshes :: GltfList Mesh,
-    nodes :: GltfList Node,
-    samplers :: GltfList Sampler,
+    buffers :: GltfArray Buffer,
+    bufferViews :: GltfArray BufferView,
+    images :: GltfArray Image,
+    materials :: GltfArray Material,
+    meshes :: GltfArray Mesh,
+    nodes :: GltfArray Node,
+    samplers :: GltfArray Sampler,
     scene :: Maybe Index,
-    scenes :: GltfList Scene,
-    textures :: GltfList Texture
+    scenes :: GltfArray Scene,
+    textures :: GltfArray Texture
 } deriving (Generic, Show)
 
 defaultGltf :: Gltf
@@ -85,7 +89,7 @@ instance ToJSON Accessor where
 instance FromJSON Accessor where
     parseJSON = genericParseJSON readOptions {
         fieldLabelModifier =
-            \label -> case label of  
+            \label -> case label of
                         "accessorType" -> "type"
                         _ -> label
     }
@@ -189,14 +193,8 @@ instance FromJSON PbrMetallicRoughness where
 
 data Mesh = Mesh {
     name :: Maybe String,
-    primitives :: Maybe [Primitive]
+    primitives :: [Primitive]
 } deriving (Generic, Show)
-
-defaultMesh :: Mesh
-defaultMesh = Mesh {
-    name = Nothing,
-    primitives = Nothing
-}
 
 instance ToJSON Mesh where
     toEncoding = genericToEncoding writeOptions

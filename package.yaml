@@ -31,6 +31,8 @@ dependencies:
 - linear
 
 default-extensions:
+- OverloadedStrings
+- DuplicateRecordFields
 - DisambiguateRecordFields # https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/disambiguate_record_fields.html
 
 ghc-options:
@@ -68,3 +70,5 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - gltf-builder
+    - hspec
+    - hspec-discover

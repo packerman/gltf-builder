@@ -25,9 +25,16 @@ source-repository head
 
 library
   exposed-modules:
+      Core.Decode
+      Core.Model
+      Gltf.Accessor
       Gltf.Decode
       Gltf.Json
       Lib
+      Util.Base64
+      Util.Either
+      Util.Map
+      Util.Numeric
   other-modules:
       Paths_gltf_builder
   autogen-modules:
@@ -35,6 +42,8 @@ library
   hs-source-dirs:
       src
   default-extensions:
+      OverloadedStrings
+      DuplicateRecordFields
       DisambiguateRecordFields
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
@@ -58,6 +67,8 @@ executable gltf-builder-exe
   hs-source-dirs:
       app
   default-extensions:
+      OverloadedStrings
+      DuplicateRecordFields
       DisambiguateRecordFields
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
@@ -77,12 +88,17 @@ test-suite gltf-builder-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Core.DecodeSpec
+      Gltf.AccessorSpec
+      Util.Base64Spec
       Paths_gltf_builder
   autogen-modules:
       Paths_gltf_builder
   hs-source-dirs:
       test
   default-extensions:
+      OverloadedStrings
+      DuplicateRecordFields
       DisambiguateRecordFields
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
@@ -93,6 +109,8 @@ test-suite gltf-builder-test
     , bytestring
     , containers
     , gltf-builder
+    , hspec
+    , hspec-discover
     , linear
     , text
     , vector
