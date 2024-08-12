@@ -6,9 +6,19 @@ import Data.Map (Map)
 import Data.Vector (Vector)
 import qualified Data.Vector as V
 import Data.Word (Word16)
-import Linear (M44, V2, V3, identity)
+import Linear (M44, V2, V3, V4, identity)
 
 data Material = Material
+  { name :: Maybe String,
+    pbrMetallicRoughness :: PbrMetallicRoughness
+  }
+  deriving (Eq, Show)
+
+data PbrMetallicRoughness = PbrMetallicRoughness
+  { baseColorFactor :: V4 Float,
+    baseColorTexture :: Maybe Texture,
+    metallicFactor :: Float
+  }
   deriving (Eq, Show)
 
 data Mesh = Mesh
@@ -56,7 +66,7 @@ shortIndex = ShortIndex
 data Primitive = Primitive
   { attributes :: Map Attribute AttributeData,
     indices :: Maybe IndexData,
-    material :: Maybe Material,
+    material :: Material,
     mode :: Mode
   }
   deriving (Eq, Show)
@@ -86,3 +96,13 @@ data Scene = Scene
 
 scene :: Maybe String -> [Node] -> Scene
 scene = Scene
+
+data Texture = Texture
+  { image :: Image,
+    sampler :: Sampler
+  }
+  deriving (Eq, Show)
+
+data Image = Image deriving (Eq, Show)
+
+data Sampler = Sampler deriving (Eq, Show)
