@@ -66,17 +66,22 @@ decodeMesh accessorData (Gltf.Mesh name primitives) = Mesh name <$> traverse dec
             decodeAttribute
             (getByIndex accessorData "accessor" >=> decodeAttributeData)
             attributes
-          <*> traverse decodeIndexData indices
+          <*> traverse (getByIndex accessorData "accessor" >=> decodeIndexData) indices
           <*> traverse decodeMaterial material
           <*> decodeMode (fromMaybe 4 mode)
 
     decodeAttribute key = case key of
       "POSITION" -> Right Position
+      "NORMAL" -> Right Normal
+      "TEXCOORD_0" -> Right $ TexCoord 0
       _ -> Left $ "Unknown attribute: " ++ key
     decodeAttributeData accessorData = case accessorData of
       (Vec3Float xs) -> Right $ vec3Attribute xs
-    -- _ -> Left $ "Unsupported accessor data"
-    decodeIndexData _ = Left "Unsupported accessor data"
+      (Vec2Float xs) -> Right $ vec2Attribute xs
+      _ -> Left $ "Unsupported attribute accessor data: " <> show accessorData
+    decodeIndexData accessorData = case accessorData of
+      (ScalarShort xs) -> Right $ shortIndex xs
+      _ -> Left $ "Unsupported index accessor data: " <> show accessorData
     decodeMode n = case n of
       0 -> Right Points
       1 -> Right Lines

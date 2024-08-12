@@ -7,14 +7,18 @@ module Gltf.Accessor
 where
 
 import Data.Binary (Get, Put)
-import Data.Binary.Get (getFloatle, runGetOrFail)
-import Data.Binary.Put (putFloatle, runPut)
+import Data.Binary.Get (getFloatle, getWord16le, runGetOrFail)
+import Data.Binary.Put (putFloatle, putWord16le, runPut)
 import Data.ByteString.Lazy (ByteString)
 import Data.Vector (Vector, replicateM)
 import qualified Data.Vector as V
-import Linear (V3 (..))
+import Data.Word (Word16)
+import Linear (V2 (..), V3 (..))
 
-newtype AccessorData = Vec3Float (Vector (V3 Float))
+data AccessorData
+  = Vec3Float (Vector (V3 Float))
+  | Vec2Float (Vector (V2 Float))
+  | ScalarShort (Vector Word16)
   deriving (Eq, Show)
 
 fromV3List :: [V3 Float] -> AccessorData
@@ -40,23 +44,45 @@ decodeAccessorData count accessorType componentType byteString =
         <> ")"
 
 getAttributeData :: Int -> AccessorType -> ComponentType -> Get AccessorData
-getAttributeData count "VEC3" 5126 = Vec3Float <$> get3dArray count getFloatle
-getAttributeData _ _ _ = fail "Unknown accessor and component type"
+getAttributeData count "VEC3" 5126 = Vec3Float <$> getVec3Array count getFloatle
+getAttributeData count "VEC2" 5126 = Vec2Float <$> getVec2Array count getFloatle
+getAttributeData count "SCALAR" 5123 = ScalarShort <$> getScalarArray count getWord16le
+getAttributeData _ at ct = fail $ "Unknown accessor " <> show at <> " and component type " <> show ct
 
 getV3 :: Get a -> Get (V3 a)
 getV3 g = V3 <$> g <*> g <*> g
 
-get3dArray :: Int -> Get a -> Get (Vector (V3 a))
-get3dArray count = replicateM count . getV3
+getV2 :: Get a -> Get (V2 a)
+getV2 g = V2 <$> g <*> g
+
+getScalarArray :: Int -> Get a -> Get (Vector a)
+getScalarArray = replicateM
+
+getVec3Array :: Int -> Get a -> Get (Vector (V3 a))
+getVec3Array count = replicateM count . getV3
+
+getVec2Array :: Int -> Get a -> Get (Vector (V2 a))
+getVec2Array count = replicateM count . getV2
 
 encodeAccessorData :: AccessorData -> ByteString
 encodeAccessorData = runPut . putAccessorData
 
 putAccessorData :: AccessorData -> Put
-putAccessorData (Vec3Float vector) = put3dArray putFloatle vector
+putAccessorData (Vec3Float vector) = putVec3Array putFloatle vector
+putAccessorData (Vec2Float vector) = putVec2Array putFloatle vector
+putAccessorData (ScalarShort vector) = putScalarArray putWord16le vector
 
 putV3 :: (a -> Put) -> V3 a -> Put
 putV3 p (V3 x y z) = p x <> p y <> p z
 
-put3dArray :: (a -> Put) -> Vector (V3 a) -> Put
-put3dArray = V.mapM_ . putV3
+putVec3Array :: (a -> Put) -> Vector (V3 a) -> Put
+putVec3Array = V.mapM_ . putV3
+
+putV2 :: (a -> Put) -> V2 a -> Put
+putV2 p (V2 x y) = p x <> p y
+
+putVec2Array :: (a -> Put) -> Vector (V2 a) -> Put
+putVec2Array = V.mapM_ . putV2
+
+putScalarArray :: (a -> Put) -> Vector a -> Put
+putScalarArray = V.mapM_
