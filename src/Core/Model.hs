@@ -6,7 +6,7 @@ import Data.Map (Map)
 import Data.Vector (Vector)
 import qualified Data.Vector as V
 import Data.Word (Word16)
-import Linear (M44, V2, V3, V4, identity)
+import Linear (M44, V2, V3, V4 (..), identity)
 
 data Material = Material
   { name :: Maybe String,
@@ -17,9 +17,25 @@ data Material = Material
 data PbrMetallicRoughness = PbrMetallicRoughness
   { baseColorFactor :: V4 Float,
     baseColorTexture :: Maybe Texture,
-    metallicFactor :: Float
+    metallicFactor :: Float,
+    roughnessFactor :: Float,
+    metallicRoughnessTexture :: Maybe Texture
   }
   deriving (Eq, Show)
+
+defaultMaterial :: Material
+defaultMaterial =
+  Material
+    { name = Nothing,
+      pbrMetallicRoughness =
+        PbrMetallicRoughness
+          { baseColorFactor = V4 1 1 1 1,
+            baseColorTexture = Nothing,
+            metallicFactor = 1,
+            roughnessFactor = 1,
+            metallicRoughnessTexture = Nothing
+          }
+    }
 
 data Mesh = Mesh
   { name :: Maybe String,

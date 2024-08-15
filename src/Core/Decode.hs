@@ -11,13 +11,12 @@ import Data.Maybe
 import Data.Vector (Vector, (!?))
 import Gltf.Accessor (AccessorData (..))
 import Gltf.Decode
-import Gltf.Json (Gltf, GltfArray, Index, Number, toVector)
-import qualified Gltf.Json as Gltf (Gltf (..), Mesh (..), Node (..), Primitive (..))
+import Gltf.Json (Gltf, GltfArray, Index, Material (pbrMetallicRoughness), Number, defaultPbrMetallicRoughness, toVector)
+import qualified Gltf.Json as Gltf (Gltf (..), Material (..), Mesh (..), Node (..), PbrMetallicRoughness (..), Primitive (..))
 import qualified Gltf.Json as Scene (Scene (..))
 import Linear (M44, V4 (V4), identity)
 import Util.Either (maybeToEither)
 import Util.Map (mapPairsM)
-import Util.Numeric (doubleToFloat)
 
 decodeScene :: Int -> Gltf -> Either String Scene
 decodeScene index gltf = do
@@ -25,7 +24,8 @@ decodeScene index gltf = do
   buffers <- traverse (fmap BSL.fromStrict . decodeBuffer) $ toVector $ Gltf.buffers gltf
   let bufferViews = toVector (Gltf.bufferViews gltf)
   accessorData <- traverse (decodeAccessor buffers bufferViews) $ toVector $ Gltf.accessors gltf
-  meshes <- traverse (decodeMesh accessorData) $ toVector $ Gltf.meshes gltf
+  materials <- traverse decodeMaterial $ toVector $ Gltf.materials gltf
+  meshes <- traverse (decodeMesh accessorData materials) $ toVector $ Gltf.meshes gltf
   nodes <- traverse (decodeNode meshes) $ toVector $ Gltf.nodes gltf
   scene (Scene.name gltfScene) <$> getByIndices nodes "node" (fromMaybe [] $ Scene.nodes gltfScene)
 
@@ -37,20 +37,18 @@ decodeNode meshes (Gltf.Node {name, matrix = gltfMatrix, mesh = meshIndex}) = do
   return Node {..}
   where
     decodeMatrix :: Maybe [Number] -> Either String (M44 Float)
-    decodeMatrix = decodeMatrix' . fmap (doubleToFloat <$>)
-    decodeMatrix' :: Maybe [Float] -> Either String (M44 Float)
-    decodeMatrix' (Just [a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p]) =
+    decodeMatrix (Just [a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p]) =
       Right $
         V4
           (V4 a b c d)
           (V4 e f g h)
           (V4 i j k l)
           (V4 m n o p)
-    decodeMatrix' Nothing = Right identity
-    decodeMatrix' _ = Left "Incorrect matrix: expected 16 numbers"
+    decodeMatrix Nothing = Right identity
+    decodeMatrix _ = Left "Incorrect matrix: expected 16 numbers"
 
-decodeMesh :: Vector AccessorData -> Gltf.Mesh -> Either String Mesh
-decodeMesh accessorData (Gltf.Mesh name primitives) = Mesh name <$> traverse decodePrimitive primitives
+decodeMesh :: Vector AccessorData -> Vector Model.Material -> Gltf.Mesh -> Either String Mesh
+decodeMesh accessorData materials (Gltf.Mesh name primitives) = Mesh name <$> traverse decodePrimitive primitives
   where
     decodePrimitive :: Gltf.Primitive -> Either String Model.Primitive
     decodePrimitive
@@ -67,7 +65,7 @@ decodeMesh accessorData (Gltf.Mesh name primitives) = Mesh name <$> traverse dec
             (getByIndex accessorData "accessor" >=> decodeAttributeData)
             attributes
           <*> traverse (getByIndex accessorData "accessor" >=> decodeIndexData) indices
-          <*> traverse decodeMaterial material
+          <*> maybe (Right Model.defaultMaterial) (getByIndex materials "material") material
           <*> decodeMode (fromMaybe 4 mode)
 
     decodeAttribute key = case key of
@@ -91,7 +89,27 @@ decodeMesh accessorData (Gltf.Mesh name primitives) = Mesh name <$> traverse dec
       5 -> Right TriangleStrip
       6 -> Right TriangleFan
       _ -> Left $ "Unkown mode: " ++ show n
-    decodeMaterial _ = undefined
+
+decodeMaterial :: Gltf.Material -> Either String Model.Material
+decodeMaterial (Gltf.Material {..}) =
+  Model.Material name
+    <$> decodePbrUnsafe
+      (maybe defaultPbrMetallicRoughness (<> defaultPbrMetallicRoughness) pbrMetallicRoughness)
+  where
+    decodePbrUnsafe (Gltf.PbrMetallicRoughness {..}) = do
+      baseColorFactor <- decodeV4 $ fromJust baseColorFactor
+      return
+        Model.PbrMetallicRoughness
+          { baseColorFactor,
+            baseColorTexture = Nothing,
+            metallicFactor = fromJust metallicFactor,
+            roughnessFactor = fromJust roughnessFactor,
+            metallicRoughnessTexture = Nothing
+          }
+
+decodeV4 :: [Float] -> Either String (V4 Float)
+decodeV4 [a, b, c, d] = Right $ V4 a b c d
+decodeV4 _ = Left "Expected 4 numbers"
 
 getByIndex :: Vector a -> String -> Index -> Either String a
 getByIndex v name index = getOrError name index (v !? index)
