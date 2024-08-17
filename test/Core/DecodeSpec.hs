@@ -7,7 +7,7 @@ import Core.Decode (decodeScene)
 import Core.Model as Model
 import qualified Data.Map as M
 import Gltf.Json as Gltf
-import Linear (V3 (..), identity)
+import Linear (V3 (..), V4 (..), identity)
 import Test.Hspec
 
 spec :: Spec
@@ -281,4 +281,15 @@ spec = do
                     ]
               }
       let decoded = decodeScene 0 texturedBox
-      decoded `shouldBe` Right (Model.Scene Nothing [])
+      decoded
+        `shouldBe` Right
+          ( Model.Scene
+              Nothing
+              [ Model.Node
+                  { children = [],
+                    matrix = V4 (V4 1.0 0.0 0.0 0.0) (V4 0.0 0.0 (-1.0) 0.0) (V4 0.0 1.0 0.0 0.0) (V4 0.0 0.0 0.0 1.0),
+                    name = Nothing,
+                    mesh = Nothing
+                  }
+              ]
+          )
