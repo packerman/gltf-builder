@@ -10,8 +10,9 @@ where
 
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
+import Data.Maybe (fromMaybe)
 import Data.Vector (Vector, (!?))
-import Gltf.Accessor (AccessorData, decodeAccessorData)
+import Gltf.Accessor (AccessorData, DecodeOptions (..), decodeAccessorData)
 import Gltf.Json
 import Util.Base64 (decodeBase64Uri)
 import Util.Either (maybeToEither, validate)
@@ -32,17 +33,24 @@ decodeBuffer (Buffer {uri = maybeUri, byteLength}) =
             ("Expected buffer length: " ++ show expected ++ ", but actual length is " ++ show actual)
             value
 
+decodeOptions :: BufferView -> Accessor -> DecodeOptions
+decodeOptions
+  (BufferView {byteOffset = bufferViewOffset})
+  (Accessor {count, accessorType, componentType, byteOffset = accessorOffset}) =
+    let byteOffset = fromMaybe 0 bufferViewOffset + fromMaybe 0 accessorOffset
+     in DecodeOptions
+          { count,
+            accessorType,
+            componentType,
+            byteOffset
+          }
+
 decodeAccessor :: Vector BSL.ByteString -> Vector BufferView -> Accessor -> Either String AccessorData
 decodeAccessor
   buffers
   bufferViews
-  ( Accessor
-      { bufferView = bufferViewIndex,
-        count,
-        accessorType,
-        componentType
-      }
-    ) = do
+  accessor@(Accessor {bufferView = bufferViewIndex}) = do
     bufferView <- maybeToEither "buffer view index error" (bufferViewIndex >>= (bufferViews !?))
     buffer <- maybeToEither "buffer index error" (buffers !? buffer bufferView)
-    decodeAccessorData count accessorType componentType buffer
+    let options = decodeOptions bufferView accessor
+    decodeAccessorData options buffer

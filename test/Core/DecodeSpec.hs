@@ -7,7 +7,7 @@ import Core.Decode (decodeScene)
 import Core.Model as Model
 import qualified Data.Map as M
 import Gltf.Json as Gltf
-import Linear (V3 (..), V4 (..), identity)
+import Linear (V2 (..), V3 (..), V4 (..), identity)
 import Test.Hspec
 
 spec :: Spec
@@ -286,10 +286,46 @@ spec = do
           ( Model.Scene
               Nothing
               [ Model.Node
-                  { children = [],
-                    matrix = V4 (V4 1.0 0.0 0.0 0.0) (V4 0.0 0.0 (-1.0) 0.0) (V4 0.0 1.0 0.0 0.0) (V4 0.0 0.0 0.0 1.0),
+                  { matrix = V4 (V4 1.0 0.0 0.0 0.0) (V4 0.0 0.0 (-1.0) 0.0) (V4 0.0 1.0 0.0 0.0) (V4 0.0 0.0 0.0 1.0),
                     name = Nothing,
-                    mesh = Nothing
+                    mesh = Nothing,
+                    children =
+                      [ Model.Node
+                          { matrix = V4 (V4 1.0 0.0 0.0 0.0) (V4 0.0 1.0 0.0 0.0) (V4 0.0 0.0 1.0 0.0) (V4 0.0 0.0 0.0 1.0),
+                            name = Nothing,
+                            mesh =
+                              Just
+                                ( Model.Mesh
+                                    { name = Just "Mesh",
+                                      primitives =
+                                        [ Model.Primitive
+                                            { attributes =
+                                                M.fromList
+                                                  [ (Position, fromV3List [V3 (-0.5) (-0.5) 0.5, V3 0.5 (-0.5) 0.5, V3 (-0.5) 0.5 0.5, V3 0.5 0.5 0.5, V3 0.5 0.5 0.5, V3 0.5 (-0.5) 0.5, V3 0.5 0.5 (-0.5), V3 0.5 (-0.5) (-0.5), V3 (-0.5) 0.5 0.5, V3 0.5 0.5 0.5, V3 (-0.5) 0.5 (-0.5), V3 0.5 0.5 (-0.5), V3 0.5 (-0.5) 0.5, V3 (-0.5) (-0.5) 0.5, V3 0.5 (-0.5) (-0.5), V3 (-0.5) (-0.5) (-0.5), V3 (-0.5) (-0.5) 0.5, V3 (-0.5) 0.5 0.5, V3 (-0.5) (-0.5) (-0.5), V3 (-0.5) 0.5 (-0.5), V3 (-0.5) (-0.5) (-0.5), V3 (-0.5) 0.5 (-0.5), V3 0.5 (-0.5) (-0.5), V3 0.5 0.5 (-0.5)]),
+                                                    (Normal, fromV3List [V3 0.0 0.0 1.0, V3 0.0 0.0 1.0, V3 0.0 0.0 1.0, V3 0.0 0.0 1.0, V3 1.0 0.0 0.0, V3 1.0 0.0 0.0, V3 1.0 0.0 0.0, V3 1.0 0.0 0.0, V3 0.0 1.0 0.0, V3 0.0 1.0 0.0, V3 0.0 1.0 0.0, V3 0.0 1.0 0.0, V3 0.0 (-1.0) 0.0, V3 0.0 (-1.0) 0.0, V3 0.0 (-1.0) 0.0, V3 0.0 (-1.0) 0.0, V3 (-1.0) 0.0 0.0, V3 (-1.0) 0.0 0.0, V3 (-1.0) 0.0 0.0, V3 (-1.0) 0.0 0.0, V3 0.0 0.0 (-1.0), V3 0.0 0.0 (-1.0), V3 0.0 0.0 (-1.0), V3 0.0 0.0 (-1.0)]),
+                                                    (TexCoord 0, fromV2List [V2 6.0 0.0, V2 5.0 0.0, V2 6.0 0.9999999, V2 5.0 0.9999999, V2 4.0 0.0, V2 5.0 0.0, V2 4.0 1.0, V2 5.0 1.0, V2 2.0 0.0, V2 1.0 0.0, V2 2.0 1.0, V2 1.0 1.0, V2 3.0 0.0, V2 4.0 0.0, V2 3.0 1.0, V2 4.0 1.0, V2 3.0 0.0, V2 2.0 0.0, V2 3.0 1.0, V2 2.0 1.0, V2 0.0 0.0, V2 0.0 0.9999999, V2 1.0 0.0, V2 1.0 0.9999999])
+                                                  ],
+                                              indices = Just (fromShortList [0, 1, 2, 3, 2, 1, 4, 5, 6, 7, 6, 5, 8, 9, 10, 11, 10, 9, 12, 13, 14, 15, 14, 13, 16, 17, 18, 19, 18, 17, 20, 21, 22, 23, 22, 21]),
+                                              material =
+                                                Model.Material
+                                                  { name = Just "Texture",
+                                                    pbrMetallicRoughness =
+                                                      Model.PbrMetallicRoughness
+                                                        { baseColorFactor = V4 1.0 1.0 1.0 1.0,
+                                                          baseColorTexture = Nothing,
+                                                          metallicFactor = 0.0,
+                                                          roughnessFactor = 1.0,
+                                                          metallicRoughnessTexture = Nothing
+                                                        }
+                                                  },
+                                              mode = Triangles
+                                            }
+                                        ]
+                                    }
+                                ),
+                            children = []
+                          }
+                      ]
                   }
               ]
           )

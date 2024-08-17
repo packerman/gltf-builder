@@ -26,14 +26,16 @@ decodeScene index gltf = do
   accessorData <- traverse (decodeAccessor buffers bufferViews) $ toVector $ Gltf.accessors gltf
   materials <- traverse decodeMaterial $ toVector $ Gltf.materials gltf
   meshes <- traverse (decodeMesh accessorData materials) $ toVector $ Gltf.meshes gltf
-  nodes <- traverse (decodeNode meshes) $ toVector $ Gltf.nodes gltf
+  let gltfNodes = toVector $ Gltf.nodes gltf
+  nodes <- traverse (decodeNode gltfNodes meshes) gltfNodes
   scene (Scene.name gltfScene) <$> getByIndices nodes "node" (fromMaybe [] $ Scene.nodes gltfScene)
 
-decodeNode :: Vector Model.Mesh -> Gltf.Node -> Either String Node
-decodeNode meshes (Gltf.Node {name, matrix = gltfMatrix, mesh = meshIndex}) = do
+decodeNode :: Vector Gltf.Node -> Vector Model.Mesh -> Gltf.Node -> Either String Node
+decodeNode nodes meshes (Gltf.Node {name, matrix = gltfMatrix, mesh = meshIndex, children = gltfChildren}) = do
   matrix <- decodeMatrix gltfMatrix
   mesh <- traverse (getByIndex meshes "mesh") meshIndex
-  let children = []
+  gltfChildren <- getByIndices nodes "node" $ fromMaybe [] gltfChildren
+  children <- traverse (decodeNode nodes meshes) gltfChildren
   return Node {..}
   where
     decodeMatrix :: Maybe [Number] -> Either String (M44 Float)

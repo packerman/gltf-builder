@@ -1,13 +1,16 @@
+{-# LANGUAGE NamedFieldPuns #-}
+
 module Gltf.Accessor
   ( AccessorData (..),
     decodeAccessorData,
     encodeAccessorData,
     fromV3List,
+    DecodeOptions (..),
   )
 where
 
 import Data.Binary (Get, Put)
-import Data.Binary.Get (getFloatle, getWord16le, runGetOrFail)
+import Data.Binary.Get (getFloatle, getWord16le, runGetOrFail, skip)
 import Data.Binary.Put (putFloatle, putWord16le, runPut)
 import Data.ByteString.Lazy (ByteString)
 import Data.Vector (Vector, replicateM)
@@ -28,9 +31,19 @@ type AccessorType = String
 
 type ComponentType = Int
 
-decodeAccessorData :: Int -> AccessorType -> ComponentType -> ByteString -> Either String AccessorData
-decodeAccessorData count accessorType componentType byteString =
-  case runGetOrFail (getAttributeData count accessorType componentType) byteString of
+data DecodeOptions = DecodeOptions
+  { count :: Int,
+    accessorType :: AccessorType,
+    componentType :: ComponentType,
+    byteOffset :: Int
+  }
+  deriving (Eq, Show)
+
+decodeAccessorData :: DecodeOptions -> ByteString -> Either String AccessorData
+decodeAccessorData (DecodeOptions {count, accessorType, componentType, byteOffset}) byteString =
+  case runGetOrFail
+    (skip byteOffset >> getAttributeData count accessorType componentType)
+    byteString of
     Left info -> Left $ errorMessage info
     Right (_, _, val) -> Right val
   where

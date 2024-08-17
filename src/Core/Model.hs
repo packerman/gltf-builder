@@ -67,6 +67,9 @@ data AttributeData
 fromV3List :: [V3 Float] -> AttributeData
 fromV3List = Vec3Attribute . V.fromList
 
+fromV2List :: [V2 Float] -> AttributeData
+fromV2List = Vec2Attribute . V.fromList
+
 vec2Attribute :: Vector (V2 Float) -> AttributeData
 vec2Attribute = Vec2Attribute
 
@@ -75,6 +78,9 @@ vec3Attribute = Vec3Attribute
 
 newtype IndexData = ShortIndex (Vector Word16)
   deriving (Eq, Show)
+
+fromShortList :: [Word16] -> IndexData
+fromShortList = ShortIndex . V.fromList
 
 shortIndex :: Vector Word16 -> IndexData
 shortIndex = ShortIndex
@@ -88,20 +94,20 @@ data Primitive = Primitive
   deriving (Eq, Show)
 
 data Node = Node
-  { children :: [Node],
-    matrix :: M44 Float,
+  { matrix :: M44 Float,
     name :: Maybe String,
-    mesh :: Maybe Mesh
+    mesh :: Maybe Mesh,
+    children :: [Node]
   }
   deriving (Eq, Show)
 
 defaultNode :: Node
 defaultNode =
   Node
-    { children = [],
-      matrix = identity,
+    { matrix = identity,
       name = Nothing,
-      mesh = Nothing
+      mesh = Nothing,
+      children = []
     }
 
 data Scene = Scene
