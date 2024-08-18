@@ -26,12 +26,6 @@ data DataUrl = DataUrl
 decodeBase64Text :: T.Text -> Either String B.ByteString
 decodeBase64Text = mapLeft T.unpack . decodeBase64 . encodeUtf8
 
-base64Prefix :: T.Text
-base64Prefix = "data:application/octet-stream;base64,"
-
-base64PrefixLength :: Int
-base64PrefixLength = T.length base64Prefix
-
 decodeBase64Uri :: T.Text -> Either String DataUrl
 decodeBase64Uri uri = case T.splitOn "," uri of
   [beforePart, dataPart] -> DataUrl <$> decodeBefore beforePart <*> decodeBase64Text dataPart

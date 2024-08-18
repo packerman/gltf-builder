@@ -10,8 +10,9 @@ import qualified Data.ByteString.Lazy as BSL
 import Data.Maybe
 import Data.Vector (Vector, (!?))
 import Gltf.Accessor (AccessorData (..))
+import Gltf.Array (Array, toVector)
 import Gltf.Decode
-import Gltf.Json (Gltf, GltfArray, Index, Material (pbrMetallicRoughness), Number, defaultPbrMetallicRoughness, toVector)
+import Gltf.Json (Gltf, Index, Material (pbrMetallicRoughness), Number, defaultPbrMetallicRoughness)
 import qualified Gltf.Json as Gltf (Gltf (..), Material (..), Mesh (..), Node (..), PbrMetallicRoughness (..), Primitive (..))
 import qualified Gltf.Json as Scene (Scene (..))
 import Linear (M44, V4 (V4), identity)
@@ -119,7 +120,7 @@ getByIndex v name index = getOrError name index (v !? index)
 getByIndices :: Vector a -> String -> [Index] -> Either String [a]
 getByIndices v name = traverse (getByIndex v name)
 
-getIndexed :: GltfArray a -> Int -> String -> Either String a
+getIndexed :: Array a -> Int -> String -> Either String a
 getIndexed array index name = getOrError name index (array >>= (!? index))
 
 getOrError :: String -> Int -> Maybe a -> Either String a

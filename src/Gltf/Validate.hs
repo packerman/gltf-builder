@@ -3,8 +3,10 @@
 
 module Gltf.Validate (Validity (..), Validation) where
 
+import Data.Maybe
 import Data.Validity
 import qualified Data.Vector as V
+import Gltf.Array (Array, toList)
 import Gltf.Json
 
 instance Validity Gltf where
@@ -14,7 +16,6 @@ validateGltf :: Gltf -> Validation
 validateGltf
   ( Gltf
       { accessors,
-        asset,
         buffers,
         bufferViews,
         images,
@@ -27,16 +28,32 @@ validateGltf
         textures
       }
     ) =
-    validateGltfArray accessors
-      <> validateGltfArray buffers
-      <> validateGltfArray bufferViews
-      <> validateGltfArray images
-      <> validateGltfArray materials
-      <> validateGltfArray meshes
-      <> validateGltfArray nodes
-      <> validateGltfArray samplers
-      <> validateGltfArray scenes
-      <> validateGltfArray textures
+    validateAccessors accessors
+      <> validateArrayNotEmpty buffers
+      <> validateArrayNotEmpty bufferViews
+      <> validateArrayNotEmpty images
+      <> validateArrayNotEmpty materials
+      <> validateArrayNotEmpty meshes
+      <> validateArrayNotEmpty nodes
+      <> validateArrayNotEmpty samplers
+      <> validateArrayNotEmpty scenes
+      <> validateArrayNotEmpty textures
+      <> validateDefaultScene scenes scene
 
-validateGltfArray :: GltfArray a -> Validation
-validateGltfArray array = check (maybe True (not . V.null) array) "The array is not empty."
+validateDefaultScene :: Array Scene -> Maybe Index -> Validation
+validateDefaultScene scenes = validateAll (hasIndex scenes)
+
+validateAccessors :: Array Accessor -> Validation
+validateAccessors = validateArray (const valid)
+
+validateArray :: (a -> Validation) -> Array a -> Validation
+validateArray f array = validateArrayNotEmpty array <> decorateList (toList array) f
+
+validateArrayNotEmpty :: Array a -> Validation
+validateArrayNotEmpty array = check (maybe True (not . V.null) array) "The array is not empty."
+
+hasIndex :: Array a -> Int -> Validation
+hasIndex v i = check (isJust $ v >>= (V.!? i)) ("Index " <> show i <> " is not present.")
+
+validateAll :: (Foldable f) => (a -> Validation) -> f a -> Validation
+validateAll = foldMap

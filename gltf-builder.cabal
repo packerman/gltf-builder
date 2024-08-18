@@ -28,6 +28,7 @@ library
       Core.Decode
       Core.Model
       Gltf.Accessor
+      Gltf.Array
       Gltf.Decode
       Gltf.Json
       Gltf.Validate

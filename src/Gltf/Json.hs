@@ -8,39 +8,37 @@ where
 
 import Control.Applicative
 import Data.Aeson
+  ( FromJSON (..),
+    Options (..),
+    ToJSON (..),
+    defaultOptions,
+    eitherDecode,
+    genericParseJSON,
+    genericToEncoding,
+  )
 import Data.Function
 import Data.Map (Map)
-import Data.Maybe
 import Data.Text (Text)
-import Data.Vector as V
 import GHC.Generics
+import Gltf.Array (Array)
 
 type Number = Float
 
 type Index = Int
 
-type GltfArray a = Maybe (Vector a)
-
-gltfList :: [a] -> GltfArray a
-gltfList [] = Nothing
-gltfList xs = Just $ V.fromList xs
-
-toVector :: GltfArray a -> Vector a
-toVector = fromMaybe V.empty
-
 data Gltf = Gltf
-  { accessors :: GltfArray Accessor,
+  { accessors :: Array Accessor,
     asset :: Asset,
-    buffers :: GltfArray Buffer,
-    bufferViews :: GltfArray BufferView,
-    images :: GltfArray Image,
-    materials :: GltfArray Material,
-    meshes :: GltfArray Mesh,
-    nodes :: GltfArray Node,
-    samplers :: GltfArray Sampler,
+    buffers :: Array Buffer,
+    bufferViews :: Array BufferView,
+    images :: Array Image,
+    materials :: Array Material,
+    meshes :: Array Mesh,
+    nodes :: Array Node,
+    samplers :: Array Sampler,
     scene :: Maybe Index,
-    scenes :: GltfArray Scene,
-    textures :: GltfArray Texture
+    scenes :: Array Scene,
+    textures :: Array Texture
   }
   deriving (Generic, Eq, Show)
 
