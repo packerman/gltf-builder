@@ -71,7 +71,7 @@ validateAt arr idx func =
     maybe (invalid "Does not exists.") func (arr !? idx)
 
 hasIndex :: Array a -> Int -> Validation
-hasIndex v i = check (isJust $ v >>= (V.!? i)) ("Index " <> show i <> " is not present.")
+hasIndex v i = check (isJust $ v >>= (V.!? i)) (unwords ["Index", show i, " is not present."])
 
 validateAll :: (Foldable f) => (a -> Validation) -> f a -> Validation
 validateAll = foldMap

@@ -30,7 +30,7 @@ decodeBuffer (Buffer {uri = maybeUri, byteLength}) =
       let actual = BS.length value
        in validate
             (actual == expected)
-            ("Expected buffer length: " ++ show expected ++ ", but actual length is " ++ show actual)
+            (unwords ["Expected buffer length:", show expected, "but actual length is" ++ show actual])
             value
 
 decodeOptions :: BufferView -> Accessor -> DecodeOptions

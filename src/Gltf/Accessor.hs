@@ -48,19 +48,13 @@ decodeAccessorData (DecodeOptions {count, accessorType, componentType, byteOffse
     Right (_, _, val) -> Right val
   where
     errorMessage (rest, consumedSize, msg) =
-      "Error: "
-        <> msg
-        <> " (consumed size = "
-        <> show consumedSize
-        <> ", rest = "
-        <> show rest
-        <> ")"
+      unwords ["Error:", msg, "(consumed size =", show consumedSize, ", rest =", show rest, ")"]
 
 getAttributeData :: Int -> AccessorType -> ComponentType -> Get AccessorData
 getAttributeData count "VEC3" 5126 = Vec3Float <$> getVec3Array count getFloatle
 getAttributeData count "VEC2" 5126 = Vec2Float <$> getVec2Array count getFloatle
 getAttributeData count "SCALAR" 5123 = ScalarShort <$> getScalarArray count getWord16le
-getAttributeData _ at ct = fail $ "Unknown accessor " <> show at <> " and component type " <> show ct
+getAttributeData _ at ct = fail $ unwords ["Unknown accessor", show at, "and component type", show ct]
 
 getV3 :: Get a -> Get (V3 a)
 getV3 g = V3 <$> g <*> g <*> g
