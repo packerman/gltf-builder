@@ -1,6 +1,3 @@
-{-# LANGUAGE DisambiguateRecordFields #-}
-{-# LANGUAGE OverloadedStrings #-}
-
 module Core.DecodeSpec (spec) where
 
 import Core.Decode (decodeScene)

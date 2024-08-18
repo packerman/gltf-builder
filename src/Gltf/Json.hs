@@ -1,5 +1,4 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DuplicateRecordFields #-}
 
 module Gltf.Json
   ( module Gltf.Json,
@@ -43,7 +42,7 @@ data Gltf = Gltf
     scenes :: GltfArray Scene,
     textures :: GltfArray Texture
   }
-  deriving (Generic, Show)
+  deriving (Generic, Eq, Show)
 
 defaultGltf :: Gltf
 defaultGltf =
@@ -90,7 +89,7 @@ data Accessor = Accessor
     max :: Maybe [Number],
     min :: Maybe [Number]
   }
-  deriving (Generic, Show)
+  deriving (Generic, Eq, Show)
 
 instance ToJSON Accessor where
   toEncoding = genericToEncoding writeOptions
@@ -109,7 +108,7 @@ data Asset = Asset
   { generator :: Maybe String,
     version :: String
   }
-  deriving (Generic, Show)
+  deriving (Generic, Eq, Show)
 
 defaultAsset :: Asset
 defaultAsset =
@@ -129,7 +128,7 @@ data Buffer = Buffer
     name :: Maybe String,
     uri :: Maybe Text
   }
-  deriving (Generic, Show)
+  deriving (Generic, Eq, Show)
 
 instance ToJSON Buffer where
   toEncoding = genericToEncoding writeOptions
@@ -145,7 +144,7 @@ data BufferView = BufferView
     name :: Maybe String,
     target :: Maybe Index
   }
-  deriving (Generic, Show)
+  deriving (Generic, Eq, Show)
 
 instance ToJSON BufferView where
   toEncoding = genericToEncoding writeOptions
@@ -157,7 +156,7 @@ data Image = Image
   { name :: Maybe String,
     uri :: Maybe Text
   }
-  deriving (Generic, Show)
+  deriving (Generic, Eq, Show)
 
 defaultImage :: Image
 defaultImage =
@@ -176,7 +175,7 @@ data Material = Material
   { name :: Maybe String,
     pbrMetallicRoughness :: Maybe PbrMetallicRoughness
   }
-  deriving (Generic, Show)
+  deriving (Generic, Eq, Show)
 
 defaultMaterial :: Material
 defaultMaterial =
@@ -198,7 +197,7 @@ data PbrMetallicRoughness = PbrMetallicRoughness
     roughnessFactor :: Maybe Number,
     metallicRoughnessTexture :: Maybe TextureInfo
   }
-  deriving (Generic, Show)
+  deriving (Generic, Eq, Show)
 
 defaultPbrMetallicRoughness :: PbrMetallicRoughness
 defaultPbrMetallicRoughness =
@@ -230,7 +229,7 @@ data Mesh = Mesh
   { name :: Maybe String,
     primitives :: [Primitive]
   }
-  deriving (Generic, Show)
+  deriving (Generic, Eq, Show)
 
 instance ToJSON Mesh where
   toEncoding = genericToEncoding writeOptions
@@ -244,7 +243,7 @@ data Primitive = Primitive
     material :: Maybe Index,
     mode :: Maybe Index
   }
-  deriving (Generic, Show)
+  deriving (Generic, Eq, Show)
 
 instance ToJSON Primitive where
   toEncoding = genericToEncoding writeOptions
@@ -258,7 +257,7 @@ data Node = Node
     mesh :: Maybe Index,
     name :: Maybe String
   }
-  deriving (Generic, Show)
+  deriving (Generic, Eq, Show)
 
 defaultNode :: Node
 defaultNode =
@@ -282,7 +281,7 @@ data Sampler = Sampler
     wrapS :: Maybe Index,
     wrapT :: Maybe Index
   }
-  deriving (Generic, Show)
+  deriving (Generic, Eq, Show)
 
 defaultSampler :: Sampler
 defaultSampler =
@@ -304,7 +303,7 @@ data Scene = Scene
   { name :: Maybe String,
     nodes :: Maybe [Index]
   }
-  deriving (Generic, Show)
+  deriving (Generic, Eq, Show)
 
 defaultScene :: Scene
 defaultScene =
@@ -324,7 +323,7 @@ data Texture = Texture
     sampler :: Maybe Index,
     source :: Maybe Index
   }
-  deriving (Generic, Show)
+  deriving (Generic, Eq, Show)
 
 defaultTexture :: Texture
 defaultTexture =
@@ -344,7 +343,7 @@ data TextureInfo = TextureInfo
   { index :: Index,
     texCoord :: Maybe Index
   }
-  deriving (Generic, Show)
+  deriving (Generic, Eq, Show)
 
 instance ToJSON TextureInfo where
   toEncoding = genericToEncoding writeOptions

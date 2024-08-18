@@ -29,6 +29,7 @@ dependencies:
 - aeson # https://hackage.haskell.org/package/aeson
 - base64
 - linear
+- validity
 
 default-extensions:
 - OverloadedStrings
