@@ -3,6 +3,8 @@ module Gltf.Array
     fromList,
     toVector,
     toList,
+    (!),
+    (!?),
   )
 where
 
@@ -21,3 +23,9 @@ toList = maybe [] V.toList
 
 toVector :: Array a -> Vector a
 toVector = fromMaybe V.empty
+
+(!) :: Array a -> Int -> a
+(!) a i = fromJust a V.! i
+
+(!?) :: Array a -> Int -> Maybe a
+(!?) a i = a >>= (V.!? i)
