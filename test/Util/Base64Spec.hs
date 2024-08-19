@@ -14,10 +14,10 @@ spec = do
     it "decodes base64 data uri" $ do
       let input = "data:application/octet-stream;base64,AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAA"
           expected = B.pack [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x80, 0x3f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x80, 0x3f, 0, 0, 0, 0]
-      decodeBase64Uri input `shouldBe` Right (DataUrl "application/octet-stream" expected)
+      decodeBase64Url input `shouldBe` Right (DataUrl "application/octet-stream" expected)
     it "decodes media type" $ do
       let input = "data:application/octet-stream;base64,AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAA"
-      let result = decodeBase64Uri input
+      let result = decodeBase64Url input
       (isMediaType ["image/png", "application/octet-stream"] <$> result) `shouldBe` Right (Just "application/octet-stream")
       (isMediaType ["image/png"] <$> result) `shouldBe` Right Nothing
     it "encodes base64" $ do

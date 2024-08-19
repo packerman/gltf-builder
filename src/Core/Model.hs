@@ -2,6 +2,7 @@
 
 module Core.Model (module Core.Model) where
 
+import Data.ByteString (ByteString)
 import Data.Map (Map)
 import Data.Vector (Vector)
 import qualified Data.Vector as V
@@ -125,6 +126,48 @@ data Texture = Texture
   }
   deriving (Eq, Show)
 
-data Image = Image deriving (Eq, Show)
+data Image = Image
+  { name :: Maybe String,
+    mimeType :: String,
+    imageData :: ByteString
+  }
+  deriving (Eq, Show)
 
-data Sampler = Sampler deriving (Eq, Show)
+data MagFilter
+  = MagNearest
+  | MagLinear
+  deriving (Eq, Show, Enum)
+
+data MinFilter
+  = MinNearest
+  | MinLinear
+  | NearestMipMapNearest
+  | LinearMipmapNearest
+  | NearestMipmapLinear
+  | LinearMipmapLinear
+  deriving (Eq, Show, Enum)
+
+data Wrap
+  = ClampToEdge
+  | MirroredRepeat
+  | Repeat
+  deriving (Eq, Show, Enum)
+
+data Sampler = Sampler
+  { name :: Maybe String,
+    magFilter :: Maybe MagFilter,
+    minFilter :: Maybe MinFilter,
+    wrapS :: Wrap,
+    wrapT :: Wrap
+  }
+  deriving (Eq, Show)
+
+defaultSampler :: Sampler
+defaultSampler =
+  Sampler
+    { name = Nothing,
+      magFilter = Nothing,
+      minFilter = Nothing,
+      wrapS = Repeat,
+      wrapT = Repeat
+    }

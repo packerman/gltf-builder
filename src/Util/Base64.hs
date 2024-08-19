@@ -2,7 +2,7 @@
 
 module Util.Base64
   ( decodeBase64Text,
-    decodeBase64Uri,
+    decodeBase64Url,
     encodeBase64Text,
     DataUrl (..),
     isMediaType,
@@ -26,8 +26,8 @@ data DataUrl = DataUrl
 decodeBase64Text :: T.Text -> Either String B.ByteString
 decodeBase64Text = mapLeft T.unpack . decodeBase64 . encodeUtf8
 
-decodeBase64Uri :: T.Text -> Either String DataUrl
-decodeBase64Uri uri = case T.splitOn "," uri of
+decodeBase64Url :: T.Text -> Either String DataUrl
+decodeBase64Url uri = case T.splitOn "," uri of
   [beforePart, dataPart] -> DataUrl <$> decodeBefore beforePart <*> decodeBase64Text dataPart
   _ -> unsupportedError "only one data part is allowed"
   where

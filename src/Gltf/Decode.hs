@@ -14,7 +14,7 @@ import Data.Maybe (fromMaybe)
 import Data.Vector (Vector, (!?))
 import Gltf.Accessor (AccessorData, DecodeOptions (..), decodeAccessorData)
 import Gltf.Json
-import Util.Base64 (DataUrl (..), decodeBase64Uri)
+import Util.Base64 (DataUrl (..), decodeBase64Url)
 import Util.Either (maybeToEither, validate)
 
 readGltf :: FilePath -> IO (Either String Gltf)
@@ -23,7 +23,7 @@ readGltf path = eitherDecode <$> BSL.readFile path
 decodeBuffer :: Buffer -> Either String BS.ByteString
 decodeBuffer (Buffer {uri = maybeUri, byteLength}) =
   case maybeUri of
-    Just uri -> decodeBase64Uri uri >>= validateLength byteLength . getData
+    Just uri -> decodeBase64Url uri >>= validateLength byteLength . getData
     Nothing -> error "No uri in buffer"
   where
     validateLength expected value =

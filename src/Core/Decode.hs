@@ -13,23 +13,44 @@ import Gltf.Accessor (AccessorData (..))
 import Gltf.Array (Array, toVector)
 import Gltf.Decode
 import Gltf.Json (Gltf, Index, Material (pbrMetallicRoughness), Number, defaultPbrMetallicRoughness)
-import qualified Gltf.Json as Gltf (Gltf (..), Material (..), Mesh (..), Node (..), PbrMetallicRoughness (..), Primitive (..))
-import qualified Gltf.Json as Scene (Scene (..))
+import qualified Gltf.Json as Gltf
+  ( Gltf (..),
+    Material (..),
+    Mesh (..),
+    Node (..),
+    PbrMetallicRoughness (..),
+    Primitive (..),
+    Sampler (..),
+    Scene (..),
+  )
 import Linear (M44, V4 (V4), identity)
 import Util.Either (maybeToEither)
 import Util.Map (mapPairsM)
 
 decodeScene :: Int -> Gltf -> Either String Scene
-decodeScene index gltf = do
-  gltfScene <- getIndexed (Gltf.scenes gltf) index "scene"
-  buffers <- traverse (fmap BSL.fromStrict . decodeBuffer) $ toVector $ Gltf.buffers gltf
-  let bufferViews = toVector (Gltf.bufferViews gltf)
-  accessorData <- traverse (decodeAccessor buffers bufferViews) $ toVector $ Gltf.accessors gltf
-  materials <- traverse decodeMaterial $ toVector $ Gltf.materials gltf
-  meshes <- traverse (decodeMesh accessorData materials) $ toVector $ Gltf.meshes gltf
-  let gltfNodes = toVector $ Gltf.nodes gltf
-  nodes <- traverse (decodeNode gltfNodes meshes) gltfNodes
-  scene (Scene.name gltfScene) <$> getByIndices nodes "node" (fromMaybe [] $ Scene.nodes gltfScene)
+decodeScene
+  index
+  ( Gltf.Gltf
+      { buffers = gltfBuffers,
+        bufferViews = gltfBufferViews,
+        accessors = gltfAcceccors,
+        materials = gltfMaterials,
+        meshes = gltfMeshes,
+        nodes = gltfNodes,
+        scenes = gltfScenes,
+        samplers = gltfSamplers
+      }
+    ) = do
+    (Gltf.Scene sceneName sceneNodes) <- getIndexed gltfScenes index "scene"
+    buffers <- traverse (fmap BSL.fromStrict . decodeBuffer) $ toVector gltfBuffers
+    let bufferViews = toVector gltfBufferViews
+    accessorData <- traverse (decodeAccessor buffers bufferViews) $ toVector gltfAcceccors
+    samplers <- traverse decodeSampler $ toVector gltfSamplers
+    materials <- traverse decodeMaterial $ toVector gltfMaterials
+    meshes <- traverse (decodeMesh accessorData materials) $ toVector gltfMeshes
+    let nodeVector = toVector gltfNodes
+    nodes <- traverse (decodeNode nodeVector meshes) nodeVector
+    scene sceneName <$> getByIndices nodes "node" (fromMaybe [] sceneNodes)
 
 decodeNode :: Vector Gltf.Node -> Vector Model.Mesh -> Gltf.Node -> Either String Node
 decodeNode nodes meshes (Gltf.Node {name, matrix = gltfMatrix, mesh = meshIndex, children = gltfChildren}) = do
@@ -84,13 +105,13 @@ decodeMesh accessorData materials (Gltf.Mesh name primitives) = Mesh name <$> tr
       (ScalarShort xs) -> Right $ shortIndex xs
       _ -> Left $ unwords ["Unsupported index accessor data:", show accessorData]
     decodeMode n = case n of
-      0 -> Right Points
-      1 -> Right Lines
-      2 -> Right LineLoop
-      3 -> Right LineStrip
-      4 -> Right Triangles
-      5 -> Right TriangleStrip
-      6 -> Right TriangleFan
+      0 -> pure Points
+      1 -> pure Lines
+      2 -> pure LineLoop
+      3 -> pure LineStrip
+      4 -> pure Triangles
+      5 -> pure TriangleStrip
+      6 -> pure TriangleFan
       _ -> Left $ unwords ["Unkown mode:", show n]
 
 decodeMaterial :: Gltf.Material -> Either String Model.Material
@@ -109,6 +130,40 @@ decodeMaterial (Gltf.Material {..}) =
             roughnessFactor = fromJust roughnessFactor,
             metallicRoughnessTexture = Nothing
           }
+
+decodeSampler :: Gltf.Sampler -> Either String Model.Sampler
+decodeSampler
+  ( Gltf.Sampler
+      { name,
+        magFilter,
+        minFilter,
+        wrapS,
+        wrapT
+      }
+    ) =
+    Model.Sampler name
+      <$> traverse decodeMagFilter magFilter
+      <*> traverse decodeMinFilter minFilter
+      <*> maybe (pure Repeat) decodeWrap wrapS
+      <*> maybe (pure Repeat) decodeWrap wrapT
+    where
+      decodeMagFilter n = case n of
+        9728 -> pure MagNearest
+        9729 -> pure MagLinear
+        _ -> Left $ unwords ["Unknown mag filter", show n]
+      decodeMinFilter n = case n of
+        9728 -> pure MinNearest
+        9729 -> pure MinLinear
+        9984 -> pure NearestMipMapNearest
+        9985 -> pure LinearMipmapNearest
+        9986 -> pure NearestMipmapLinear
+        9987 -> pure LinearMipmapLinear
+        _ -> Left $ unwords ["Unknown min filter", show n]
+      decodeWrap n = case n of
+        33071 -> pure ClampToEdge
+        33648 -> pure MirroredRepeat
+        10497 -> pure Repeat
+        _ -> Left $ unwords ["Unknown wrap mode", show n]
 
 decodeV4 :: [Float] -> Either String (V4 Float)
 decodeV4 [a, b, c, d] = Right $ V4 a b c d
