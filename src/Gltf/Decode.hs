@@ -3,8 +3,10 @@
 module Gltf.Decode
   ( readGltf,
     decodeBuffer,
+    decodeImageData,
     BSL.fromStrict,
     decodeAccessor,
+    DataUrl (..),
   )
 where
 
@@ -54,3 +56,7 @@ decodeAccessor
     buffer <- maybeToEither "buffer index error" (buffers !? buffer bufferView)
     let options = decodeOptions bufferView accessor
     decodeAccessorData options buffer
+
+decodeImageData :: Image -> Either String DataUrl
+decodeImageData (Image {uri}) =
+  maybeToEither "Image uri is absent" uri >>= decodeBase64Url

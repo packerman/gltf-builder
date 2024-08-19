@@ -18,7 +18,7 @@ import Util.Either (mapLeft)
 type MediaType = T.Text
 
 data DataUrl = DataUrl
-  { mediatype :: MediaType,
+  { mediaType :: MediaType,
     getData :: B.ByteString
   }
   deriving (Eq, Show)
@@ -40,8 +40,8 @@ decodeBase64Url uri = case T.splitOn "," uri of
     unsupportedError = Left . ("Unsupported uri format: " <>)
 
 isMediaType :: [MediaType] -> DataUrl -> Maybe MediaType
-isMediaType acceptedMediaType (DataUrl {mediatype}) =
-  if mediatype `elem` acceptedMediaType then Just mediatype else Nothing
+isMediaType acceptedMediaType (DataUrl {mediaType}) =
+  if mediaType `elem` acceptedMediaType then Just mediaType else Nothing
 
 encodeBase64Text :: B.ByteString -> T.Text
 encodeBase64Text = encodeBase64

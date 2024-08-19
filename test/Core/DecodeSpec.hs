@@ -2,6 +2,7 @@ module Core.DecodeSpec (spec) where
 
 import Core.Decode (decodeScene)
 import Core.Model as Model
+import qualified Data.ByteString as BS
 import qualified Data.Map as M
 import Gltf.Array as Array
 import Gltf.Json as Gltf
@@ -317,7 +318,25 @@ spec = do
                                                     pbrMetallicRoughness =
                                                       Model.PbrMetallicRoughness
                                                         { baseColorFactor = V4 1.0 1.0 1.0 1.0,
-                                                          baseColorTexture = Nothing,
+                                                          baseColorTexture =
+                                                            Just $
+                                                              Model.Texture
+                                                                { name = Nothing,
+                                                                  image =
+                                                                    Model.Image
+                                                                      { name = Nothing,
+                                                                        mimeType = "image/png",
+                                                                        imageData = BS.pack []
+                                                                      },
+                                                                  sampler =
+                                                                    Model.Sampler
+                                                                      { name = Nothing,
+                                                                        magFilter = Just MagLinear,
+                                                                        minFilter = Just NearestMipmapLinear,
+                                                                        wrapS = Repeat,
+                                                                        wrapT = Repeat
+                                                                      }
+                                                                },
                                                           metallicFactor = 0.0,
                                                           roughnessFactor = 1.0,
                                                           metallicRoughnessTexture = Nothing

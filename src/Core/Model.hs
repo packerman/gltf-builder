@@ -4,6 +4,7 @@ module Core.Model (module Core.Model) where
 
 import Data.ByteString (ByteString)
 import Data.Map (Map)
+import Data.Text (Text)
 import Data.Vector (Vector)
 import qualified Data.Vector as V
 import Data.Word (Word16)
@@ -121,14 +122,15 @@ scene :: Maybe String -> [Node] -> Scene
 scene = Scene
 
 data Texture = Texture
-  { image :: Image,
+  { name :: Maybe String,
+    image :: Image,
     sampler :: Sampler
   }
   deriving (Eq, Show)
 
 data Image = Image
   { name :: Maybe String,
-    mimeType :: String,
+    mimeType :: Text,
     imageData :: ByteString
   }
   deriving (Eq, Show)
