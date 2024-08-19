@@ -62,13 +62,13 @@ decodeNode nodes meshes (Gltf.Node {name, matrix = gltfMatrix, mesh = meshIndex,
   where
     decodeMatrix :: Maybe [Number] -> Either String (M44 Float)
     decodeMatrix (Just [a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p]) =
-      Right $
+      pure $
         V4
           (V4 a b c d)
           (V4 e f g h)
           (V4 i j k l)
           (V4 m n o p)
-    decodeMatrix Nothing = Right identity
+    decodeMatrix Nothing = pure identity
     decodeMatrix _ = Left "Incorrect matrix: expected 16 numbers"
 
 decodeMesh :: Vector AccessorData -> Vector Model.Material -> Gltf.Mesh -> Either String Mesh
@@ -93,9 +93,9 @@ decodeMesh accessorData materials (Gltf.Mesh name primitives) = Mesh name <$> tr
           <*> decodeMode (fromMaybe 4 mode)
 
     decodeAttribute key = case key of
-      "POSITION" -> Right Position
-      "NORMAL" -> Right Normal
-      "TEXCOORD_0" -> Right $ TexCoord 0
+      "POSITION" -> pure Position
+      "NORMAL" -> pure Normal
+      "TEXCOORD_0" -> pure $ TexCoord 0
       _ -> Left $ unwords ["Unknown attribute: ", key]
     decodeAttributeData accessorData = case accessorData of
       (Vec3Float xs) -> Right $ vec3Attribute xs
