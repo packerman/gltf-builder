@@ -28,8 +28,10 @@ library
       Core.Decode
       Core.Model
       Gltf.Accessor
+      Gltf.Array
       Gltf.Decode
       Gltf.Json
+      Gltf.Validate
       Lib
       Util.Base64
       Util.Either
@@ -55,6 +57,7 @@ library
     , containers
     , linear
     , text
+    , validity
     , vector
   default-language: Haskell2010
 
@@ -81,6 +84,7 @@ executable gltf-builder-exe
     , gltf-builder
     , linear
     , text
+    , validity
     , vector
   default-language: Haskell2010
 
@@ -113,5 +117,6 @@ test-suite gltf-builder-test
     , hspec-discover
     , linear
     , text
+    , validity
     , vector
   default-language: Haskell2010
