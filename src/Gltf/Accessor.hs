@@ -40,15 +40,17 @@ data DecodeOptions = DecodeOptions
   deriving (Eq, Show)
 
 decodeAccessorData :: DecodeOptions -> ByteString -> Either String AccessorData
-decodeAccessorData (DecodeOptions {count, accessorType, componentType, byteOffset}) byteString =
-  case runGetOrFail
-    (skip byteOffset >> getAttributeData count accessorType componentType)
-    byteString of
+decodeAccessorData options byteString =
+  case runGetOrFail (decodeAttributeData options) byteString of
     Left info -> Left $ errorMessage info
     Right (_, _, val) -> Right val
   where
     errorMessage (rest, consumedSize, msg) =
       unwords ["Error:", msg, "(consumed size =", show consumedSize, ", rest =", show rest, ")"]
+
+decodeAttributeData :: DecodeOptions -> Get AccessorData
+decodeAttributeData (DecodeOptions {count, accessorType, componentType, byteOffset}) =
+  skip byteOffset >> getAttributeData count accessorType componentType
 
 getAttributeData :: Int -> AccessorType -> ComponentType -> Get AccessorData
 getAttributeData count "VEC3" 5126 = Vec3Float <$> getVec3Array count getFloatle
