@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Core.Decode
+      Core.Encode
       Core.Model
       Gltf.Accessor
       Gltf.Array
@@ -93,6 +94,7 @@ test-suite gltf-builder-test
   main-is: Spec.hs
   other-modules:
       Core.DecodeSpec
+      Core.EncodeSpec
       Gltf.AccessorSpec
       Gltf.DecodeSpec
       Util.Base64Spec
