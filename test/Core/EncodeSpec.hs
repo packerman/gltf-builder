@@ -3,6 +3,7 @@ module Core.EncodeSpec (spec) where
 import Core.Encode (encodeScene)
 import Core.Model as Model
 import Data.Map as M
+import qualified Gltf.Array as Array
 import Gltf.Json (Gltf (..))
 import qualified Gltf.Json as Gltf
 import Linear
@@ -45,6 +46,18 @@ spec = do
         `shouldBe` Gltf
           { asset =
               Gltf.Asset
-                { version = "2.0"
-                }
+                { version = "2.0",
+                  generator = Nothing
+                },
+            accessors = Array.fromList [],
+            scene = Just 0,
+            scenes = Array.fromList [],
+            buffers = Array.fromList [],
+            bufferViews = Array.fromList [],
+            images = Array.fromList [],
+            materials = Array.fromList [],
+            meshes = Array.fromList [],
+            nodes = Array.fromList [],
+            samplers = Array.fromList [],
+            textures = Array.fromList []
           }
