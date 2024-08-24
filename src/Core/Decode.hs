@@ -1,4 +1,3 @@
-{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -Wno-name-shadowing #-}
 
@@ -111,8 +110,8 @@ decodeMesh accessorData materials (Gltf.Mesh name primitives) = Mesh name <$> tr
       "TEXCOORD_0" -> pure $ TexCoord 0
       _ -> Left $ unwords ["Unknown attribute: ", key]
     decodeAttributeData accessorData = case accessorData of
-      (Vec3Float xs) -> Right $ vec3Attribute xs
-      (Vec2Float xs) -> Right $ vec2Attribute xs
+      (Vec3Float xs) -> pure $ vec3Attribute xs
+      (Vec2Float xs) -> pure $ vec2Attribute xs
       _ -> Left $ unwords ["Unsupported attribute accessor data:", show accessorData]
     decodeIndexData accessorData = case accessorData of
       (ScalarShort xs) -> Right $ shortIndex xs

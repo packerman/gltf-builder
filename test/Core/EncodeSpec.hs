@@ -51,7 +51,13 @@ spec = do
                 },
             accessors = Array.fromList [],
             scene = Just 0,
-            scenes = Array.fromList [],
+            scenes =
+              Array.fromList
+                [ Gltf.Scene
+                    { name = Nothing,
+                      nodes = Just [0]
+                    }
+                ],
             buffers = Array.fromList [],
             bufferViews = Array.fromList [],
             images = Array.fromList [],

@@ -1,5 +1,6 @@
 module Core.Encode (encodeScene) where
 
+import Core.Model (Attribute (..), Mode (..))
 import qualified Core.Model as Model
 import qualified Gltf.Array as Array
 import Gltf.Json (Gltf (..))
@@ -27,3 +28,30 @@ encodeScene _ =
       samplers = Array.fromList [],
       textures = Array.fromList []
     }
+
+encodeMesh :: Model.Mesh -> Gltf.Mesh
+encodeMesh
+  ( Model.Mesh
+      { name,
+        primitives
+      }
+    ) = undefined
+    where
+      encodePrimitive
+        ( Model.Primitive
+            { attributes,
+              indices,
+              material,
+              mode
+            }
+          ) = undefined
+      encodeAttribute Position = "POSITION"
+      encodeAttribute (TexCoord n) = "TEXCOORD_" <> show n
+      encodeAttribute Normal = "NORMAL"
+      encodeMode Points = 0
+      encodeMode Lines = 1
+      encodeMode LineLoop = 2
+      encodeMode LineStrip = 3
+      encodeMode Triangles = 4
+      encodeMode TriangleStrip = 5
+      encodeMode TriangleFan = 6
