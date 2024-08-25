@@ -38,6 +38,7 @@ library
       Util.Either
       Util.Map
       Util.Numeric
+      Util.Tuple
   other-modules:
       Paths_gltf_builder
   autogen-modules:
