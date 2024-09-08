@@ -1,4 +1,4 @@
-module Util.Either (module Util.Either) where
+module Lib.Base (module Lib.Base) where
 
 maybeToEither :: a -> Maybe b -> Either a b
 maybeToEither def = maybe (Left def) Right
@@ -13,3 +13,9 @@ validateEither p d e@(Right x) = if p x then e else Left d
 
 validate :: Bool -> b -> a -> Either b a
 validate p e x = if p then Right x else Left e
+
+doubleToFloat :: Double -> Float
+doubleToFloat = realToFrac
+
+pairA :: (Applicative f) => (f a, f b) -> f (a, b)
+pairA = uncurry (liftA2 (,))

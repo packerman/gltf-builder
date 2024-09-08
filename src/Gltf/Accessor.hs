@@ -1,4 +1,4 @@
-{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE NoFieldSelectors #-}
 
 module Gltf.Accessor
   ( AccessorData (..),
@@ -26,6 +26,21 @@ data AccessorData
 
 fromV3List :: [V3 Float] -> AccessorData
 fromV3List = Vec3Float . V.fromList
+
+stride :: AccessorData -> Int
+stride (Vec3Float _) = 12
+stride (Vec2Float _) = 8
+stride (ScalarShort _) = 2
+
+byteSize :: AccessorData -> Int
+byteSize (Vec3Float xs) = 12 * V.length xs
+byteSize (Vec2Float xs) = 8 * V.length xs
+byteSize (ScalarShort xs) = 2 * V.length xs
+
+count :: AccessorData -> Int
+count (Vec3Float xs) = V.length xs
+count (Vec2Float xs) = V.length xs
+count (ScalarShort xs) = V.length xs
 
 type AccessorType = String
 

@@ -1,6 +1,4 @@
-{-# LANGUAGE NamedFieldPuns #-}
-
-module Util.Base64
+module Lib.Base64
   ( decodeBase64Text,
     decodeBase64Url,
     encodeBase64Text,
@@ -13,7 +11,7 @@ import qualified Data.ByteString as B
 import Data.ByteString.Base64 (decodeBase64, encodeBase64)
 import qualified Data.Text as T
 import Data.Text.Encoding (encodeUtf8)
-import Util.Either (mapLeft)
+import Lib.Base (mapLeft)
 
 type MediaType = T.Text
 

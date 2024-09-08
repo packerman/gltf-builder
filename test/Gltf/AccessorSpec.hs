@@ -4,7 +4,7 @@ import qualified Data.ByteString.Lazy as BL
 import Gltf.Accessor
 import Linear (V3 (..))
 import Test.Hspec
-import Util.Base64 (decodeBase64Text)
+import Lib.Base64 (decodeBase64Text)
 
 spec :: Spec
 spec = do

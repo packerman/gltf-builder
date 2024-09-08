@@ -1,6 +1,6 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.36.0.
+-- This file has been generated from package.yaml by hpack version 0.37.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -33,12 +33,9 @@ library
       Gltf.Decode
       Gltf.Json
       Gltf.Validate
-      Lib
-      Util.Base64
-      Util.Either
-      Util.Map
-      Util.Numeric
-      Util.Tuple
+      Lib.Base
+      Lib.Base64
+      Lib.Container
   other-modules:
       Paths_gltf_builder
   autogen-modules:

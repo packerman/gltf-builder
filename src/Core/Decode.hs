@@ -31,9 +31,9 @@ import qualified Gltf.Json as Gltf
     Scene (..),
     Texture (..),
   )
+import Lib.Base (maybeToEither)
+import Lib.Container (mapPairsM)
 import Linear (M44, V4 (V4), identity)
-import Util.Either (maybeToEither)
-import Util.Map (mapPairsM)
 
 decodeScene :: Int -> Gltf -> Either String Scene
 decodeScene

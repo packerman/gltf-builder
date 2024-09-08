@@ -16,8 +16,8 @@ import Data.Maybe (fromMaybe)
 import Data.Vector (Vector, (!?))
 import Gltf.Accessor (AccessorData, DecodeOptions (..), decodeAccessorData)
 import Gltf.Json
-import Util.Base64 (DataUrl (..), decodeBase64Url)
-import Util.Either (maybeToEither, validate)
+import Lib.Base (maybeToEither, validate)
+import Lib.Base64 (DataUrl (..), decodeBase64Url)
 
 readGltf :: FilePath -> IO (Either String Gltf)
 readGltf path = eitherDecode <$> BSL.readFile path

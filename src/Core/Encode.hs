@@ -1,12 +1,12 @@
 module Core.Encode (encodeScene) where
 
-import Core.Model (Attribute (..), AttributeData, Mode (..))
+import Core.Model (Attribute (..), AttributeData (..), Mode (..))
 import qualified Core.Model as Model
-import qualified Data.Map as M
+import Gltf.Accessor (AccessorData (..))
 import qualified Gltf.Array as Array
 import Gltf.Json (Gltf (..))
 import qualified Gltf.Json as Gltf
-import Util.Map (mapPairs)
+import Lib.Container (mapPairs)
 
 encodeScene :: Model.Scene -> Gltf
 encodeScene _ =
@@ -52,16 +52,18 @@ encodeMesh
             }
           ) =
           Gltf.Primitive
-            { attributes = mapPairs encodeAttribute encodeAttributeData attributes,
+            { attributes = undefined, -- mapPairs encodeAttribute encodeAttributeData attributes,
               indices = Nothing,
               material = Nothing,
               mode = pure $ encodeMode mode
             }
+
       encodeAttribute Position = "POSITION"
       encodeAttribute (TexCoord n) = "TEXCOORD_" <> show n
       encodeAttribute Normal = "NORMAL"
-      encodeAttributeData :: AttributeData -> Int
-      encodeAttributeData = undefined
+      encodeAttributeData (Vec2Attribute xs) = Vec2Float xs
+      encodeAttributeData (Vec3Attribute xs) = Vec3Float xs
+
       encodeMode Points = 0
       encodeMode Lines = 1
       encodeMode LineLoop = 2
