@@ -16,3 +16,6 @@ groupBy f = M.fromListWith (++) . map (\x -> (f x, [x]))
 
 groupByA :: (Ord k, Applicative f, Monoid (f a)) => (a -> k) -> [a] -> Map k (f a)
 groupByA f = M.fromListWith (<>) . fmap (\x -> (f x, pure x))
+
+groupByM :: (Ord k, Monoid m) => (a -> m) -> (a -> k) -> [a] -> Map k m
+groupByM s f = M.fromListWith (<>) . fmap (\x -> (f x, s x))

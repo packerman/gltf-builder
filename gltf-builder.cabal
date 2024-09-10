@@ -32,6 +32,7 @@ library
       Gltf.Array
       Gltf.Decode
       Gltf.Json
+      Gltf.Package
       Gltf.Validate
       Lib.Base
       Lib.Base64
