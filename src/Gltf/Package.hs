@@ -1,17 +1,15 @@
 module Gltf.Package () where
 
-import Control.Monad.Zip
-import Core.Model (AttributeData)
 import Data.Foldable (toList)
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Vector (Vector)
 import qualified Data.Vector as V
 import Gltf.Accessor (AccessorData (..))
-import Gltf.Json (Accessor (..), BufferView (..))
+import Gltf.Json (Accessor (..), Buffer (..), BufferView (..))
+import Lib.Base (mzipMax, mzipMin, nothingIf)
 import Lib.Container (groupBy)
 import Prelude
-import qualified Prelude as P (max, min)
 
 data Package = Package
   {
@@ -25,40 +23,46 @@ encodeAttributes attributes =
   where
     encodeWithStride :: Int -> [(String, AccessorData)] -> Package
     encodeWithStride groupStride attributeList = undefined
-    createAccessor =
+    createAccessor :: AccessorData -> Accessor
+    createAccessor (Vec3Float xs) =
       Accessor
         { bufferView = undefined,
           byteOffset = undefined,
-          componentType = undefined,
+          componentType = 5126,
           count = undefined,
-          name = undefined,
-          accessorType = undefined,
-          max = undefined,
-          min = undefined
+          name = Nothing,
+          accessorType = "VEC3",
+          max = pure $ toList $ mzipMax xs,
+          min = pure $ toList $ mzipMin xs
         }
-
-createAccessor :: AccessorData -> Accessor
-createAccessor (Vec3Float xs) =
-  Accessor
-    { bufferView = undefined,
-      byteOffset = undefined,
-      componentType = 5126,
-      count = undefined,
-      name = Nothing,
-      accessorType = "VEC3",
-      max = pure $ toList $ mzipMax xs,
-      min = pure $ toList $ mzipMin xs
-    }
-createAccessor _ = error ""
-
-mzipMin :: (MonadZip m, Ord a) => Vector (m a) -> m a
-mzipMin = V.foldl1' (mzipWith P.min)
-
-mzipMax :: (MonadZip m, Ord a) => Vector (m a) -> m a
-mzipMax = V.foldl1' (mzipWith P.max)
-
-foldl1Zip' :: (MonadZip m) => (a -> a -> a) -> Vector (m a) -> m a
-foldl1Zip' f = V.foldl1' (mzipWith f)
+    createAccessor _ = error ""
+    createArrayBuffer :: Int -> BufferView
+    createArrayBuffer byteStride =
+      BufferView
+        { buffer = undefined,
+          byteOffset = undefined,
+          byteLength = undefined,
+          byteStride = nothingIf (== 0) byteStride,
+          name = Nothing,
+          target = pure 34962
+        }
+    createElementArrayBuffer :: BufferView
+    createElementArrayBuffer =
+      BufferView
+        { buffer = undefined,
+          byteOffset = undefined,
+          byteLength = undefined,
+          byteStride = Nothing,
+          name = Nothing,
+          target = pure 34963
+        }
+    createBuffer :: Buffer
+    createBuffer =
+      Buffer
+        { byteLength = undefined,
+          name = Nothing,
+          uri = undefined
+        }
 
 encodePrimitive :: Map String AccessorData -> Maybe AccessorData -> Package
 encodePrimitive attributes indices = undefined
