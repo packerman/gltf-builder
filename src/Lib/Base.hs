@@ -2,6 +2,12 @@ module Lib.Base (module Lib.Base) where
 
 import Control.Monad.Zip
 
+mcons :: Maybe a -> [a] -> [a]
+mcons x xs = maybe xs (: xs) x
+
+sumWith :: (Functor t, Foldable t, Num b) => (a -> b) -> t a -> b
+sumWith f = sum . fmap f
+
 maybeToEither :: a -> Maybe b -> Either a b
 maybeToEither def = maybe (Left def) Right
 

@@ -1,3 +1,5 @@
+{-# LANGUAGE NoFieldSelectors #-}
+
 module Gltf.Package () where
 
 import Data.Foldable (toList)
@@ -15,6 +17,12 @@ data Package = Package
   {
   }
   deriving (Eq, Show)
+
+data EncodingState = EncodingState
+  { bufferIndexOffset :: Int,
+    bufferViewOffset :: Int,
+    currentByteOffset :: Int
+  }
 
 encodeAttributes :: Map String AccessorData -> Package
 encodeAttributes attributes =

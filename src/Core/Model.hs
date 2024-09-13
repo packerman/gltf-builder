@@ -8,6 +8,7 @@ import Data.Text (Text)
 import Data.Vector (Vector)
 import qualified Data.Vector as V
 import Data.Word (Word16)
+import Lib.Base (mcons)
 import Linear (M44, V2, V3, V4 (..), identity)
 
 data Material = Material
@@ -120,6 +121,16 @@ data Scene = Scene
 
 scene :: Maybe String -> [Node] -> Scene
 scene = Scene
+
+sceneNodes :: Scene -> [Node]
+sceneNodes (Scene {nodes}) = concatMap descendants nodes
+  where
+    descendants node@(Node {children}) = node : concatMap descendants children
+
+sceneMeshes :: Scene -> [Mesh]
+sceneMeshes (Scene {nodes}) = concatMap nodeMeshes nodes
+  where
+    nodeMeshes (Node {mesh, children}) = mcons mesh $ concatMap nodeMeshes children
 
 data Texture = Texture
   { name :: Maybe String,
