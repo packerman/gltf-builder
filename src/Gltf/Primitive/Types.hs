@@ -1,8 +1,28 @@
 module Gltf.Primitive.Types (module Gltf.Primitive.Types) where
 
+import Control.Monad.Trans.State
 import Data.ByteString.Lazy
 import Data.Map
-import Gltf.Json
+import Gltf.Json (Accessor, BufferView)
+
+data EncodedPrimitive = EncodedPrimitive
+  { attributes :: Map String Int,
+    indices :: Maybe Int,
+    bytes :: [ByteString],
+    accessors :: [Accessor],
+    bufferViews :: [BufferView]
+  }
+  deriving (Eq, Show)
+
+data EncodingState = EncodingState
+  { accessorIndexOffset :: Int,
+    bufferIndex :: Int,
+    bufferViewIndex :: Int,
+    bufferViewByteOffset :: Int,
+    accessorByteOffset :: Int
+  }
+
+type EncodingM = State EncodingState
 
 data EncodedAccessor = EncodedAccessor
   { accessorBytes :: ByteString,

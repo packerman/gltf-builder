@@ -1,4 +1,9 @@
-module Gltf.Primitive (encodePrimitive) where
+module Gltf.Primitive
+  ( encodePrimitive,
+    EncodingM,
+    EncodedPrimitive,
+  )
+where
 
 import Control.Monad
 import Control.Monad.Trans.State
@@ -21,25 +26,6 @@ import qualified Gltf.Primitive.Types as EncStrGrp (EncodedStrideGroup (..))
 import Lib.Base (mcons, mzipMax, mzipMin)
 import Lib.Container (groupBy)
 import Linear (V2 (..), V3 (..))
-
-data EncodedPrimitive = EncodedPrimitive
-  { attributes :: Map String Int,
-    indices :: Maybe Int,
-    bytes :: [ByteString],
-    accessors :: [Accessor],
-    bufferViews :: [BufferView]
-  }
-  deriving (Eq, Show)
-
-data EncodingState = EncodingState
-  { accessorIndexOffset :: Int,
-    bufferIndex :: Int,
-    bufferViewIndex :: Int,
-    bufferViewByteOffset :: Int,
-    accessorByteOffset :: Int
-  }
-
-type EncodingM = State EncodingState
 
 encodePrimitive ::
   Map String AccessorData ->

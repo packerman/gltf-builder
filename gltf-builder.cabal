@@ -97,6 +97,7 @@ test-suite gltf-builder-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Base.WriterSpec
       Core.DecodeSpec
       Core.EncodeSpec
       Gltf.AccessorSpec
