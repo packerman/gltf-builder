@@ -16,6 +16,7 @@ import Data.Vector (Vector)
 import qualified Data.Vector as V
 import Gltf.Accessor (AccessorData (..))
 import Gltf.Json (Accessor (..), Buffer (..), BufferView (..), Primitive (..))
+import Gltf.Primitive.Types
 import Lib.Base (foldl1Zip, mcons, mzipMax, mzipMin, nothingIf)
 import Lib.Container (groupBy)
 import Linear (V2 (..), V3 (..))
@@ -35,22 +36,6 @@ data EncodingState = EncodingState
     bufferViewIndex :: Int,
     bufferViewByteOffset :: Int,
     accessorByteOffset :: Int
-  }
-
-data EncodedAccessor = EncodedAccessor
-  { accessorBytes :: ByteString,
-    accessor :: Accessor,
-    accessorIndex :: Int
-  }
-
-data EncodedIndices = EncodedIndices
-  { accessor :: EncodedAccessor,
-    bufferView :: BufferView
-  }
-
-data EncodedStrideGroup = EncodedStrideGroup
-  { attributes :: Map String EncodedAccessor,
-    bufferView :: BufferView
   }
 
 type EncodingM = State EncodingState
@@ -76,32 +61,27 @@ encodePrimitive attributes indices = do
       M.unions
         . map (\(EncodedStrideGroup {attributes = attrs}) -> M.map accessorIndex attrs)
     indexBytes (EncodedIndices {accessor = EncodedAccessor {accessorBytes}}) = accessorBytes
-    attributeBytes :: [EncodedStrideGroup] -> [ByteString]
+    -- attributeBytes :: [EncodedStrideGroup] -> [ByteString]
     attributeBytes = (>>= (\(EncodedStrideGroup {attributes = attrs}) -> map accessorBytes $ M.elems attrs))
-
--- getAndModify :: (s -> a) -> (s -> s) -> State s a
--- getAndModify f m = do
---   x <- gets f
---   modify m
---   return x
 
 encodeAttributes :: Map String AccessorData -> EncodingM [EncodedStrideGroup]
 encodeAttributes attributes =
-  let attributeCount = fromJust getAttributeCount
+  let -- attributeCount = fromJust getAttributeCount
       strideGroups = groupBy (stride . snd) (M.assocs attributes)
       byteSizeSum = sum $ byteSize <$> M.elems attributes
    in forM (M.elems strideGroups) (encodeWithStride byteSizeSum)
   where
-    getAttributeCount :: Maybe Int
-    getAttributeCount = getSingleWith (elemCount . snd) (M.assocs attributes)
-      where
-        getSingle :: (Eq a) => [a] -> Maybe a
-        getSingle (x : xs) = if all (== x) xs then Just x else Nothing
-        getSingle _ = Nothing
-        getSingleWith :: (Eq b) => (a -> b) -> [a] -> Maybe b
-        getSingleWith f = getSingle . map f
+    -- getAttributeCount :: Maybe Int
+    -- getAttributeCount = getSingleWith (elemCount . snd) (M.assocs attributes)
+    --   where
+    --     getSingle :: (Eq a) => [a] -> Maybe a
+    --     getSingle (x : xs) = if all (== x) xs then Just x else Nothing
+    --     getSingle _ = Nothing
+    --     getSingleWith :: (Eq b) => (a -> b) -> [a] -> Maybe b
+    --     getSingleWith f = getSingle . map f
     encodeWithStride :: Int -> [(String, AccessorData)] -> EncodingM EncodedStrideGroup
     encodeWithStride byteSizeSum attributeList = do
+      resetAccessorByteOffset
       attrs <- forM attributeList (mapM encodeAccessor)
       bufferView <- createBufferView Nothing (pure 34962) byteSizeSum
       return
@@ -109,36 +89,37 @@ encodeAttributes attributes =
           { attributes = M.fromList attrs,
             bufferView
           }
-    -- createAccessor :: AccessorData -> EncodingState -> Accessor
-    -- createAccessor (Vec3Float xs) (EncodingState {bufferViewIndex, accessorByteOffset}) =
-    --   Accessor
-    --     { bufferView = pure bufferViewIndex,
-    --       byteOffset = pure accessorByteOffset,
-    --       componentType = 5126,
-    --       count = undefined,
-    --       name = Nothing,
-    --       accessorType = "VEC3",
-    --       max = pure $ toList $ mzipMax xs,
-    --       min = pure $ toList $ mzipMin xs
-    --     }
-    -- createAccessor _ _ = error ""
-    createArrayBuffer :: Int -> EncodingState -> BufferView
-    createArrayBuffer byteLength (EncodingState {bufferIndex, bufferViewByteOffset}) =
-      BufferView
-        { buffer = bufferIndex,
-          byteOffset = pure bufferViewByteOffset,
-          byteLength,
-          byteStride = Nothing,
-          name = Nothing,
-          target = pure 34962
-        }
-    createBuffer :: Buffer
-    createBuffer =
-      Buffer
-        { byteLength = undefined,
-          name = Nothing,
-          uri = undefined
-        }
+
+-- createAccessor :: AccessorData -> EncodingState -> Accessor
+-- createAccessor (Vec3Float xs) (EncodingState {bufferViewIndex, accessorByteOffset}) =
+--   Accessor
+--     { bufferView = pure bufferViewIndex,
+--       byteOffset = pure accessorByteOffset,
+--       componentType = 5126,
+--       count = undefined,
+--       name = Nothing,
+--       accessorType = "VEC3",
+--       max = pure $ toList $ mzipMax xs,
+--       min = pure $ toList $ mzipMin xs
+--     }
+-- createAccessor _ _ = error ""
+-- createArrayBuffer :: Int -> EncodingState -> BufferView
+-- createArrayBuffer byteLength (EncodingState {bufferIndex, bufferViewByteOffset}) =
+--   BufferView
+--     { buffer = bufferIndex,
+--       byteOffset = pure bufferViewByteOffset,
+--       byteLength,
+--       byteStride = Nothing,
+--       name = Nothing,
+--       target = pure 34962
+--     }
+-- createBuffer :: Buffer
+-- createBuffer =
+--   Buffer
+--     { byteLength = undefined,
+--       name = Nothing,
+--       uri = undefined
+--     }
 
 encodeIndices :: AccessorData -> EncodingM EncodedIndices
 encodeIndices accessorData =

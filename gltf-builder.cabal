@@ -33,6 +33,7 @@ library
       Gltf.Decode
       Gltf.Json
       Gltf.Primitive
+      Gltf.Primitive.Types
       Gltf.Validate
       Lib.Base
       Lib.Base64
