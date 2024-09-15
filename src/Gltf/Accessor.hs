@@ -8,7 +8,7 @@ module Gltf.Accessor
   )
 where
 
-import Data.Binary (Get, Put)
+import Data.Binary (Get)
 import Data.Binary.Get (getFloatle, getWord16le, runGetOrFail, skip)
 import Data.ByteString.Lazy (ByteString)
 import Data.Vector (Vector, replicateM)

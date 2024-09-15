@@ -1,9 +1,8 @@
-module Gltf.Primitive () where
+module Gltf.Primitive (encodePrimitive) where
 
 import Control.Monad
 import Control.Monad.Trans.State
 import Control.Monad.Zip (MonadZip)
-import qualified Core.Model as Gltf
 import Data.Binary.Put (Put, putFloatle, putWord16le, runPut)
 import Data.ByteString.Lazy (ByteString)
 import qualified Data.ByteString.Lazy as BSL
@@ -11,13 +10,15 @@ import Data.Foldable (toList)
 import Data.List (singleton)
 import Data.Map (Map)
 import qualified Data.Map as M
-import Data.Maybe (fromJust)
 import Data.Vector (Vector)
 import qualified Data.Vector as V
 import Gltf.Accessor (AccessorData (..))
-import Gltf.Json (Accessor (..), Buffer (..), BufferView (..), Primitive (..))
+import Gltf.Json (Accessor (..), BufferView (..))
 import Gltf.Primitive.Types
-import Lib.Base (foldl1Zip, mcons, mzipMax, mzipMin, nothingIf)
+import qualified Gltf.Primitive.Types as EncAcc (EncodedAccessor (..))
+import qualified Gltf.Primitive.Types as EncInd (EncodedIndices (..))
+import qualified Gltf.Primitive.Types as EncStrGrp (EncodedStrideGroup (..))
+import Lib.Base (mcons, mzipMax, mzipMin)
 import Lib.Container (groupBy)
 import Linear (V2 (..), V3 (..))
 
@@ -49,20 +50,27 @@ encodePrimitive attributes indices = do
   encodedAttributes <- encodeAttributes attributes
   return
     EncodedPrimitive
-      { attributes = attributeAccessors encodedAttributes,
-        indices = fmap indexAccessor encodedIndices,
-        bytes = mcons (fmap indexBytes encodedIndices) (attributeBytes encodedAttributes),
-        accessors = undefined,
-        bufferViews = undefined
+      { attributes = attributeAccessorIndices encodedAttributes,
+        indices = accessIndex accessorIndex <$> encodedIndices,
+        bytes =
+          mcons
+            (accessIndex accessorBytes <$> encodedIndices)
+            (accessAttribute accessorBytes encodedAttributes),
+        accessors =
+          mcons
+            (accessIndex EncAcc.accessor <$> encodedIndices)
+            (accessAttribute EncAcc.accessor encodedAttributes),
+        bufferViews =
+          mcons
+            (EncInd.bufferView <$> encodedIndices)
+            (EncStrGrp.bufferView <$> encodedAttributes)
       }
   where
-    indexAccessor (EncodedIndices {accessor = EncodedAccessor {accessorIndex}}) = accessorIndex
-    attributeAccessors =
+    attributeAccessorIndices =
       M.unions
         . map (\(EncodedStrideGroup {attributes = attrs}) -> M.map accessorIndex attrs)
-    indexBytes (EncodedIndices {accessor = EncodedAccessor {accessorBytes}}) = accessorBytes
-    -- attributeBytes :: [EncodedStrideGroup] -> [ByteString]
-    attributeBytes = (>>= (\(EncodedStrideGroup {attributes = attrs}) -> map accessorBytes $ M.elems attrs))
+    accessIndex f (EncodedIndices {accessor}) = f accessor
+    accessAttribute f = (>>= (\(EncodedStrideGroup {attributes = attrs}) -> map f $ M.elems attrs))
 
 encodeAttributes :: Map String AccessorData -> EncodingM [EncodedStrideGroup]
 encodeAttributes attributes =
@@ -90,29 +98,6 @@ encodeAttributes attributes =
             bufferView
           }
 
--- createAccessor :: AccessorData -> EncodingState -> Accessor
--- createAccessor (Vec3Float xs) (EncodingState {bufferViewIndex, accessorByteOffset}) =
---   Accessor
---     { bufferView = pure bufferViewIndex,
---       byteOffset = pure accessorByteOffset,
---       componentType = 5126,
---       count = undefined,
---       name = Nothing,
---       accessorType = "VEC3",
---       max = pure $ toList $ mzipMax xs,
---       min = pure $ toList $ mzipMin xs
---     }
--- createAccessor _ _ = error ""
--- createArrayBuffer :: Int -> EncodingState -> BufferView
--- createArrayBuffer byteLength (EncodingState {bufferIndex, bufferViewByteOffset}) =
---   BufferView
---     { buffer = bufferIndex,
---       byteOffset = pure bufferViewByteOffset,
---       byteLength,
---       byteStride = Nothing,
---       name = Nothing,
---       target = pure 34962
---     }
 -- createBuffer :: Buffer
 -- createBuffer =
 --   Buffer
@@ -233,23 +218,23 @@ elemCount (ScalarShort xs) = V.length xs
 
 encodeAccessorData :: AccessorData -> ByteString
 encodeAccessorData = runPut . putAccessorData
+  where
+    putAccessorData :: AccessorData -> Put
+    putAccessorData (Vec3Float vector) = putVec3Array putFloatle vector
+    putAccessorData (Vec2Float vector) = putVec2Array putFloatle vector
+    putAccessorData (ScalarShort vector) = putScalarArray putWord16le vector
 
-putAccessorData :: AccessorData -> Put
-putAccessorData (Vec3Float vector) = putVec3Array putFloatle vector
-putAccessorData (Vec2Float vector) = putVec2Array putFloatle vector
-putAccessorData (ScalarShort vector) = putScalarArray putWord16le vector
+    putV3 :: (a -> Put) -> V3 a -> Put
+    putV3 p (V3 x y z) = p x <> p y <> p z
 
-putV3 :: (a -> Put) -> V3 a -> Put
-putV3 p (V3 x y z) = p x <> p y <> p z
+    putVec3Array :: (a -> Put) -> Vector (V3 a) -> Put
+    putVec3Array = V.mapM_ . putV3
 
-putVec3Array :: (a -> Put) -> Vector (V3 a) -> Put
-putVec3Array = V.mapM_ . putV3
+    putV2 :: (a -> Put) -> V2 a -> Put
+    putV2 p (V2 x y) = p x <> p y
 
-putV2 :: (a -> Put) -> V2 a -> Put
-putV2 p (V2 x y) = p x <> p y
+    putVec2Array :: (a -> Put) -> Vector (V2 a) -> Put
+    putVec2Array = V.mapM_ . putV2
 
-putVec2Array :: (a -> Put) -> Vector (V2 a) -> Put
-putVec2Array = V.mapM_ . putV2
-
-putScalarArray :: (a -> Put) -> Vector a -> Put
-putScalarArray = V.mapM_
+    putScalarArray :: (a -> Put) -> Vector a -> Put
+    putScalarArray = V.mapM_

@@ -1,6 +1,5 @@
 module Lib.Base (module Lib.Base) where
 
-import Control.Applicative
 import Control.Monad.Zip
 import Data.Bool
 
