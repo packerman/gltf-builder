@@ -1,18 +1,14 @@
 module Gltf.Primitive.Types (module Gltf.Primitive.Types) where
 
-import Control.Monad.Trans.State
+import Control.Monad.Trans.RWS
 import Data.ByteString.Lazy
 import Data.Map
 import Gltf.Json (Accessor, BufferView)
 
 data EncodedPrimitive = EncodedPrimitive
   { attributes :: Map String Int,
-    indices :: Maybe Int,
-    bytes :: [ByteString],
-    accessors :: [Accessor],
-    bufferViews :: [BufferView]
+    indices :: Maybe Int
   }
-  deriving (Eq, Show)
 
 data EncodingState = EncodingState
   { accessorIndexOffset :: Int,
@@ -22,20 +18,29 @@ data EncodingState = EncodingState
     accessorByteOffset :: Int
   }
 
-type EncodingM = State EncodingState
+type EncodingM = RWS () MeshPart EncodingState
 
-data EncodedAccessor = EncodedAccessor
-  { accessorBytes :: ByteString,
-    accessor :: Accessor,
-    accessorIndex :: Int
+data MeshPart = MeshPart
+  { bytes :: [ByteString],
+    accessors :: [Accessor],
+    bufferViews :: [BufferView]
   }
+  deriving (Eq, Show)
 
-data EncodedIndices = EncodedIndices
-  { accessor :: EncodedAccessor,
-    bufferView :: BufferView
-  }
+instance Semigroup MeshPart where
+  (<>)
+    (MeshPart {bytes = bytes1, accessors = accessors1, bufferViews = bufferViews1})
+    (MeshPart {bytes = bytes2, accessors = accessors2, bufferViews = bufferViews2}) =
+      MeshPart
+        { bytes = bytes1 <> bytes2,
+          accessors = accessors1 <> accessors2,
+          bufferViews = bufferViews1 <> bufferViews2
+        }
 
-data EncodedStrideGroup = EncodedStrideGroup
-  { attributes :: Map String EncodedAccessor,
-    bufferView :: BufferView
-  }
+instance Monoid MeshPart where
+  mempty =
+    MeshPart
+      { bytes = [],
+        accessors = [],
+        bufferViews = []
+      }

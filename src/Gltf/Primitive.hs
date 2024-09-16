@@ -6,7 +6,7 @@ module Gltf.Primitive
 where
 
 import Control.Monad
-import Control.Monad.Trans.State
+import Control.Monad.Trans.RWS
 import Control.Monad.Zip (MonadZip)
 import Data.Binary.Put (Put, putFloatle, putWord16le, runPut)
 import Data.ByteString.Lazy (ByteString)
@@ -20,10 +20,8 @@ import qualified Data.Vector as V
 import Gltf.Accessor (AccessorData (..))
 import Gltf.Json (Accessor (..), BufferView (..))
 import Gltf.Primitive.Types
-import qualified Gltf.Primitive.Types as EncAcc (EncodedAccessor (..))
-import qualified Gltf.Primitive.Types as EncInd (EncodedIndices (..))
-import qualified Gltf.Primitive.Types as EncStrGrp (EncodedStrideGroup (..))
-import Lib.Base (mcons, mzipMax, mzipMin)
+import qualified Gltf.Primitive.Types as MeshPart (MeshPart (..))
+import Lib.Base (mzipMax, mzipMin)
 import Lib.Container (groupBy)
 import Linear (V2 (..), V3 (..))
 
@@ -36,29 +34,11 @@ encodePrimitive attributes indices = do
   encodedAttributes <- encodeAttributes attributes
   return
     EncodedPrimitive
-      { attributes = attributeAccessorIndices encodedAttributes,
-        indices = accessIndex accessorIndex <$> encodedIndices,
-        bytes =
-          mcons
-            (accessIndex accessorBytes <$> encodedIndices)
-            (accessAttribute accessorBytes encodedAttributes),
-        accessors =
-          mcons
-            (accessIndex EncAcc.accessor <$> encodedIndices)
-            (accessAttribute EncAcc.accessor encodedAttributes),
-        bufferViews =
-          mcons
-            (EncInd.bufferView <$> encodedIndices)
-            (EncStrGrp.bufferView <$> encodedAttributes)
+      { attributes = M.unions encodedAttributes,
+        indices = encodedIndices
       }
-  where
-    attributeAccessorIndices =
-      M.unions
-        . map (\(EncodedStrideGroup {attributes = attrs}) -> M.map accessorIndex attrs)
-    accessIndex f (EncodedIndices {accessor}) = f accessor
-    accessAttribute f = (>>= (\(EncodedStrideGroup {attributes = attrs}) -> map f $ M.elems attrs))
 
-encodeAttributes :: Map String AccessorData -> EncodingM [EncodedStrideGroup]
+encodeAttributes :: Map String AccessorData -> EncodingM [Map String Int]
 encodeAttributes attributes =
   let -- attributeCount = fromJust getAttributeCount
       strideGroups = groupBy (stride . snd) (M.assocs attributes)
@@ -73,16 +53,12 @@ encodeAttributes attributes =
     --     getSingle _ = Nothing
     --     getSingleWith :: (Eq b) => (a -> b) -> [a] -> Maybe b
     --     getSingleWith f = getSingle . map f
-    encodeWithStride :: Int -> [(String, AccessorData)] -> EncodingM EncodedStrideGroup
+    encodeWithStride :: Int -> [(String, AccessorData)] -> EncodingM (Map String Int)
     encodeWithStride byteSizeSum attributeList = do
       resetAccessorByteOffset
       attrs <- forM attributeList (mapM encodeAccessor)
-      bufferView <- createBufferView Nothing (pure 34962) byteSizeSum
-      return
-        EncodedStrideGroup
-          { attributes = M.fromList attrs,
-            bufferView
-          }
+      createBufferView Nothing (pure 34962) byteSizeSum
+      return $ M.fromList attrs
 
 -- createBuffer :: Buffer
 -- createBuffer =
@@ -92,17 +68,15 @@ encodeAttributes attributes =
 --       uri = undefined
 --     }
 
-encodeIndices :: AccessorData -> EncodingM EncodedIndices
+encodeIndices :: AccessorData -> EncodingM Int
 encodeIndices accessorData =
   do
     resetAccessorByteOffset
     accessor <- encodeAccessor accessorData
-    bufferView <- createElementArrayBuffer (byteSize accessorData)
-    return EncodedIndices {accessor, bufferView}
-  where
-    createElementArrayBuffer = createBufferView Nothing (pure 34963)
+    createBufferView Nothing (pure 34963) (byteSize accessorData)
+    return accessor
 
-createBufferView :: Maybe Int -> Maybe Int -> Int -> EncodingM BufferView
+createBufferView :: Maybe Int -> Maybe Int -> Int -> EncodingM ()
 createBufferView byteStride target byteLength = do
   (EncodingState {bufferIndex, bufferViewByteOffset, bufferViewIndex}) <- get
   modify
@@ -112,20 +86,24 @@ createBufferView byteStride target byteLength = do
             bufferViewByteOffset = bufferViewByteOffset + byteLength
           }
     )
-  return
-    BufferView
-      { buffer = bufferIndex,
-        byteOffset = pure bufferViewByteOffset,
-        byteLength,
-        byteStride,
-        name = Nothing,
-        target
+  tell $
+    mempty
+      { MeshPart.bufferViews =
+          [ BufferView
+              { buffer = bufferIndex,
+                byteOffset = pure bufferViewByteOffset,
+                byteLength,
+                byteStride,
+                name = Nothing,
+                target
+              }
+          ]
       }
 
 resetAccessorByteOffset :: EncodingM ()
 resetAccessorByteOffset = modify (\s -> s {accessorByteOffset = 0})
 
-encodeAccessor :: AccessorData -> EncodingM EncodedAccessor
+encodeAccessor :: AccessorData -> EncodingM Int
 encodeAccessor
   accessorData =
     let (accessorType, componentType) = getAccessorTypes
@@ -147,22 +125,23 @@ encodeAccessor
                     bufferViewByteOffset = bufferViewByteOffset + fromIntegral (BSL.length bytes)
                   }
             )
-          return
-            EncodedAccessor
-              { accessorBytes = bytes,
-                accessorIndex = accessorIndexOffset,
-                accessor =
-                  Accessor
-                    { bufferView = pure bufferViewIndex,
-                      byteOffset = pure accessorByteOffset,
-                      componentType,
-                      count = elemCount accessorData,
-                      name = Nothing,
-                      accessorType,
-                      max = getMax,
-                      min = getMin
-                    }
+          tell $
+            mempty
+              { MeshPart.accessors =
+                  [ Accessor
+                      { bufferView = pure bufferViewIndex,
+                        byteOffset = pure accessorByteOffset,
+                        componentType,
+                        count = elemCount accessorData,
+                        name = Nothing,
+                        accessorType,
+                        max = getMax,
+                        min = getMin
+                      }
+                  ],
+                bytes = [bytes]
               }
+          return accessorIndexOffset
     where
       getAccessorTypes = case accessorData of
         (Vec3Float _) -> ("VEC3", 5126)

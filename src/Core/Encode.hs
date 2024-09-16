@@ -1,11 +1,15 @@
 module Core.Encode (encodeScene) where
 
-import Core.Model (Attribute (..), AttributeData (..), Mode (..))
+import Control.Monad
+import Core.Model (Attribute (..), AttributeData (..), IndexData (..), Mode (..))
 import qualified Core.Model as Model
 import Gltf.Accessor (AccessorData (..))
 import qualified Gltf.Array as Array
 import Gltf.Json (Gltf (..))
 import qualified Gltf.Json as Gltf
+import Gltf.Primitive (EncodingM)
+import qualified Gltf.Primitive as GltfPrimitive (encodePrimitive)
+import Gltf.Primitive.Types (EncodedPrimitive (..))
 import Lib.Container (mapPairs)
 
 encodeScene :: Model.Scene -> Gltf
@@ -31,18 +35,21 @@ encodeScene _ =
       textures = Array.fromList []
     }
 
-encodeMesh :: Model.Mesh -> Gltf.Mesh
+encodeMesh :: Model.Mesh -> EncodingM Gltf.Mesh
 encodeMesh
   ( Model.Mesh
       { name,
         primitives
       }
-    ) =
-    Gltf.Mesh
-      { name,
-        primitives = encodePrimitive <$> primitives
-      }
+    ) = do
+    encodedPrimitives <- forM primitives encodePrimitive
+    return $
+      Gltf.Mesh
+        { name,
+          primitives = encodedPrimitives
+        }
     where
+      encodePrimitive :: Model.Primitive -> EncodingM Gltf.Primitive
       encodePrimitive
         ( Model.Primitive
             { attributes,
@@ -50,19 +57,27 @@ encodeMesh
               material,
               mode
             }
-          ) =
-          Gltf.Primitive
-            { attributes = undefined, -- mapPairs encodeAttribute encodeAttributeData attributes,
-              indices = Nothing,
-              material = Nothing,
-              mode = pure $ encodeMode mode
-            }
+          ) = do
+          (EncodedPrimitive {attributes = encodedAttributes, indices = encodedIndices}) <-
+            GltfPrimitive.encodePrimitive
+              (mapPairs encodeAttribute encodeAttributeData attributes)
+              (encodeIndexData <$> indices)
+          return $
+            Gltf.Primitive
+              { attributes = encodedAttributes,
+                indices = encodedIndices,
+                material = Nothing,
+                mode = pure $ encodeMode mode
+              }
 
       encodeAttribute Position = "POSITION"
       encodeAttribute (TexCoord n) = "TEXCOORD_" <> show n
       encodeAttribute Normal = "NORMAL"
+
       encodeAttributeData (Vec2Attribute xs) = Vec2Float xs
       encodeAttributeData (Vec3Attribute xs) = Vec3Float xs
+
+      encodeIndexData (ShortIndex xs) = ScalarShort xs
 
       encodeMode Points = 0
       encodeMode Lines = 1
