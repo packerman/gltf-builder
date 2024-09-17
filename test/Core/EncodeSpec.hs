@@ -49,7 +49,19 @@ spec = do
                 { version = "2.0",
                   generator = Nothing
                 },
-            accessors = Array.fromList [],
+            accessors =
+              Array.fromList
+                [ Gltf.Accessor
+                    { bufferView = Just 0,
+                      byteOffset = Just 0,
+                      componentType = 5126,
+                      count = 3,
+                      name = Nothing,
+                      accessorType = "VEC3",
+                      max = Just [1.0, 1.0, 0.0],
+                      min = Just [0.0, 0.0, 0.0]
+                    }
+                ],
             scene = Just 0,
             scenes =
               Array.fromList
@@ -59,10 +71,33 @@ spec = do
                     }
                 ],
             buffers = Array.fromList [],
-            bufferViews = Array.fromList [],
+            bufferViews =
+              Array.fromList
+                [ Gltf.BufferView
+                    { buffer = 0,
+                      byteOffset = Just 0,
+                      byteLength = 36,
+                      byteStride = Nothing,
+                      name = Nothing,
+                      target = Just 34962
+                    }
+                ],
             images = Array.fromList [],
             materials = Array.fromList [],
-            meshes = Array.fromList [],
+            meshes =
+              Array.fromList
+                [ Gltf.Mesh
+                    { name = Nothing,
+                      primitives =
+                        [ Gltf.Primitive
+                            { attributes = fromList [("POSITION", 0)],
+                              indices = Nothing,
+                              material = Nothing,
+                              mode = Just 4
+                            }
+                        ]
+                    }
+                ],
             nodes = Array.fromList [],
             samplers = Array.fromList [],
             textures = Array.fromList []

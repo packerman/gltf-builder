@@ -2,6 +2,7 @@ module Gltf.Primitive
   ( encodePrimitive,
     EncodingM,
     EncodedPrimitive,
+    MeshPart,
   )
 where
 

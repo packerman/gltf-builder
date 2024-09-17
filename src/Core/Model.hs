@@ -15,7 +15,7 @@ data Material = Material
   { name :: Maybe String,
     pbrMetallicRoughness :: PbrMetallicRoughness
   }
-  deriving (Eq, Show)
+  deriving (Eq, Show, Ord)
 
 data PbrMetallicRoughness = PbrMetallicRoughness
   { baseColorFactor :: V4 Float,
@@ -24,7 +24,7 @@ data PbrMetallicRoughness = PbrMetallicRoughness
     roughnessFactor :: Float,
     metallicRoughnessTexture :: Maybe Texture
   }
-  deriving (Eq, Show)
+  deriving (Eq, Show, Ord)
 
 defaultMaterial :: Material
 defaultMaterial =
@@ -44,7 +44,7 @@ data Mesh = Mesh
   { name :: Maybe String,
     primitives :: [Primitive]
   }
-  deriving (Eq, Show)
+  deriving (Eq, Show, Ord)
 
 data Attribute
   = Position
@@ -60,12 +60,12 @@ data Mode
   | Triangles
   | TriangleStrip
   | TriangleFan
-  deriving (Eq, Show)
+  deriving (Eq, Show, Ord)
 
 data AttributeData
   = Vec3Attribute (Vector (V3 Float))
   | Vec2Attribute (Vector (V2 Float))
-  deriving (Eq, Show)
+  deriving (Eq, Show, Ord)
 
 fromV3List :: [V3 Float] -> AttributeData
 fromV3List = Vec3Attribute . V.fromList
@@ -80,7 +80,7 @@ vec3Attribute :: Vector (V3 Float) -> AttributeData
 vec3Attribute = Vec3Attribute
 
 newtype IndexData = ShortIndex (Vector Word16)
-  deriving (Eq, Show)
+  deriving (Eq, Show, Ord)
 
 fromShortList :: [Word16] -> IndexData
 fromShortList = ShortIndex . V.fromList
@@ -94,7 +94,7 @@ data Primitive = Primitive
     material :: Material,
     mode :: Mode
   }
-  deriving (Eq, Show)
+  deriving (Eq, Show, Ord)
 
 data Node = Node
   { matrix :: M44 Float,
@@ -137,19 +137,19 @@ data Texture = Texture
     image :: Image,
     sampler :: Sampler
   }
-  deriving (Eq, Show)
+  deriving (Eq, Show, Ord)
 
 data Image = Image
   { name :: Maybe String,
     mimeType :: Text,
     imageData :: ByteString
   }
-  deriving (Eq, Show)
+  deriving (Eq, Show, Ord)
 
 data MagFilter
   = MagNearest
   | MagLinear
-  deriving (Eq, Show, Enum)
+  deriving (Eq, Show, Enum, Ord)
 
 data MinFilter
   = MinNearest
@@ -158,13 +158,13 @@ data MinFilter
   | LinearMipmapNearest
   | NearestMipmapLinear
   | LinearMipmapLinear
-  deriving (Eq, Show, Enum)
+  deriving (Eq, Show, Enum, Ord)
 
 data Wrap
   = ClampToEdge
   | MirroredRepeat
   | Repeat
-  deriving (Eq, Show, Enum)
+  deriving (Eq, Show, Enum, Ord)
 
 data Sampler = Sampler
   { name :: Maybe String,
@@ -173,7 +173,7 @@ data Sampler = Sampler
     wrapS :: Wrap,
     wrapT :: Wrap
   }
-  deriving (Eq, Show)
+  deriving (Eq, Show, Ord)
 
 defaultSampler :: Sampler
 defaultSampler =

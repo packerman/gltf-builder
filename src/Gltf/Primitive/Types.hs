@@ -18,6 +18,16 @@ data EncodingState = EncodingState
     accessorByteOffset :: Int
   }
 
+initialEncoding :: EncodingState
+initialEncoding =
+  EncodingState
+    { accessorIndexOffset = 0,
+      bufferIndex = 0,
+      bufferViewIndex = 0,
+      bufferViewByteOffset = 0,
+      accessorByteOffset = 0
+    }
+
 type EncodingM = RWS () MeshPart EncodingState
 
 data MeshPart = MeshPart

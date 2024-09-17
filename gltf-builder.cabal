@@ -38,6 +38,7 @@ library
       Lib.Base
       Lib.Base64
       Lib.Container
+      Lib.UniqList
   other-modules:
       Paths_gltf_builder
   autogen-modules:
@@ -102,7 +103,7 @@ test-suite gltf-builder-test
       Core.EncodeSpec
       Gltf.AccessorSpec
       Gltf.DecodeSpec
-      Util.Base64Spec
+      Lib.Base64Spec
       Paths_gltf_builder
   autogen-modules:
       Paths_gltf_builder
