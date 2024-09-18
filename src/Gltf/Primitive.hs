@@ -21,7 +21,6 @@ import qualified Data.Vector as V
 import Gltf.Accessor (AccessorData (..))
 import Gltf.Json (Accessor (..), BufferView (..))
 import Gltf.Primitive.Types
-import qualified Gltf.Primitive.Types as MeshPart (MeshPart (..))
 import Lib.Base (mzipMax, mzipMin)
 import Lib.Container (groupBy)
 import Linear (V2 (..), V3 (..))
@@ -88,18 +87,15 @@ createBufferView byteStride target byteLength = do
           }
     )
   tell $
-    mempty
-      { MeshPart.bufferViews =
-          [ BufferView
-              { buffer = bufferIndex,
-                byteOffset = pure bufferViewByteOffset,
-                byteLength,
-                byteStride,
-                name = Nothing,
-                target
-              }
-          ]
-      }
+    fromBufferView $
+      BufferView
+        { buffer = bufferIndex,
+          byteOffset = pure bufferViewByteOffset,
+          byteLength,
+          byteStride,
+          name = Nothing,
+          target
+        }
 
 resetAccessorByteOffset :: EncodingM ()
 resetAccessorByteOffset = modify (\s -> s {accessorByteOffset = 0})
@@ -113,8 +109,7 @@ encodeAccessor
           ( EncodingState
               { bufferViewIndex,
                 accessorByteOffset,
-                accessorIndexOffset,
-                bufferViewByteOffset
+                accessorIndexOffset
               }
             ) <-
             get
@@ -122,26 +117,23 @@ encodeAccessor
             ( \s ->
                 s
                   { accessorIndexOffset = accessorIndexOffset + 1,
-                    accessorByteOffset = accessorByteOffset + fromIntegral (BSL.length bytes),
-                    bufferViewByteOffset = bufferViewByteOffset + fromIntegral (BSL.length bytes)
+                    accessorByteOffset = accessorByteOffset + fromIntegral (BSL.length bytes)
                   }
             )
           tell $
-            mempty
-              { MeshPart.accessors =
-                  [ Accessor
-                      { bufferView = pure bufferViewIndex,
-                        byteOffset = pure accessorByteOffset,
-                        componentType,
-                        count = elemCount accessorData,
-                        name = Nothing,
-                        accessorType,
-                        max = getMax,
-                        min = getMin
-                      }
-                  ],
-                bytes = [bytes]
-              }
+            fromAccessor
+              ( Accessor
+                  { bufferView = pure bufferViewIndex,
+                    byteOffset = pure accessorByteOffset,
+                    componentType,
+                    count = elemCount accessorData,
+                    name = Nothing,
+                    accessorType,
+                    max = getMax,
+                    min = getMin
+                  }
+              )
+              bytes
           return accessorIndexOffset
     where
       getAccessorTypes = case accessorData of

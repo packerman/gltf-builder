@@ -10,14 +10,18 @@ import Core.Model
     sceneMeshes,
   )
 import qualified Core.Model as Model
+import Data.ByteString.Lazy (ByteString)
+import Data.ByteString.Lazy as BSL (concat, length, toStrict)
 import Gltf.Accessor (AccessorData (..))
 import qualified Gltf.Array as Array
-import Gltf.Json (Gltf (..))
+import Gltf.Json (Buffer (..), Gltf (..))
 import qualified Gltf.Json as Gltf
 import Gltf.Primitive (EncodingM)
 import qualified Gltf.Primitive as GltfPrimitive (encodePrimitive)
 import Gltf.Primitive.Types (EncodedPrimitive (..), initialEncoding)
 import qualified Gltf.Primitive.Types as MeshPart (MeshPart (..))
+import Lib.Base (sumWith)
+import Lib.Base64 (bytesDataUrl, encodeDataUrl)
 import Lib.Container (mapPairs)
 import qualified Lib.UniqList as UniqList
 
@@ -42,7 +46,7 @@ encodeScene scene =
                   }
               ],
           accessors = Array.fromList encodedAccessors,
-          buffers = Array.fromList [],
+          buffers = Array.fromList [encodeBuffer encodedBytes],
           bufferViews = Array.fromList bufferViews,
           images = Array.fromList [],
           materials = Array.fromList [],
@@ -50,6 +54,14 @@ encodeScene scene =
           nodes = Array.fromList [],
           samplers = Array.fromList [],
           textures = Array.fromList []
+        }
+  where
+    encodeBuffer :: [ByteString] -> Buffer
+    encodeBuffer byteStrings =
+      Buffer
+        { byteLength = fromIntegral $ sumWith BSL.length byteStrings,
+          uri = pure $ encodeDataUrl (bytesDataUrl $ BSL.toStrict $ BSL.concat byteStrings),
+          name = Nothing
         }
 
 encodeMeshes :: [Model.Mesh] -> ([Gltf.Mesh], MeshPart.MeshPart)

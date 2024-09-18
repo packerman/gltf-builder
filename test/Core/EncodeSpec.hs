@@ -70,7 +70,14 @@ spec = do
                       nodes = Just [0]
                     }
                 ],
-            buffers = Array.fromList [],
+            buffers =
+              Array.fromList
+                [ Gltf.Buffer
+                    { byteLength = 36,
+                      name = Nothing,
+                      uri = Just "data:application/octet-stream;base64,AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAA"
+                    }
+                ],
             bufferViews =
               Array.fromList
                 [ Gltf.BufferView

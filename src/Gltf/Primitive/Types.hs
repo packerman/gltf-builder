@@ -2,6 +2,7 @@ module Gltf.Primitive.Types (module Gltf.Primitive.Types) where
 
 import Control.Monad.Trans.RWS
 import Data.ByteString.Lazy
+import qualified Data.List as L
 import Data.Map
 import Gltf.Json (Accessor, BufferView)
 
@@ -36,6 +37,19 @@ data MeshPart = MeshPart
     bufferViews :: [BufferView]
   }
   deriving (Eq, Show)
+
+fromBufferView :: BufferView -> MeshPart
+fromBufferView bufferView =
+  mempty
+    { bufferViews = L.singleton bufferView
+    }
+
+fromAccessor :: Accessor -> ByteString -> MeshPart
+fromAccessor accessor bytes =
+  mempty
+    { accessors = L.singleton accessor,
+      bytes = L.singleton bytes
+    }
 
 instance Semigroup MeshPart where
   (<>)

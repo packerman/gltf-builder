@@ -4,6 +4,9 @@ module Lib.Base64
     encodeBase64Text,
     DataUrl (..),
     isMediaType,
+    bytesDataUrl,
+    imagePngDataUrl,
+    encodeDataUrl,
   )
 where
 
@@ -20,6 +23,15 @@ data DataUrl = DataUrl
     getData :: B.ByteString
   }
   deriving (Eq, Show)
+
+dataUrl :: MediaType -> B.ByteString -> DataUrl
+dataUrl = DataUrl
+
+bytesDataUrl :: B.ByteString -> DataUrl
+bytesDataUrl = dataUrl "application/octet-stream"
+
+imagePngDataUrl :: B.ByteString -> DataUrl
+imagePngDataUrl = dataUrl "image/png"
 
 decodeBase64Text :: T.Text -> Either String B.ByteString
 decodeBase64Text = mapLeft T.unpack . decodeBase64 . encodeUtf8
@@ -43,3 +55,7 @@ isMediaType acceptedMediaType (DataUrl {mediaType}) =
 
 encodeBase64Text :: B.ByteString -> T.Text
 encodeBase64Text = encodeBase64
+
+encodeDataUrl :: DataUrl -> T.Text
+encodeDataUrl (DataUrl {mediaType, getData}) =
+  "data:" <> mediaType <> ";base64," <> encodeBase64Text getData
