@@ -1,7 +1,7 @@
 module Core.Encode (encodeScene) where
 
 import Control.Monad
-import Control.Monad.Trans.RWS (evalRWS)
+import Control.Monad.Trans.RWS (evalRWS, get, modify, tell)
 import Core.Model
   ( Attribute (..),
     AttributeData (..),
@@ -12,13 +12,14 @@ import Core.Model
 import qualified Core.Model as Model
 import Data.ByteString.Lazy (ByteString)
 import Data.ByteString.Lazy as BSL (concat, length, toStrict)
+import Data.Foldable (toList)
 import Gltf.Accessor (AccessorData (..))
 import qualified Gltf.Array as Array
 import Gltf.Json (Buffer (..), Gltf (..))
 import qualified Gltf.Json as Gltf
 import Gltf.Primitive (EncodingM)
 import qualified Gltf.Primitive as GltfPrimitive (encodePrimitive)
-import Gltf.Primitive.Types (EncodedPrimitive (..), initialEncoding)
+import Gltf.Primitive.Types (EncodedPrimitive (..), EncodingState (..), fromMaterial, initialEncoding, setMaterialIndex)
 import qualified Gltf.Primitive.Types as MeshPart (MeshPart (..))
 import Lib.Base (sumWith)
 import Lib.Base64 (bytesDataUrl, encodeDataUrl)
@@ -32,7 +33,8 @@ encodeScene scene =
       ( MeshPart.MeshPart
           { bytes = encodedBytes,
             accessors = encodedAccessors,
-            bufferViews
+            bufferViews,
+            materials
           }
         ) = meshPart
    in Gltf
@@ -49,7 +51,7 @@ encodeScene scene =
           buffers = Array.fromList [encodeBuffer encodedBytes],
           bufferViews = Array.fromList bufferViews,
           images = Array.fromList [],
-          materials = Array.fromList [],
+          materials = Array.fromList materials,
           meshes = Array.fromList encodedMeshes,
           nodes = Array.fromList [],
           samplers = Array.fromList [],
@@ -94,11 +96,12 @@ encodeMesh
             GltfPrimitive.encodePrimitive
               (mapPairs encodeAttribute encodeAttributeData attributes)
               (encodeIndexData <$> indices)
+          encodedMaterial <- encodeMaterial material
           return $
             Gltf.Primitive
               { attributes = encodedAttributes,
                 indices = encodedIndices,
-                material = Nothing,
+                material = pure encodedMaterial,
                 mode = pure $ encodeMode mode
               }
 
@@ -110,6 +113,36 @@ encodeMesh
       encodeAttributeData (Vec3Attribute xs) = Vec3Float xs
 
       encodeIndexData (ShortIndex xs) = ScalarShort xs
+
+      encodeMaterial :: Model.Material -> EncodingM Int
+      encodeMaterial
+        ( Model.Material
+            { pbrMetallicRoughness =
+                Model.PbrMetallicRoughness
+                  { baseColorFactor,
+                    metallicFactor,
+                    roughnessFactor
+                  }
+            }
+          ) =
+          do
+            (EncodingState {materialIndex}) <- get
+            modify $ setMaterialIndex (materialIndex + 1)
+            tell $
+              fromMaterial $
+                Gltf.Material
+                  { name,
+                    pbrMetallicRoughness =
+                      pure $
+                        Gltf.PbrMetallicRoughness
+                          { baseColorFactor = pure $ toList baseColorFactor,
+                            metallicFactor = pure metallicFactor,
+                            roughnessFactor = pure roughnessFactor,
+                            baseColorTexture = Nothing,
+                            metallicRoughnessTexture = Nothing
+                          }
+                  }
+            return materialIndex
 
       encodeMode Points = 0
       encodeMode Lines = 1

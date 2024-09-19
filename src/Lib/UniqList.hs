@@ -7,6 +7,7 @@ data UniqList a = UniqList
   { elems :: [a],
     index :: Map a Int
   }
+  deriving (Eq, Show)
 
 fromList :: (Ord a) => [a] -> UniqList a
 fromList xs =

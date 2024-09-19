@@ -90,7 +90,21 @@ spec = do
                     }
                 ],
             images = Array.fromList [],
-            materials = Array.fromList [],
+            materials =
+              Array.fromList
+                [ Gltf.Material
+                    { name = Nothing,
+                      pbrMetallicRoughness =
+                        Just $
+                          Gltf.PbrMetallicRoughness
+                            { baseColorFactor = Just [1.0, 1.0, 1.0, 1.0],
+                              baseColorTexture = Nothing,
+                              metallicFactor = Just 1.0,
+                              roughnessFactor = Just 1.0,
+                              metallicRoughnessTexture = Nothing
+                            }
+                    }
+                ],
             meshes =
               Array.fromList
                 [ Gltf.Mesh
@@ -99,7 +113,7 @@ spec = do
                         [ Gltf.Primitive
                             { attributes = fromList [("POSITION", 0)],
                               indices = Nothing,
-                              material = Nothing,
+                              material = Just 0,
                               mode = Just 4
                             }
                         ]
