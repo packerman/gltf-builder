@@ -1,8 +1,8 @@
-module Util.Base64Spec (spec) where
+module Lib.Base64Spec (spec) where
 
 import Data.ByteString as B
 import Test.Hspec
-import Util.Base64
+import Lib.Base64
 
 spec :: Spec
 spec = do

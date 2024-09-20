@@ -1,17 +1,15 @@
-{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE NoFieldSelectors #-}
 
 module Gltf.Accessor
   ( AccessorData (..),
     decodeAccessorData,
-    encodeAccessorData,
     fromV3List,
     DecodeOptions (..),
   )
 where
 
-import Data.Binary (Get, Put)
+import Data.Binary (Get)
 import Data.Binary.Get (getFloatle, getWord16le, runGetOrFail, skip)
-import Data.Binary.Put (putFloatle, putWord16le, runPut)
 import Data.ByteString.Lazy (ByteString)
 import Data.Vector (Vector, replicateM)
 import qualified Data.Vector as V
@@ -40,15 +38,17 @@ data DecodeOptions = DecodeOptions
   deriving (Eq, Show)
 
 decodeAccessorData :: DecodeOptions -> ByteString -> Either String AccessorData
-decodeAccessorData (DecodeOptions {count, accessorType, componentType, byteOffset}) byteString =
-  case runGetOrFail
-    (skip byteOffset >> getAttributeData count accessorType componentType)
-    byteString of
+decodeAccessorData options byteString =
+  case runGetOrFail (decodeAttributeData options) byteString of
     Left info -> Left $ errorMessage info
     Right (_, _, val) -> Right val
   where
     errorMessage (rest, consumedSize, msg) =
       unwords ["Error:", msg, "(consumed size =", show consumedSize, ", rest =", show rest, ")"]
+
+decodeAttributeData :: DecodeOptions -> Get AccessorData
+decodeAttributeData (DecodeOptions {count, accessorType, componentType, byteOffset}) =
+  skip byteOffset >> getAttributeData count accessorType componentType
 
 getAttributeData :: Int -> AccessorType -> ComponentType -> Get AccessorData
 getAttributeData count "VEC3" 5126 = Vec3Float <$> getVec3Array count getFloatle
@@ -70,26 +70,3 @@ getVec3Array count = replicateM count . getV3
 
 getVec2Array :: Int -> Get a -> Get (Vector (V2 a))
 getVec2Array count = replicateM count . getV2
-
-encodeAccessorData :: AccessorData -> ByteString
-encodeAccessorData = runPut . putAccessorData
-
-putAccessorData :: AccessorData -> Put
-putAccessorData (Vec3Float vector) = putVec3Array putFloatle vector
-putAccessorData (Vec2Float vector) = putVec2Array putFloatle vector
-putAccessorData (ScalarShort vector) = putScalarArray putWord16le vector
-
-putV3 :: (a -> Put) -> V3 a -> Put
-putV3 p (V3 x y z) = p x <> p y <> p z
-
-putVec3Array :: (a -> Put) -> Vector (V3 a) -> Put
-putVec3Array = V.mapM_ . putV3
-
-putV2 :: (a -> Put) -> V2 a -> Put
-putV2 p (V2 x y) = p x <> p y
-
-putVec2Array :: (a -> Put) -> Vector (V2 a) -> Put
-putVec2Array = V.mapM_ . putV2
-
-putScalarArray :: (a -> Put) -> Vector a -> Put
-putScalarArray = V.mapM_

@@ -25,6 +25,7 @@ dependencies:
 - bytestring
 - containers
 - text
+- transformers
 - vector
 - aeson # https://hackage.haskell.org/package/aeson
 - base64
@@ -35,6 +36,7 @@ default-extensions:
 - OverloadedStrings
 - DuplicateRecordFields
 - DisambiguateRecordFields # https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/disambiguate_record_fields.html
+- NamedFieldPuns
 
 ghc-options:
 - -Wall
