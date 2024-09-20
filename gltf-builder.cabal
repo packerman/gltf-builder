@@ -38,7 +38,7 @@ library
       Lib.Base
       Lib.Base64
       Lib.Container
-      Lib.UniqList
+      Lib.UniqueList
   other-modules:
       Paths_gltf_builder
   autogen-modules:

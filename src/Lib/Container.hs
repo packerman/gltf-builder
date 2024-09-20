@@ -3,6 +3,7 @@ module Lib.Container (module Lib.Container) where
 import Data.Bifunctor
 import Data.Map (Map)
 import qualified Data.Map as M
+import Data.Maybe (mapMaybe)
 import Lib.Base
 
 mapPairsM :: (Ord k2, Monad m) => (k1 -> m k2) -> (a -> m b) -> Map k1 a -> m (Map k2 b)
@@ -19,3 +20,9 @@ groupByA f = M.fromListWith (<>) . fmap (\x -> (f x, pure x))
 
 groupByM :: (Ord k, Monoid m) => (a -> m) -> (a -> k) -> [a] -> Map k m
 groupByM s f = M.fromListWith (<>) . fmap (\x -> (f x, s x))
+
+indexList :: (Ord a) => [a] -> Map a Int
+indexList = M.fromList . (`zip` iterate (+ 1) 0)
+
+lookupAll :: (Ord k) => [k] -> Map k a -> [a]
+lookupAll ks m = mapMaybe (`M.lookup` m) ks

@@ -119,7 +119,15 @@ spec = do
                         ]
                     }
                 ],
-            nodes = Array.fromList [],
+            nodes =
+              Array.fromList
+                [ Gltf.Node
+                    { children = Just [],
+                      matrix = Just [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0],
+                      mesh = Just 0,
+                      name = Nothing
+                    }
+                ],
             samplers = Array.fromList [],
             textures = Array.fromList []
           }

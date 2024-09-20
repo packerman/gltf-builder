@@ -102,7 +102,7 @@ data Node = Node
     mesh :: Maybe Mesh,
     children :: [Node]
   }
-  deriving (Eq, Show)
+  deriving (Eq, Show, Ord)
 
 defaultNode :: Node
 defaultNode =

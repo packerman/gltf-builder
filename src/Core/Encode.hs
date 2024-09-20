@@ -13,6 +13,7 @@ import qualified Core.Model as Model
 import Data.ByteString.Lazy (ByteString)
 import Data.ByteString.Lazy as BSL (concat, length, toStrict)
 import Data.Foldable (toList)
+import Data.Map (Map)
 import Gltf.Accessor (AccessorData (..))
 import qualified Gltf.Array as Array
 import Gltf.Json (Buffer (..), Gltf (..))
@@ -23,13 +24,14 @@ import Gltf.Primitive.Types (EncodedPrimitive (..), EncodingState (..), fromMate
 import qualified Gltf.Primitive.Types as MeshPart (MeshPart (..))
 import Lib.Base (sumWith)
 import Lib.Base64 (bytesDataUrl, encodeDataUrl)
-import Lib.Container (mapPairs)
-import qualified Lib.UniqList as UniqList
+import Lib.Container (indexList, lookupAll, mapPairs)
+import Lib.UniqueList (UniqueList)
+import qualified Lib.UniqueList as UniqueList
 
 encodeScene :: Model.Scene -> Gltf
-encodeScene scene =
-  let meshIndex = UniqList.fromList $ sceneMeshes scene
-      (encodedMeshes, meshPart) = encodeMeshes $ UniqList.toList meshIndex
+encodeScene scene@(Model.Scene {nodes, name = sceneName}) =
+  let meshIndex = UniqueList.fromList $ sceneMeshes scene
+      (encodedMeshes, meshPart) = encodeMeshes $ UniqueList.toList meshIndex
       ( MeshPart.MeshPart
           { bytes = encodedBytes,
             accessors = encodedAccessors,
@@ -37,14 +39,17 @@ encodeScene scene =
             materials
           }
         ) = meshPart
+      nodeList = Model.sceneNodes scene
+      nodeIndex = indexList nodeList
+      encodedNodes = encodeNodes meshIndex nodeIndex nodeList
    in Gltf
         { asset = Gltf.defaultAsset,
           scene = Just 0,
           scenes =
             Array.fromList
               [ Gltf.Scene
-                  { name = Nothing,
-                    nodes = Just [0]
+                  { name = sceneName,
+                    nodes = pure $ lookupAll nodes nodeIndex
                   }
               ],
           accessors = Array.fromList encodedAccessors,
@@ -53,11 +58,24 @@ encodeScene scene =
           images = Array.fromList [],
           materials = Array.fromList materials,
           meshes = Array.fromList encodedMeshes,
-          nodes = Array.fromList [],
+          nodes = Array.fromList encodedNodes,
           samplers = Array.fromList [],
           textures = Array.fromList []
         }
   where
+    encodeNodes :: UniqueList Model.Mesh -> Map Model.Node Int -> [Model.Node] -> [Gltf.Node]
+    encodeNodes meshIndex nodeIndex = map encodeNode
+      where
+        encodeNode :: Model.Node -> Gltf.Node
+        encodeNode (Model.Node {matrix, name, mesh, children}) =
+          ( Gltf.Node
+              { name,
+                matrix = pure $ concatMap toList matrix,
+                mesh = mesh >>= (`UniqueList.indexOf` meshIndex),
+                children = pure $ lookupAll children nodeIndex
+              }
+          )
+
     encodeBuffer :: [ByteString] -> Buffer
     encodeBuffer byteStrings =
       Buffer
