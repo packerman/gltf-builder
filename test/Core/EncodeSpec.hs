@@ -271,15 +271,15 @@ spec = do
                 [ Gltf.BufferView {buffer = 0, byteOffset = Just 0, byteLength = 36, byteStride = Nothing, name = Nothing, target = Just 34962},
                   Gltf.BufferView {buffer = 0, byteOffset = Just 36, byteLength = 36, byteStride = Nothing, name = Nothing, target = Just 34962},
                   Gltf.BufferView {buffer = 0, byteOffset = Just 72, byteLength = 72, byteStride = Nothing, name = Nothing, target = Just 34963},
-                  Gltf.BufferView {buffer = 0, byteOffset = Just 144, byteLength = 768, byteStride = Nothing, name = Nothing, target = Just 34962},
-                  Gltf.BufferView {buffer = 0, byteOffset = Just 912, byteLength = 768, byteStride = Nothing, name = Nothing, target = Just 34962}
+                  Gltf.BufferView {buffer = 0, byteOffset = Just 144, byteLength = 192, byteStride = Nothing, name = Nothing, target = Just 34962},
+                  Gltf.BufferView {buffer = 0, byteOffset = Just 336, byteLength = 576, byteStride = Nothing, name = Nothing, target = Just 34962}
                 ],
             images = Array.fromList [],
             materials =
               Array.fromList
-                [ Gltf.Material {name = Nothing, pbrMetallicRoughness = Just (Gltf.PbrMetallicRoughness {baseColorFactor = Just [1.0, 1.0, 1.0, 1.0], baseColorTexture = Nothing, metallicFactor = Just 1.0, roughnessFactor = Just 1.0, metallicRoughnessTexture = Nothing})},
-                  Gltf.Material {name = Nothing, pbrMetallicRoughness = Just (Gltf.PbrMetallicRoughness {baseColorFactor = Just [1.0, 1.0, 1.0, 1.0], baseColorTexture = Nothing, metallicFactor = Just 1.0, roughnessFactor = Just 1.0, metallicRoughnessTexture = Nothing})},
-                  Gltf.Material {name = Just "Mesh", pbrMetallicRoughness = Just (Gltf.PbrMetallicRoughness {baseColorFactor = Just [1.0, 1.0, 1.0, 1.0], baseColorTexture = Nothing, metallicFactor = Just 0.0, roughnessFactor = Just 1.0, metallicRoughnessTexture = Nothing})}
+                [ Gltf.Material {name = Just "Material 1", pbrMetallicRoughness = Just (Gltf.PbrMetallicRoughness {baseColorFactor = Just [1.0, 1.0, 1.0, 1.0], baseColorTexture = Nothing, metallicFactor = Just 1.0, roughnessFactor = Just 1.0, metallicRoughnessTexture = Nothing})},
+                  Gltf.Material {name = Just "Material 2", pbrMetallicRoughness = Just (Gltf.PbrMetallicRoughness {baseColorFactor = Just [1.0, 1.0, 1.0, 1.0], baseColorTexture = Nothing, metallicFactor = Just 1.0, roughnessFactor = Just 1.0, metallicRoughnessTexture = Nothing})},
+                  Gltf.Material {name = Just "Texture", pbrMetallicRoughness = Just (Gltf.PbrMetallicRoughness {baseColorFactor = Just [1.0, 1.0, 1.0, 1.0], baseColorTexture = Nothing, metallicFactor = Just 0.0, roughnessFactor = Just 1.0, metallicRoughnessTexture = Nothing})}
                 ],
             meshes =
               Array.fromList
