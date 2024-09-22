@@ -32,7 +32,7 @@ initialEncoding =
     }
 
 newBuffer :: Int -> EncodingState -> EncodingState
-newBuffer val s = s {materialIndex = val, bufferViewByteOffset = 0}
+newBuffer val s = s {bufferIndex = val, bufferViewByteOffset = 0}
 
 setMaterialIndex :: Int -> EncodingState -> EncodingState
 setMaterialIndex val s = s {materialIndex = val}

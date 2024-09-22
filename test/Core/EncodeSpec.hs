@@ -348,10 +348,10 @@ spec = do
               bufferViews =
                 Array.fromList
                   [ Gltf.BufferView {buffer = 0, byteOffset = Just 0, byteLength = 36, byteStride = Nothing, name = Nothing, target = Just 34962},
-                    Gltf.BufferView {buffer = 0, byteOffset = Just 0, byteLength = 36, byteStride = Nothing, name = Nothing, target = Just 34962},
-                    Gltf.BufferView {buffer = 0, byteOffset = Just 0, byteLength = 72, byteStride = Nothing, name = Nothing, target = Just 34963},
-                    Gltf.BufferView {buffer = 0, byteOffset = Just 72, byteLength = 192, byteStride = Nothing, name = Nothing, target = Just 34962},
-                    Gltf.BufferView {buffer = 0, byteOffset = Just 264, byteLength = 576, byteStride = Nothing, name = Nothing, target = Just 34962}
+                    Gltf.BufferView {buffer = 1, byteOffset = Just 0, byteLength = 36, byteStride = Nothing, name = Nothing, target = Just 34962},
+                    Gltf.BufferView {buffer = 2, byteOffset = Just 0, byteLength = 72, byteStride = Nothing, name = Nothing, target = Just 34963},
+                    Gltf.BufferView {buffer = 2, byteOffset = Just 72, byteLength = 192, byteStride = Nothing, name = Nothing, target = Just 34962},
+                    Gltf.BufferView {buffer = 2, byteOffset = Just 264, byteLength = 576, byteStride = Nothing, name = Nothing, target = Just 34962}
                   ],
               images = Array.fromList [],
               materials =
