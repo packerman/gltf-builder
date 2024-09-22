@@ -1,7 +1,11 @@
-module Core.Encode (encodeScene) where
+module Core.Encode
+  ( encodeScene,
+    encodeSceneWithOptions,
+  )
+where
 
 import Control.Monad
-import Control.Monad.Trans.RWS (evalRWS, get, modify, tell)
+import Control.Monad.Trans.RWS (censor, evalRWS, get, modify, tell)
 import Core.Model
   ( Attribute (..),
     AttributeData (..),
@@ -20,7 +24,17 @@ import Gltf.Json (Buffer (..), Gltf (..))
 import qualified Gltf.Json as Gltf
 import Gltf.Primitive (EncodingM)
 import qualified Gltf.Primitive as GltfPrimitive (encodePrimitive)
-import Gltf.Primitive.Types (EncodedPrimitive (..), EncodingState (..), fromMaterial, initialEncoding, setMaterialIndex)
+import Gltf.Primitive.Types
+  ( BufferCreate (..),
+    EncodedPrimitive (..),
+    EncodingOptions (..),
+    EncodingState (..),
+    defaultEncodingOptions,
+    fromMaterial,
+    initialEncoding,
+    newBuffer,
+    setMaterialIndex,
+  )
 import qualified Gltf.Primitive.Types as MeshPart (MeshPart (..))
 import Lib.Base (sumWith)
 import Lib.Base64 (bytesDataUrl, encodeDataUrl)
@@ -29,11 +43,14 @@ import Lib.UniqueList (UniqueList)
 import qualified Lib.UniqueList as UniqueList
 
 encodeScene :: Model.Scene -> Gltf
-encodeScene scene@(Model.Scene {nodes, name = sceneName}) =
+encodeScene = encodeSceneWithOptions defaultEncodingOptions
+
+encodeSceneWithOptions :: EncodingOptions -> Model.Scene -> Gltf
+encodeSceneWithOptions encodingOptions scene@(Model.Scene {nodes, name = sceneName}) =
   let meshIndex = UniqueList.fromList $ sceneMeshes scene
-      (encodedMeshes, meshPart) = encodeMeshes $ UniqueList.toList meshIndex
+      (encodedMeshes, meshPart) = encodeMeshes encodingOptions $ UniqueList.toList meshIndex
       ( MeshPart.MeshPart
-          { bytes = encodedBytes,
+          { buffers,
             accessors = encodedAccessors,
             bufferViews,
             materials
@@ -53,7 +70,7 @@ encodeScene scene@(Model.Scene {nodes, name = sceneName}) =
                   }
               ],
           accessors = Array.fromList encodedAccessors,
-          buffers = Array.fromList [encodeBuffer encodedBytes],
+          buffers = Array.fromList buffers,
           bufferViews = Array.fromList bufferViews,
           images = Array.fromList [],
           materials = Array.fromList materials,
@@ -76,16 +93,37 @@ encodeScene scene@(Model.Scene {nodes, name = sceneName}) =
               }
           )
 
-    encodeBuffer :: [ByteString] -> Buffer
-    encodeBuffer byteStrings =
-      Buffer
-        { byteLength = fromIntegral $ sumWith BSL.length byteStrings,
-          uri = pure $ encodeDataUrl (bytesDataUrl $ BSL.toStrict $ BSL.concat byteStrings),
-          name = Nothing
-        }
+encodeMeshes :: EncodingOptions -> [Model.Mesh] -> ([Gltf.Mesh], MeshPart.MeshPart)
+encodeMeshes encodingOptions meshes = evalRWS meshAction encodingOptions initialEncoding
+  where
+    meshAction = case bufferCreate encodingOptions of
+      SingleBuffer -> do withBuffer $ forM meshes encodeMesh
+      OnePerMesh -> forM meshes (withBuffer . encodeMesh)
 
-encodeMeshes :: [Model.Mesh] -> ([Gltf.Mesh], MeshPart.MeshPart)
-encodeMeshes meshes = evalRWS (forM meshes encodeMesh) () initialEncoding
+withBuffer :: EncodingM a -> EncodingM a
+withBuffer action = do
+  result <- censor collectBytes action
+  markNewBuffer
+  return result
+  where
+    collectBytes :: MeshPart.MeshPart -> MeshPart.MeshPart
+    collectBytes meshPart@(MeshPart.MeshPart {bytes}) =
+      meshPart
+        { MeshPart.buffers = [encodeBuffer bytes],
+          MeshPart.bytes = []
+        }
+      where
+        encodeBuffer :: [ByteString] -> Buffer
+        encodeBuffer byteStrings =
+          Buffer
+            { byteLength = fromIntegral $ sumWith BSL.length byteStrings,
+              uri = pure $ encodeDataUrl (bytesDataUrl $ BSL.toStrict $ BSL.concat byteStrings),
+              name = Nothing
+            }
+    markNewBuffer :: EncodingM ()
+    markNewBuffer = do
+      (EncodingState {bufferIndex}) <- get
+      modify $ newBuffer (bufferIndex + 1)
 
 encodeMesh :: Model.Mesh -> EncodingM Gltf.Mesh
 encodeMesh
