@@ -135,7 +135,8 @@ encodeMesh
       encodeMaterial :: Model.Material -> EncodingM Int
       encodeMaterial
         ( Model.Material
-            { pbrMetallicRoughness =
+            { name = materialName,
+              pbrMetallicRoughness =
                 Model.PbrMetallicRoughness
                   { baseColorFactor,
                     metallicFactor,
@@ -149,7 +150,7 @@ encodeMesh
             tell $
               fromMaterial $
                 Gltf.Material
-                  { name,
+                  { name = materialName,
                     pbrMetallicRoughness =
                       pure $
                         Gltf.PbrMetallicRoughness
