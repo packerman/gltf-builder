@@ -1,10 +1,12 @@
 module Gltf.Encode.Types (module Gltf.Encode.Types) where
 
 import Control.Monad.Trans.RWS
-import Data.ByteString.Lazy
+import Data.ByteString.Lazy as BSL
 import qualified Data.List as L
 import Data.Map
-import Gltf.Json (Accessor, Buffer, BufferView, Material)
+import Gltf.Json (Accessor, Buffer (..), BufferView, Material)
+import Lib.Base (sumWith)
+import Lib.Base64 (bytesDataUrl, encodeDataUrl)
 
 data EncodedPrimitive = EncodedPrimitive
   { attributes :: Map String Int,
@@ -63,6 +65,31 @@ fromAccessor accessor bytes =
 
 fromMaterial :: Material -> MeshPart
 fromMaterial material = mempty {materials = L.singleton material}
+
+withBuffer :: EncodingM a -> EncodingM a
+withBuffer action = do
+  result <- censor collectBytes action
+  markNewBuffer
+  return result
+  where
+    collectBytes :: MeshPart -> MeshPart
+    collectBytes meshPart@(MeshPart {bytes}) =
+      meshPart
+        { buffers = [encodeBuffer bytes],
+          bytes = []
+        }
+      where
+        encodeBuffer :: [ByteString] -> Buffer
+        encodeBuffer byteStrings =
+          Buffer
+            { byteLength = fromIntegral $ sumWith BSL.length byteStrings,
+              uri = pure $ encodeDataUrl (bytesDataUrl $ BSL.toStrict $ BSL.concat byteStrings),
+              name = Nothing
+            }
+    markNewBuffer :: EncodingM ()
+    markNewBuffer = do
+      (EncodingState {bufferIndex}) <- get
+      modify $ newBuffer (bufferIndex + 1)
 
 instance Semigroup MeshPart where
   (<>)

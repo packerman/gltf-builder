@@ -28,6 +28,7 @@ dependencies:
 - transformers
 - vector
 - aeson # https://hackage.haskell.org/package/aeson
+- aeson-pretty
 - base64
 - linear
 - validity

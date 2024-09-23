@@ -5,7 +5,7 @@ module Core.Encode
 where
 
 import Control.Monad
-import Control.Monad.Trans.RWS (censor, evalRWS, get, modify, tell)
+import Control.Monad.Trans.RWS (evalRWS, get, modify, tell)
 import Core.Model
   ( Attribute (..),
     AttributeData (..),
@@ -14,8 +14,6 @@ import Core.Model
     sceneMeshes,
   )
 import qualified Core.Model as Model
-import Data.ByteString.Lazy (ByteString)
-import Data.ByteString.Lazy as BSL (concat, length, toStrict)
 import Data.Foldable (toList)
 import Data.Map (Map)
 import Gltf.Accessor (AccessorData (..))
@@ -30,14 +28,12 @@ import Gltf.Encode.Types
     defaultEncodingOptions,
     fromMaterial,
     initialEncoding,
-    newBuffer,
     setMaterialIndex,
+    withBuffer,
   )
 import qualified Gltf.Encode.Types as MeshPart (MeshPart (..))
-import Gltf.Json (Buffer (..), Gltf (..))
+import Gltf.Json (Gltf (..))
 import qualified Gltf.Json as Gltf
-import Lib.Base (sumWith)
-import Lib.Base64 (bytesDataUrl, encodeDataUrl)
 import Lib.Container (indexList, lookupAll, mapPairs)
 import Lib.UniqueList (UniqueList)
 import qualified Lib.UniqueList as UniqueList
@@ -99,31 +95,6 @@ encodeMeshes encodingOptions meshes = evalRWS meshAction encodingOptions initial
     meshAction = case bufferCreate encodingOptions of
       SingleBuffer -> do withBuffer $ forM meshes encodeMesh
       OnePerMesh -> forM meshes (withBuffer . encodeMesh)
-
-withBuffer :: EncodingM a -> EncodingM a
-withBuffer action = do
-  result <- censor collectBytes action
-  markNewBuffer
-  return result
-  where
-    collectBytes :: MeshPart.MeshPart -> MeshPart.MeshPart
-    collectBytes meshPart@(MeshPart.MeshPart {bytes}) =
-      meshPart
-        { MeshPart.buffers = [encodeBuffer bytes],
-          MeshPart.bytes = []
-        }
-      where
-        encodeBuffer :: [ByteString] -> Buffer
-        encodeBuffer byteStrings =
-          Buffer
-            { byteLength = fromIntegral $ sumWith BSL.length byteStrings,
-              uri = pure $ encodeDataUrl (bytesDataUrl $ BSL.toStrict $ BSL.concat byteStrings),
-              name = Nothing
-            }
-    markNewBuffer :: EncodingM ()
-    markNewBuffer = do
-      (EncodingState {bufferIndex}) <- get
-      modify $ newBuffer (bufferIndex + 1)
 
 encodeMesh :: Model.Mesh -> EncodingM Gltf.Mesh
 encodeMesh

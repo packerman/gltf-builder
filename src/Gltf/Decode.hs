@@ -1,5 +1,3 @@
-{-# LANGUAGE NamedFieldPuns #-}
-
 module Gltf.Decode
   ( readGltf,
     decodeBuffer,
