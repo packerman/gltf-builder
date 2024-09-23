@@ -74,10 +74,13 @@ withBuffer action = do
   where
     collectBytes :: MeshPart -> MeshPart
     collectBytes meshPart@(MeshPart {bytes}) =
-      meshPart
-        { buffers = [encodeBuffer bytes],
-          bytes = []
-        }
+      if L.null bytes
+        then meshPart
+        else
+          meshPart
+            { buffers = [encodeBuffer bytes],
+              bytes = []
+            }
       where
         encodeBuffer :: [ByteString] -> Buffer
         encodeBuffer byteStrings =
