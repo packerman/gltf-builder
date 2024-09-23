@@ -2,11 +2,11 @@ module Main (main) where
 
 import Core.Encode (encodeScene)
 import Core.Model (Scene (..))
-import Gltf.Encode (writeGltfPretty)
+import Gltf.Encode (writeGltf)
 
 main :: IO ()
 main = do
-  writeGltfPretty
+  writeGltf
     "scene1.gltf"
     ( encodeScene $
         Scene

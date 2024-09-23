@@ -34,6 +34,7 @@ import Gltf.Encode.Types
 import qualified Gltf.Encode.Types as MeshPart (MeshPart (..))
 import Gltf.Json (Gltf (..))
 import qualified Gltf.Json as Gltf
+import Lib.Base (nothingIf)
 import Lib.Container (indexList, lookupAll, mapPairs)
 import Lib.UniqueList (UniqueList)
 import qualified Lib.UniqueList as UniqueList
@@ -62,7 +63,7 @@ encodeSceneWithOptions encodingOptions scene@(Model.Scene {nodes, name = sceneNa
             Array.fromList
               [ Gltf.Scene
                   { name = sceneName,
-                    nodes = pure $ lookupAll nodes nodeIndex
+                    nodes = nothingIf null $ lookupAll nodes nodeIndex
                   }
               ],
           accessors = Array.fromList encodedAccessors,
