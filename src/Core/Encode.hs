@@ -20,11 +20,9 @@ import Data.Foldable (toList)
 import Data.Map (Map)
 import Gltf.Accessor (AccessorData (..))
 import qualified Gltf.Array as Array
-import Gltf.Json (Buffer (..), Gltf (..))
-import qualified Gltf.Json as Gltf
-import Gltf.Primitive (EncodingM)
-import qualified Gltf.Primitive as GltfPrimitive (encodePrimitive)
-import Gltf.Primitive.Types
+import Gltf.Encode.Primitive (EncodingM)
+import qualified Gltf.Encode.Primitive as GltfPrimitive (encodePrimitive)
+import Gltf.Encode.Types
   ( BufferCreate (..),
     EncodedPrimitive (..),
     EncodingOptions (..),
@@ -35,7 +33,9 @@ import Gltf.Primitive.Types
     newBuffer,
     setMaterialIndex,
   )
-import qualified Gltf.Primitive.Types as MeshPart (MeshPart (..))
+import qualified Gltf.Encode.Types as MeshPart (MeshPart (..))
+import Gltf.Json (Buffer (..), Gltf (..))
+import qualified Gltf.Json as Gltf
 import Lib.Base (sumWith)
 import Lib.Base64 (bytesDataUrl, encodeDataUrl)
 import Lib.Container (indexList, lookupAll, mapPairs)

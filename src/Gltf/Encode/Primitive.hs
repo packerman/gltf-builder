@@ -1,4 +1,4 @@
-module Gltf.Primitive
+module Gltf.Encode.Primitive
   ( encodePrimitive,
     EncodingM,
     EncodedPrimitive,
@@ -19,8 +19,8 @@ import qualified Data.Map as M
 import Data.Vector (Vector)
 import qualified Data.Vector as V
 import Gltf.Accessor (AccessorData (..))
+import Gltf.Encode.Types
 import Gltf.Json (Accessor (..), BufferView (..))
-import Gltf.Primitive.Types
 import Lib.Base (mzipMax, mzipMin, sumWith)
 import Lib.Container (groupBy)
 import Linear (V2 (..), V3 (..))

@@ -7,7 +7,7 @@ import Data.Map as M
 import qualified Gltf.Array as Array
 import Gltf.Json (Gltf (..))
 import qualified Gltf.Json as Gltf
-import Gltf.Primitive.Types
+import Gltf.Encode.Types
   ( BufferCreate (..),
     EncodingOptions (..),
     defaultEncodingOptions,

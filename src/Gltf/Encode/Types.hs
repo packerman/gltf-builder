@@ -1,4 +1,4 @@
-module Gltf.Primitive.Types (module Gltf.Primitive.Types) where
+module Gltf.Encode.Types (module Gltf.Encode.Types) where
 
 import Control.Monad.Trans.RWS
 import Data.ByteString.Lazy

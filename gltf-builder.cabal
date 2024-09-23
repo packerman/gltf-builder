@@ -31,9 +31,10 @@ library
       Gltf.Accessor
       Gltf.Array
       Gltf.Decode
+      Gltf.Decode.Accessor
+      Gltf.Encode.Primitive
+      Gltf.Encode.Types
       Gltf.Json
-      Gltf.Primitive
-      Gltf.Primitive.Types
       Gltf.Validate
       Lib.Base
       Lib.Base64
