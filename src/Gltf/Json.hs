@@ -90,17 +90,23 @@ data Accessor = Accessor
   deriving (Generic, Eq, Show)
 
 instance ToJSON Accessor where
-  toEncoding = genericToEncoding writeOptions
+  toEncoding =
+    genericToEncoding
+      writeOptions
+        { fieldLabelModifier = accessorFieldLabelModifier
+        }
 
 instance FromJSON Accessor where
   parseJSON =
     genericParseJSON
       readOptions
-        { fieldLabelModifier =
-            \label -> case label of
-              "accessorType" -> "type"
-              _ -> label
+        { fieldLabelModifier = accessorFieldLabelModifier
         }
+
+accessorFieldLabelModifier :: String -> String
+accessorFieldLabelModifier label = case label of
+  "accessorType" -> "type"
+  _ -> label
 
 data Asset = Asset
   { generator :: Maybe String,

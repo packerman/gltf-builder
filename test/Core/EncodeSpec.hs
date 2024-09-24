@@ -5,19 +5,42 @@ import Core.Model as Model
 import qualified Core.Model as Material (Material (..))
 import Data.Map as M
 import qualified Gltf.Array as Array
-import Gltf.Json (Gltf (..))
-import qualified Gltf.Json as Gltf
 import Gltf.Encode.Types
   ( BufferCreate (..),
     EncodingOptions (..),
     defaultEncodingOptions,
   )
+import Gltf.Json (Gltf (..))
+import qualified Gltf.Json as Gltf
 import Linear
 import Test.Hspec
 
 spec :: Spec
 spec = do
   describe "Encode" $ do
+    it "encodes empty scene" $ do
+      let input = Model.scene (pure "Empty") []
+      encodeScene input
+        `shouldBe` Gltf
+          { asset = Gltf.defaultAsset,
+            accessors = Nothing,
+            buffers = Nothing,
+            bufferViews = Nothing,
+            images = Nothing,
+            materials = Nothing,
+            meshes = Nothing,
+            nodes = Nothing,
+            samplers = Nothing,
+            scene = pure 0,
+            scenes =
+              Array.fromList
+                [ Gltf.Scene
+                    { name = pure "Empty",
+                      nodes = Nothing
+                    }
+                ],
+            textures = Nothing
+          }
     it "encodes triangle" $ do
       let input =
             Model.scene
@@ -128,8 +151,8 @@ spec = do
             nodes =
               Array.fromList
                 [ Gltf.Node
-                    { children = Just [],
-                      matrix = Just [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0],
+                    { children = Nothing,
+                      matrix = Nothing,
                       mesh = Just 0,
                       name = Nothing
                     }
@@ -295,10 +318,10 @@ spec = do
                   ],
               nodes =
                 Array.fromList
-                  [ Gltf.Node {children = Just [], matrix = Just [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0], mesh = Just 0, name = Nothing},
-                    Gltf.Node {children = Just [], matrix = Just [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0], mesh = Just 1, name = Nothing},
+                  [ Gltf.Node {children = Nothing, matrix = Nothing, mesh = Just 0, name = Nothing},
+                    Gltf.Node {children = Nothing, matrix = Nothing, mesh = Just 1, name = Nothing},
                     Gltf.Node {children = Just [3], matrix = Just [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0], mesh = Nothing, name = Nothing},
-                    Gltf.Node {children = Just [], matrix = Just [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0], mesh = Just 2, name = Nothing}
+                    Gltf.Node {children = Nothing, matrix = Nothing, mesh = Just 2, name = Nothing}
                   ],
               samplers = Array.fromList [],
               scene = Just 0,
@@ -368,10 +391,10 @@ spec = do
                   ],
               nodes =
                 Array.fromList
-                  [ Gltf.Node {children = Just [], matrix = Just [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0], mesh = Just 0, name = Nothing},
-                    Gltf.Node {children = Just [], matrix = Just [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0], mesh = Just 1, name = Nothing},
+                  [ Gltf.Node {children = Nothing, matrix = Nothing, mesh = Just 0, name = Nothing},
+                    Gltf.Node {children = Nothing, matrix = Nothing, mesh = Just 1, name = Nothing},
                     Gltf.Node {children = Just [3], matrix = Just [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0], mesh = Nothing, name = Nothing},
-                    Gltf.Node {children = Just [], matrix = Just [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0], mesh = Just 2, name = Nothing}
+                    Gltf.Node {children = Nothing, matrix = Nothing, mesh = Just 2, name = Nothing}
                   ],
               samplers = Array.fromList [],
               scene = Just 0,

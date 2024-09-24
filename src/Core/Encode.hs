@@ -38,6 +38,7 @@ import Lib.Base (nothingIf)
 import Lib.Container (indexList, lookupAll, mapPairs)
 import Lib.UniqueList (UniqueList)
 import qualified Lib.UniqueList as UniqueList
+import Linear (identity)
 
 encodeScene :: Model.Scene -> Gltf
 encodeScene = encodeSceneWithOptions defaultEncodingOptions
@@ -84,9 +85,9 @@ encodeSceneWithOptions encodingOptions scene@(Model.Scene {nodes, name = sceneNa
         encodeNode (Model.Node {matrix, name, mesh, children}) =
           ( Gltf.Node
               { name,
-                matrix = pure $ concatMap toList matrix,
+                matrix = concatMap toList <$> nothingIf (== identity) matrix,
                 mesh = mesh >>= (`UniqueList.indexOf` meshIndex),
-                children = pure $ lookupAll children nodeIndex
+                children = nothingIf null $ lookupAll children nodeIndex
               }
           )
 
