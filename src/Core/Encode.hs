@@ -5,7 +5,7 @@ module Core.Encode
 where
 
 import Control.Monad
-import Control.Monad.Trans.RWS (censor, evalRWS, get, modify, tell)
+import Control.Monad.Trans.RWS (evalRWS, get, modify, tell)
 import Core.Model
   ( Attribute (..),
     AttributeData (..),
@@ -14,17 +14,13 @@ import Core.Model
     sceneMeshes,
   )
 import qualified Core.Model as Model
-import Data.ByteString.Lazy (ByteString)
-import Data.ByteString.Lazy as BSL (concat, length, toStrict)
 import Data.Foldable (toList)
 import Data.Map (Map)
 import Gltf.Accessor (AccessorData (..))
 import qualified Gltf.Array as Array
-import Gltf.Json (Buffer (..), Gltf (..))
-import qualified Gltf.Json as Gltf
-import Gltf.Primitive (EncodingM)
-import qualified Gltf.Primitive as GltfPrimitive (encodePrimitive)
-import Gltf.Primitive.Types
+import Gltf.Encode.Primitive (EncodingM)
+import qualified Gltf.Encode.Primitive as GltfPrimitive (encodePrimitive)
+import Gltf.Encode.Types
   ( BufferCreate (..),
     EncodedPrimitive (..),
     EncodingOptions (..),
@@ -32,15 +28,17 @@ import Gltf.Primitive.Types
     defaultEncodingOptions,
     fromMaterial,
     initialEncoding,
-    newBuffer,
     setMaterialIndex,
+    withBuffer,
   )
-import qualified Gltf.Primitive.Types as MeshPart (MeshPart (..))
-import Lib.Base (sumWith)
-import Lib.Base64 (bytesDataUrl, encodeDataUrl)
+import qualified Gltf.Encode.Types as MeshPart (MeshPart (..))
+import Gltf.Json (Gltf (..))
+import qualified Gltf.Json as Gltf
+import Lib.Base (nothingIf)
 import Lib.Container (indexList, lookupAll, mapPairs)
 import Lib.UniqueList (UniqueList)
 import qualified Lib.UniqueList as UniqueList
+import Linear (identity)
 
 encodeScene :: Model.Scene -> Gltf
 encodeScene = encodeSceneWithOptions defaultEncodingOptions
@@ -66,7 +64,7 @@ encodeSceneWithOptions encodingOptions scene@(Model.Scene {nodes, name = sceneNa
             Array.fromList
               [ Gltf.Scene
                   { name = sceneName,
-                    nodes = pure $ lookupAll nodes nodeIndex
+                    nodes = nothingIf null $ lookupAll nodes nodeIndex
                   }
               ],
           accessors = Array.fromList encodedAccessors,
@@ -87,9 +85,9 @@ encodeSceneWithOptions encodingOptions scene@(Model.Scene {nodes, name = sceneNa
         encodeNode (Model.Node {matrix, name, mesh, children}) =
           ( Gltf.Node
               { name,
-                matrix = pure $ concatMap toList matrix,
+                matrix = concatMap toList <$> nothingIf (== identity) matrix,
                 mesh = mesh >>= (`UniqueList.indexOf` meshIndex),
-                children = pure $ lookupAll children nodeIndex
+                children = nothingIf null $ lookupAll children nodeIndex
               }
           )
 
@@ -99,31 +97,6 @@ encodeMeshes encodingOptions meshes = evalRWS meshAction encodingOptions initial
     meshAction = case bufferCreate encodingOptions of
       SingleBuffer -> do withBuffer $ forM meshes encodeMesh
       OnePerMesh -> forM meshes (withBuffer . encodeMesh)
-
-withBuffer :: EncodingM a -> EncodingM a
-withBuffer action = do
-  result <- censor collectBytes action
-  markNewBuffer
-  return result
-  where
-    collectBytes :: MeshPart.MeshPart -> MeshPart.MeshPart
-    collectBytes meshPart@(MeshPart.MeshPart {bytes}) =
-      meshPart
-        { MeshPart.buffers = [encodeBuffer bytes],
-          MeshPart.bytes = []
-        }
-      where
-        encodeBuffer :: [ByteString] -> Buffer
-        encodeBuffer byteStrings =
-          Buffer
-            { byteLength = fromIntegral $ sumWith BSL.length byteStrings,
-              uri = pure $ encodeDataUrl (bytesDataUrl $ BSL.toStrict $ BSL.concat byteStrings),
-              name = Nothing
-            }
-    markNewBuffer :: EncodingM ()
-    markNewBuffer = do
-      (EncodingState {bufferIndex}) <- get
-      modify $ newBuffer (bufferIndex + 1)
 
 encodeMesh :: Model.Mesh -> EncodingM Gltf.Mesh
 encodeMesh

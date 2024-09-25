@@ -2,6 +2,7 @@ module Gltf.AccessorSpec (spec) where
 
 import qualified Data.ByteString.Lazy as BL
 import Gltf.Accessor
+import Gltf.Decode.Accessor
 import Linear (V3 (..))
 import Test.Hspec
 import Lib.Base64 (decodeBase64Text)

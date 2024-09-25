@@ -1,5 +1,3 @@
-{-# LANGUAGE NamedFieldPuns #-}
-
 module Gltf.Decode
   ( readGltf,
     decodeBuffer,
@@ -14,7 +12,8 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
 import Data.Maybe (fromMaybe)
 import Data.Vector (Vector, (!?))
-import Gltf.Accessor (AccessorData, DecodeOptions (..), decodeAccessorData)
+import Gltf.Accessor (AccessorData)
+import Gltf.Decode.Accessor (DecodeOptions (..), decodeAccessorData)
 import Gltf.Json
 import Lib.Base (maybeToEither, validate)
 import Lib.Base64 (DataUrl (..), decodeBase64Url)

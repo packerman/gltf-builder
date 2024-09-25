@@ -17,7 +17,6 @@ import Gltf.Json
     Material (pbrMetallicRoughness),
     Number,
     TextureInfo (..),
-    defaultPbrMetallicRoughness,
   )
 import qualified Gltf.Json as Gltf
   ( Gltf (..),
@@ -30,6 +29,7 @@ import qualified Gltf.Json as Gltf
     Sampler (..),
     Scene (..),
     Texture (..),
+    defaultPbrMetallicRoughness,
   )
 import Lib.Base (maybeToEither)
 import Lib.Container (mapPairsM)
@@ -130,7 +130,7 @@ decodeMaterial :: Vector Model.Texture -> Gltf.Material -> Either String Model.M
 decodeMaterial textures (Gltf.Material {..}) =
   Model.Material name
     <$> decodePbrUnsafe
-      (maybe defaultPbrMetallicRoughness (<> defaultPbrMetallicRoughness) pbrMetallicRoughness)
+      (maybe Gltf.defaultPbrMetallicRoughness (<> Gltf.defaultPbrMetallicRoughness) pbrMetallicRoughness)
   where
     decodePbrUnsafe (Gltf.PbrMetallicRoughness {..}) = do
       baseColorFactor <- decodeV4 $ fromJust baseColorFactor

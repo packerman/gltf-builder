@@ -1,5 +1,3 @@
-{-# LANGUAGE DuplicateRecordFields #-}
-
 module Core.Model (module Core.Model) where
 
 import Data.ByteString (ByteString)
@@ -26,18 +24,21 @@ data PbrMetallicRoughness = PbrMetallicRoughness
   }
   deriving (Eq, Show, Ord)
 
+defaultPbrMetallicRoughness :: PbrMetallicRoughness
+defaultPbrMetallicRoughness =
+  PbrMetallicRoughness
+    { baseColorFactor = V4 1 1 1 1,
+      baseColorTexture = Nothing,
+      metallicFactor = 1,
+      roughnessFactor = 1,
+      metallicRoughnessTexture = Nothing
+    }
+
 defaultMaterial :: Material
 defaultMaterial =
   Material
     { name = Nothing,
-      pbrMetallicRoughness =
-        PbrMetallicRoughness
-          { baseColorFactor = V4 1 1 1 1,
-            baseColorTexture = Nothing,
-            metallicFactor = 1,
-            roughnessFactor = 1,
-            metallicRoughnessTexture = Nothing
-          }
+      pbrMetallicRoughness = defaultPbrMetallicRoughness
     }
 
 data Mesh = Mesh
