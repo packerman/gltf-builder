@@ -177,15 +177,30 @@ instance FromJSON Image where
 
 data Material = Material
   { name :: Maybe String,
-    pbrMetallicRoughness :: Maybe PbrMetallicRoughness
+    pbrMetallicRoughness :: Maybe PbrMetallicRoughness,
+    alphaMode :: Maybe String,
+    alphaCutoff :: Maybe Number,
+    doubleSided :: Maybe Bool
   }
   deriving (Generic, Eq, Show)
+
+defaultAlphaMode :: String
+defaultAlphaMode = "OPAQUE"
+
+defaultAlphaCutoff :: Number
+defaultAlphaCutoff = 0.5
+
+defaultDoubleSided :: Bool
+defaultDoubleSided = False
 
 defaultMaterial :: Material
 defaultMaterial =
   Material
     { name = Nothing,
-      pbrMetallicRoughness = Nothing
+      pbrMetallicRoughness = Nothing,
+      doubleSided = pure defaultDoubleSided,
+      alphaMode = pure defaultAlphaMode,
+      alphaCutoff = pure defaultAlphaCutoff
     }
 
 instance ToJSON Material where

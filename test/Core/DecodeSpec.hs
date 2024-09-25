@@ -225,7 +225,10 @@ spec = do
                                     roughnessFactor = Nothing,
                                     metallicRoughnessTexture = Nothing
                                   }
-                              )
+                              ),
+                          alphaMode = Nothing,
+                          alphaCutoff = Nothing,
+                          doubleSided = Nothing
                         }
                     ],
                 meshes =
@@ -340,7 +343,10 @@ spec = do
                                                           metallicFactor = 0.0,
                                                           roughnessFactor = 1.0,
                                                           metallicRoughnessTexture = Nothing
-                                                        }
+                                                        },
+                                                    alphaMode = Opaque,
+                                                    alphaCutoff = 0.5,
+                                                    doubleSided = False
                                                   },
                                               mode = Triangles
                                             }

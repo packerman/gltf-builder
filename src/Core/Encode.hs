@@ -7,7 +7,8 @@ where
 import Control.Monad
 import Control.Monad.Trans.RWS (evalRWS, get, modify, tell)
 import Core.Model
-  ( Attribute (..),
+  ( AlphaMode (..),
+    Attribute (..),
     AttributeData (..),
     IndexData (..),
     Mode (..),
@@ -32,7 +33,7 @@ import Gltf.Encode.Types
     withBuffer,
   )
 import qualified Gltf.Encode.Types as MeshPart (MeshPart (..))
-import Gltf.Json (Gltf (..))
+import Gltf.Json (Gltf (..), defaultAlphaCutoff, defaultAlphaMode, defaultDoubleSided)
 import qualified Gltf.Json as Gltf
 import Lib.Base (nothingIf)
 import Lib.Container (indexList, lookupAll, mapPairs)
@@ -152,7 +153,10 @@ encodeMesh
                   { baseColorFactor,
                     metallicFactor,
                     roughnessFactor
-                  }
+                  },
+              alphaMode,
+              alphaCutoff,
+              doubleSided
             }
           ) =
           do
@@ -170,9 +174,16 @@ encodeMesh
                             roughnessFactor = pure roughnessFactor,
                             baseColorTexture = Nothing,
                             metallicRoughnessTexture = Nothing
-                          }
+                          },
+                    alphaMode = nothingIf (== defaultAlphaMode) $ encodeAlphaMode alphaMode,
+                    alphaCutoff = nothingIf (== defaultAlphaCutoff) alphaCutoff,
+                    doubleSided = nothingIf (== defaultDoubleSided) doubleSided
                   }
             return materialIndex
+
+      encodeAlphaMode Opaque = "OPAQUE"
+      encodeAlphaMode Mask = "MASK"
+      encodeAlphaMode Blend = "BLEND"
 
       encodeMode Points = 0
       encodeMode Lines = 1

@@ -91,7 +91,10 @@ spec = do
                                       roughnessFactor = Nothing,
                                       metallicRoughnessTexture = Nothing
                                     }
-                                )
+                                ),
+                            alphaMode = Nothing,
+                            alphaCutoff = Nothing,
+                            doubleSided = Nothing
                           }
                       ],
                   meshes =

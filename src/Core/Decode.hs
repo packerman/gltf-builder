@@ -17,6 +17,9 @@ import Gltf.Json
     Material (pbrMetallicRoughness),
     Number,
     TextureInfo (..),
+    defaultAlphaCutoff,
+    defaultAlphaMode,
+    defaultDoubleSided,
   )
 import qualified Gltf.Json as Gltf
   ( Gltf (..),
@@ -127,10 +130,14 @@ decodeMesh accessorData materials (Gltf.Mesh name primitives) = Mesh name <$> tr
       _ -> Left $ unwords ["Unkown mode:", show n]
 
 decodeMaterial :: Vector Model.Texture -> Gltf.Material -> Either String Model.Material
-decodeMaterial textures (Gltf.Material {..}) =
-  Model.Material name
-    <$> decodePbrUnsafe
+decodeMaterial textures (Gltf.Material {..}) = do
+  pbrMetallicRoughness <-
+    decodePbrUnsafe
       (maybe Gltf.defaultPbrMetallicRoughness (<> Gltf.defaultPbrMetallicRoughness) pbrMetallicRoughness)
+  alphaMode <- decodeAlphaMode $ fromMaybe defaultAlphaMode alphaMode
+  alphaCutoff <- pure $ fromMaybe defaultAlphaCutoff alphaCutoff
+  doubleSided <- pure $ fromMaybe defaultDoubleSided doubleSided
+  return Model.Material {..}
   where
     decodePbrUnsafe (Gltf.PbrMetallicRoughness {..}) = do
       baseColorFactor <- decodeV4 $ fromJust baseColorFactor
@@ -144,6 +151,11 @@ decodeMaterial textures (Gltf.Material {..}) =
             roughnessFactor = fromJust roughnessFactor,
             metallicRoughnessTexture
           }
+
+    decodeAlphaMode "OPAQUE" = pure Opaque
+    decodeAlphaMode "MASK" = pure Mask
+    decodeAlphaMode "BLEND" = pure Blend
+    decodeAlphaMode mode = Left $ unwords ["Unknown alpha mode:", mode]
 
 decodeTexture :: Vector Model.Image -> Vector Model.Sampler -> Gltf.Texture -> Either String Model.Texture
 decodeTexture

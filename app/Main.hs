@@ -2,8 +2,9 @@ module Main (main) where
 
 import Core.Encode (encodeScene)
 import Core.Model
-  ( Attribute (..),
-    Material (pbrMetallicRoughness),
+  ( AlphaMode (..),
+    Attribute (..),
+    Material (..),
     Mesh (..),
     Mode (..),
     Node (..),
@@ -53,7 +54,9 @@ main = do
                                         { pbrMetallicRoughness =
                                             defaultPbrMetallicRoughness
                                               { baseColorFactor = V4 0 0.5 0 1
-                                              }
+                                              },
+                                          alphaMode = Blend,
+                                          doubleSided = True
                                         },
                                     mode = Triangles
                                   }

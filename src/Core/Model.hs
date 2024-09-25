@@ -11,7 +11,10 @@ import Linear (M44, V2, V3, V4 (..), identity)
 
 data Material = Material
   { name :: Maybe String,
-    pbrMetallicRoughness :: PbrMetallicRoughness
+    pbrMetallicRoughness :: PbrMetallicRoughness,
+    alphaMode :: AlphaMode,
+    alphaCutoff :: Float,
+    doubleSided :: Bool
   }
   deriving (Eq, Show, Ord)
 
@@ -38,8 +41,14 @@ defaultMaterial :: Material
 defaultMaterial =
   Material
     { name = Nothing,
-      pbrMetallicRoughness = defaultPbrMetallicRoughness
+      pbrMetallicRoughness = defaultPbrMetallicRoughness,
+      alphaMode = Opaque,
+      alphaCutoff = 0.5,
+      doubleSided = False
     }
+
+data AlphaMode = Opaque | Mask | Blend
+  deriving (Eq, Show, Ord, Enum)
 
 data Mesh = Mesh
   { name :: Maybe String,

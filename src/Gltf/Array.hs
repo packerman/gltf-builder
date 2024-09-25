@@ -5,6 +5,7 @@ module Gltf.Array
     toList,
     (!),
     (!?),
+    empty,
   )
 where
 
@@ -29,3 +30,6 @@ toVector = fromMaybe V.empty
 
 (!?) :: Array a -> Int -> Maybe a
 (!?) a i = a >>= (V.!? i)
+
+empty :: Array a
+empty = fromList []

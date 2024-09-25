@@ -23,14 +23,14 @@ spec = do
       encodeScene input
         `shouldBe` Gltf
           { asset = Gltf.defaultAsset,
-            accessors = Nothing,
-            buffers = Nothing,
-            bufferViews = Nothing,
-            images = Nothing,
-            materials = Nothing,
-            meshes = Nothing,
-            nodes = Nothing,
-            samplers = Nothing,
+            accessors = Array.empty,
+            buffers = Array.empty,
+            bufferViews = Array.empty,
+            images = Array.empty,
+            materials = Array.empty,
+            meshes = Array.empty,
+            nodes = Array.empty,
+            samplers = Array.empty,
             scene = pure 0,
             scenes =
               Array.fromList
@@ -131,7 +131,10 @@ spec = do
                               metallicFactor = Just 1.0,
                               roughnessFactor = Just 1.0,
                               metallicRoughnessTexture = Nothing
-                            }
+                            },
+                      alphaMode = Nothing,
+                      alphaCutoff = Nothing,
+                      doubleSided = Nothing
                     }
                 ],
             meshes =
@@ -258,7 +261,10 @@ spec = do
                                                           metallicFactor = 0.0,
                                                           roughnessFactor = 1.0,
                                                           metallicRoughnessTexture = Nothing
-                                                        }
+                                                        },
+                                                    alphaMode = Opaque,
+                                                    alphaCutoff = 0.5,
+                                                    doubleSided = False
                                                   },
                                               mode = Triangles
                                             }
@@ -306,9 +312,27 @@ spec = do
               images = Array.fromList [],
               materials =
                 Array.fromList
-                  [ Gltf.Material {name = Just "Material 1", pbrMetallicRoughness = Just (Gltf.PbrMetallicRoughness {baseColorFactor = Just [1.0, 1.0, 1.0, 1.0], baseColorTexture = Nothing, metallicFactor = Just 1.0, roughnessFactor = Just 1.0, metallicRoughnessTexture = Nothing})},
-                    Gltf.Material {name = Just "Material 2", pbrMetallicRoughness = Just (Gltf.PbrMetallicRoughness {baseColorFactor = Just [1.0, 1.0, 1.0, 1.0], baseColorTexture = Nothing, metallicFactor = Just 1.0, roughnessFactor = Just 1.0, metallicRoughnessTexture = Nothing})},
-                    Gltf.Material {name = Just "Texture", pbrMetallicRoughness = Just (Gltf.PbrMetallicRoughness {baseColorFactor = Just [1.0, 1.0, 1.0, 1.0], baseColorTexture = Nothing, metallicFactor = Just 0.0, roughnessFactor = Just 1.0, metallicRoughnessTexture = Nothing})}
+                  [ Gltf.Material
+                      { name = Just "Material 1",
+                        pbrMetallicRoughness = Just (Gltf.PbrMetallicRoughness {baseColorFactor = Just [1.0, 1.0, 1.0, 1.0], baseColorTexture = Nothing, metallicFactor = Just 1.0, roughnessFactor = Just 1.0, metallicRoughnessTexture = Nothing}),
+                        alphaMode = Nothing,
+                        alphaCutoff = Nothing,
+                        doubleSided = Nothing
+                      },
+                    Gltf.Material
+                      { name = Just "Material 2",
+                        pbrMetallicRoughness = Just (Gltf.PbrMetallicRoughness {baseColorFactor = Just [1.0, 1.0, 1.0, 1.0], baseColorTexture = Nothing, metallicFactor = Just 1.0, roughnessFactor = Just 1.0, metallicRoughnessTexture = Nothing}),
+                        alphaMode = Nothing,
+                        alphaCutoff = Nothing,
+                        doubleSided = Nothing
+                      },
+                    Gltf.Material
+                      { name = Just "Texture",
+                        pbrMetallicRoughness = Just (Gltf.PbrMetallicRoughness {baseColorFactor = Just [1.0, 1.0, 1.0, 1.0], baseColorTexture = Nothing, metallicFactor = Just 0.0, roughnessFactor = Just 1.0, metallicRoughnessTexture = Nothing}),
+                        alphaMode = Nothing,
+                        alphaCutoff = Nothing,
+                        doubleSided = Nothing
+                      }
                   ],
               meshes =
                 Array.fromList
@@ -379,9 +403,27 @@ spec = do
               images = Array.fromList [],
               materials =
                 Array.fromList
-                  [ Gltf.Material {name = Just "Material 1", pbrMetallicRoughness = Just (Gltf.PbrMetallicRoughness {baseColorFactor = Just [1.0, 1.0, 1.0, 1.0], baseColorTexture = Nothing, metallicFactor = Just 1.0, roughnessFactor = Just 1.0, metallicRoughnessTexture = Nothing})},
-                    Gltf.Material {name = Just "Material 2", pbrMetallicRoughness = Just (Gltf.PbrMetallicRoughness {baseColorFactor = Just [1.0, 1.0, 1.0, 1.0], baseColorTexture = Nothing, metallicFactor = Just 1.0, roughnessFactor = Just 1.0, metallicRoughnessTexture = Nothing})},
-                    Gltf.Material {name = Just "Texture", pbrMetallicRoughness = Just (Gltf.PbrMetallicRoughness {baseColorFactor = Just [1.0, 1.0, 1.0, 1.0], baseColorTexture = Nothing, metallicFactor = Just 0.0, roughnessFactor = Just 1.0, metallicRoughnessTexture = Nothing})}
+                  [ Gltf.Material
+                      { name = Just "Material 1",
+                        pbrMetallicRoughness = Just (Gltf.PbrMetallicRoughness {baseColorFactor = Just [1.0, 1.0, 1.0, 1.0], baseColorTexture = Nothing, metallicFactor = Just 1.0, roughnessFactor = Just 1.0, metallicRoughnessTexture = Nothing}),
+                        alphaMode = Nothing,
+                        alphaCutoff = Nothing,
+                        doubleSided = Nothing
+                      },
+                    Gltf.Material
+                      { name = Just "Material 2",
+                        pbrMetallicRoughness = Just (Gltf.PbrMetallicRoughness {baseColorFactor = Just [1.0, 1.0, 1.0, 1.0], baseColorTexture = Nothing, metallicFactor = Just 1.0, roughnessFactor = Just 1.0, metallicRoughnessTexture = Nothing}),
+                        alphaMode = Nothing,
+                        alphaCutoff = Nothing,
+                        doubleSided = Nothing
+                      },
+                    Gltf.Material
+                      { name = Just "Texture",
+                        pbrMetallicRoughness = Just (Gltf.PbrMetallicRoughness {baseColorFactor = Just [1.0, 1.0, 1.0, 1.0], baseColorTexture = Nothing, metallicFactor = Just 0.0, roughnessFactor = Just 1.0, metallicRoughnessTexture = Nothing}),
+                        alphaMode = Nothing,
+                        alphaCutoff = Nothing,
+                        doubleSided = Nothing
+                      }
                   ],
               meshes =
                 Array.fromList
