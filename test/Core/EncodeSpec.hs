@@ -262,8 +262,7 @@ spec = do
                                                           roughnessFactor = 1.0,
                                                           metallicRoughnessTexture = Nothing
                                                         },
-                                                    alphaMode = Opaque,
-                                                    alphaCutoff = 0.5,
+                                                    alpha = Opaque,
                                                     doubleSided = False
                                                   },
                                               mode = Triangles

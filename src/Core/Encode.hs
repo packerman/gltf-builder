@@ -7,7 +7,7 @@ where
 import Control.Monad
 import Control.Monad.Trans.RWS (evalRWS, get, modify, tell)
 import Core.Model
-  ( AlphaMode (..),
+  ( Alpha (..),
     Attribute (..),
     AttributeData (..),
     IndexData (..),
@@ -33,7 +33,7 @@ import Gltf.Encode.Types
     withBuffer,
   )
 import qualified Gltf.Encode.Types as MeshPart (MeshPart (..))
-import Gltf.Json (Gltf (..), defaultAlphaCutoff, defaultAlphaMode, defaultDoubleSided)
+import Gltf.Json (Gltf (..), defaultAlphaCutoff, defaultDoubleSided)
 import qualified Gltf.Json as Gltf
 import Lib.Base (nothingIf)
 import Lib.Container (indexList, lookupAll, mapPairs)
@@ -154,36 +154,36 @@ encodeMesh
                     metallicFactor,
                     roughnessFactor
                   },
-              alphaMode,
-              alphaCutoff,
+              alpha,
               doubleSided
             }
           ) =
-          do
-            (EncodingState {materialIndex}) <- get
-            modify $ setMaterialIndex (materialIndex + 1)
-            tell $
-              fromMaterial $
-                Gltf.Material
-                  { name = materialName,
-                    pbrMetallicRoughness =
-                      pure $
-                        Gltf.PbrMetallicRoughness
-                          { baseColorFactor = pure $ toList baseColorFactor,
-                            metallicFactor = pure metallicFactor,
-                            roughnessFactor = pure roughnessFactor,
-                            baseColorTexture = Nothing,
-                            metallicRoughnessTexture = Nothing
-                          },
-                    alphaMode = nothingIf (== defaultAlphaMode) $ encodeAlphaMode alphaMode,
-                    alphaCutoff = nothingIf (== defaultAlphaCutoff) alphaCutoff,
-                    doubleSided = nothingIf (== defaultDoubleSided) doubleSided
-                  }
-            return materialIndex
+          let (alphaMode, alphaCutoff) = encodeAlphaMode alpha
+           in do
+                (EncodingState {materialIndex}) <- get
+                modify $ setMaterialIndex (materialIndex + 1)
+                tell $
+                  fromMaterial $
+                    Gltf.Material
+                      { name = materialName,
+                        pbrMetallicRoughness =
+                          pure $
+                            Gltf.PbrMetallicRoughness
+                              { baseColorFactor = pure $ toList baseColorFactor,
+                                metallicFactor = pure metallicFactor,
+                                roughnessFactor = pure roughnessFactor,
+                                baseColorTexture = Nothing,
+                                metallicRoughnessTexture = Nothing
+                              },
+                        alphaMode,
+                        alphaCutoff,
+                        doubleSided = nothingIf (== defaultDoubleSided) doubleSided
+                      }
+                return materialIndex
 
-      encodeAlphaMode Opaque = "OPAQUE"
-      encodeAlphaMode Mask = "MASK"
-      encodeAlphaMode Blend = "BLEND"
+      encodeAlphaMode Opaque = (Nothing, Nothing)
+      encodeAlphaMode (Mask alphaCutoff) = (pure "MASK", nothingIf (== defaultAlphaCutoff) alphaCutoff)
+      encodeAlphaMode Blend = (pure "BLEND", Nothing)
 
       encodeMode Points = 0
       encodeMode Lines = 1

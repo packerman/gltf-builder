@@ -18,7 +18,6 @@ import Gltf.Json
     Number,
     TextureInfo (..),
     defaultAlphaCutoff,
-    defaultAlphaMode,
     defaultDoubleSided,
   )
 import qualified Gltf.Json as Gltf
@@ -134,8 +133,7 @@ decodeMaterial textures (Gltf.Material {..}) = do
   pbrMetallicRoughness <-
     decodePbrUnsafe
       (maybe Gltf.defaultPbrMetallicRoughness (<> Gltf.defaultPbrMetallicRoughness) pbrMetallicRoughness)
-  alphaMode <- decodeAlphaMode $ fromMaybe defaultAlphaMode alphaMode
-  alphaCutoff <- pure $ fromMaybe defaultAlphaCutoff alphaCutoff
+  alpha <- decodeAlpha alphaMode alphaCutoff
   doubleSided <- pure $ fromMaybe defaultDoubleSided doubleSided
   return Model.Material {..}
   where
@@ -152,10 +150,12 @@ decodeMaterial textures (Gltf.Material {..}) = do
             metallicRoughnessTexture
           }
 
-    decodeAlphaMode "OPAQUE" = pure Opaque
-    decodeAlphaMode "MASK" = pure Mask
-    decodeAlphaMode "BLEND" = pure Blend
-    decodeAlphaMode mode = Left $ unwords ["Unknown alpha mode:", mode]
+    decodeAlpha (Just "OPAQUE") _ = pure Opaque
+    decodeAlpha (Just "MASK") alphaCutoff = pure $ Mask $ fromMaybe defaultAlphaCutoff alphaCutoff
+    decodeAlpha (Just "BLEND") _ = pure Blend
+    decodeAlpha (Just mode) _ = Left $ unwords ["Unknown alpha mode:", mode]
+    decodeAlpha Nothing (Just _) = Left "Alpha cutoff is not allowed"
+    decodeAlpha _ _ = pure Opaque
 
 decodeTexture :: Vector Model.Image -> Vector Model.Sampler -> Gltf.Texture -> Either String Model.Texture
 decodeTexture
