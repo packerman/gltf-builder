@@ -1,18 +1,15 @@
 module Main (main) where
 
+import Core.Dsl
 import Core.Encode (encodeScene)
 import Core.Model
   ( Alpha (..),
     Attribute (..),
     Material (..),
-    Mesh (..),
     Mode (..),
-    Node (..),
     PbrMetallicRoughness (baseColorFactor),
     Primitive (..),
-    Scene (..),
     defaultMaterial,
-    defaultNode,
     defaultPbrMetallicRoughness,
     fromShortList,
     fromV3List,
@@ -26,43 +23,31 @@ main = do
   writeGltf
     "scene1.gltf"
     ( encodeScene $
-        Scene
-          { name = pure "Scene",
-            nodes =
-              [ defaultNode
-                  { name = pure "Object 1",
-                    mesh =
-                      pure $
-                        Mesh
-                          { name = Nothing,
-                            primitives =
-                              [ Primitive
-                                  { attributes =
-                                      M.fromList
-                                        [ ( Position,
-                                            fromV3List
-                                              [ V3 (-0.75) (-0.75) 0,
-                                                V3 0.75 (-0.75) 0,
-                                                V3 0.75 0.75 0,
-                                                V3 (-0.75) 0.75 0
-                                              ]
-                                          )
-                                        ],
-                                    indices = pure $ fromShortList [0, 1, 2, 0, 2, 3],
-                                    material =
-                                      defaultMaterial
-                                        { pbrMetallicRoughness =
-                                            defaultPbrMetallicRoughness
-                                              { baseColorFactor = V4 0 0.5 0 1
-                                              },
-                                          alpha = Blend,
-                                          doubleSided = True
-                                        },
-                                    mode = Triangles
-                                  }
-                              ]
-                          }
-                  }
-              ]
-          }
+        scene
+          [ primitive $
+              Primitive
+                { attributes =
+                    M.fromList
+                      [ ( Position,
+                          fromV3List
+                            [ V3 (-0.75) (-0.75) 0,
+                              V3 0.75 (-0.75) 0,
+                              V3 0.75 0.75 0,
+                              V3 (-0.75) 0.75 0
+                            ]
+                        )
+                      ],
+                  indices = pure $ fromShortList [0, 1, 2, 0, 2, 3],
+                  material =
+                    defaultMaterial
+                      { pbrMetallicRoughness =
+                          defaultPbrMetallicRoughness
+                            { baseColorFactor = V4 0 0.5 0 1
+                            },
+                        alpha = Blend,
+                        doubleSided = True
+                      },
+                  mode = Triangles
+                }
+          ]
     )
