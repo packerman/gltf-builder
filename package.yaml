@@ -30,7 +30,11 @@ dependencies:
 - aeson # https://hackage.haskell.org/package/aeson
 - aeson-pretty
 - base64
+- directory
+- filepath
+- lens
 - linear
+- wreq
 - validity
 
 default-extensions:
