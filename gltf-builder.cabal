@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Core.Decode
+      Core.Dsl
       Core.Encode
       Core.Model
       Gltf.Accessor
@@ -40,6 +41,7 @@ library
       Lib.Base
       Lib.Base64
       Lib.Container
+      Lib.File
       Lib.UniqueList
   other-modules:
       Paths_gltf_builder
@@ -61,11 +63,15 @@ library
     , binary
     , bytestring
     , containers
+    , directory
+    , filepath
+    , lens
     , linear
     , text
     , transformers
     , validity
     , vector
+    , wreq
   default-language: Haskell2010
 
 executable gltf-builder-exe
@@ -90,12 +96,16 @@ executable gltf-builder-exe
     , binary
     , bytestring
     , containers
+    , directory
+    , filepath
     , gltf-builder
+    , lens
     , linear
     , text
     , transformers
     , validity
     , vector
+    , wreq
   default-language: Haskell2010
 
 test-suite gltf-builder-test
@@ -127,12 +137,16 @@ test-suite gltf-builder-test
     , binary
     , bytestring
     , containers
+    , directory
+    , filepath
     , gltf-builder
     , hspec
     , hspec-discover
+    , lens
     , linear
     , text
     , transformers
     , validity
     , vector
+    , wreq
   default-language: Haskell2010

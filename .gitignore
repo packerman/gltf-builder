@@ -2,3 +2,6 @@
 *~
 .idea/
 *.iml
+downloaded-files/
+created-models/
+.DS_Store
