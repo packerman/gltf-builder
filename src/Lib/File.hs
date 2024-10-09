@@ -1,4 +1,8 @@
-module Lib.File (downloadFile) where
+module Lib.File
+  ( downloadFile,
+    writeNestedFile,
+  )
+where
 
 import Control.Lens
 import Data.ByteString.Lazy as BSL
@@ -17,6 +21,11 @@ downloadFile url filePath = do
       createDirectoryForFile filePath
       BSL.writeFile filePath body
       return body
+
+writeNestedFile :: FilePath -> BSL.ByteString -> IO ()
+writeNestedFile filePath content = do
+  createDirectoryForFile filePath
+  BSL.writeFile filePath content
 
 createDirectoryForFile :: FilePath -> IO ()
 createDirectoryForFile filePath = do

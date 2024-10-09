@@ -1,6 +1,8 @@
 module Core.Dsl (module Core.Dsl) where
 
 import Core.Model
+import Gltf.Json (Number)
+import Linear (V4)
 
 scene :: [Node] -> Scene
 scene nodes =
@@ -18,4 +20,13 @@ primitive p =
             { name = Nothing,
               primitives = [p]
             }
+    }
+
+baseColor :: V4 Number -> Material
+baseColor c =
+  defaultMaterial
+    { pbrMetallicRoughness =
+        defaultPbrMetallicRoughness
+          { baseColorFactor = c
+          }
     }

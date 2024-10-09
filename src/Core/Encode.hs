@@ -1,6 +1,7 @@
 module Core.Encode
   ( encodeScene,
     encodeSceneWithOptions,
+    writeScene,
   )
 where
 
@@ -19,6 +20,7 @@ import Data.Foldable (toList)
 import Data.Map (Map)
 import Gltf.Accessor (AccessorData (..))
 import qualified Gltf.Array as Array
+import Gltf.Encode (writeGltf)
 import Gltf.Encode.Primitive (EncodingM)
 import qualified Gltf.Encode.Primitive as GltfPrimitive (encodePrimitive)
 import Gltf.Encode.Types
@@ -40,6 +42,9 @@ import Lib.Container (indexList, lookupAll, mapPairs)
 import Lib.UniqueList (UniqueList)
 import qualified Lib.UniqueList as UniqueList
 import Linear (identity)
+
+writeScene :: FilePath -> Model.Scene -> IO ()
+writeScene filePath = writeGltf filePath . encodeScene
 
 encodeScene :: Model.Scene -> Gltf
 encodeScene = encodeSceneWithOptions defaultEncodingOptions
