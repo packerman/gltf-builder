@@ -31,9 +31,11 @@ dependencies:
 - aeson-pretty
 - base64
 - directory
+- extra
 - filepath
 - lens
 - linear
+- mime-types
 - wreq
 - validity
 

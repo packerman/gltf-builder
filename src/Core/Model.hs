@@ -2,12 +2,12 @@ module Core.Model (module Core.Model) where
 
 import Data.ByteString (ByteString)
 import Data.Map (Map)
-import Data.Text (Text)
 import Data.Vector (Vector)
 import qualified Data.Vector as V
 import Data.Word (Word16)
 import Lib.Base (mcons)
 import Linear (M44, V2, V3, V4 (..), identity)
+import Network.Mime (MimeType)
 
 data Material = Material
   { name :: Maybe String,
@@ -156,7 +156,7 @@ data Texture = Texture
 
 data Image = Image
   { name :: Maybe String,
-    mimeType :: Text,
+    mimeType :: MimeType,
     imageData :: ByteString
   }
   deriving (Eq, Show, Ord)

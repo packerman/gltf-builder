@@ -6,6 +6,7 @@ module Core.Decode (decodeScene) where
 import Control.Monad ((>=>))
 import Core.Model as Model
 import qualified Data.ByteString.Lazy as BSL
+import Data.Either.Extra (maybeToEither)
 import Data.Maybe
 import Data.Vector (Vector, (!?))
 import Gltf.Accessor (AccessorData (..))
@@ -33,7 +34,6 @@ import qualified Gltf.Json as Gltf
     Texture (..),
     defaultPbrMetallicRoughness,
   )
-import Lib.Base (maybeToEither)
 import Lib.Container (mapPairsM)
 import Linear (M44, V4 (V4), identity)
 
@@ -173,11 +173,11 @@ decodeTexture
 
 decodeImage :: Gltf.Image -> Either String Model.Image
 decodeImage image = do
-  DataUrl {getData, mediaType} <- decodeImageData image
+  DataUrl {getData, mimeType} <- decodeImageData image
   return
     Model.Image
       { name = Nothing,
-        mimeType = mediaType,
+        mimeType,
         imageData = getData
       }
 

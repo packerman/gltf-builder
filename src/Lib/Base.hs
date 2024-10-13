@@ -1,20 +1,12 @@
 module Lib.Base (module Lib.Base) where
 
 import Control.Monad.Zip
-import Data.Bool
 
 mcons :: Maybe a -> [a] -> [a]
 mcons x xs = maybe xs (: xs) x
 
 sumWith :: (Functor t, Foldable t, Num b) => (a -> b) -> t a -> b
 sumWith f = sum . fmap f
-
-maybeToEither :: a -> Maybe b -> Either a b
-maybeToEither def = maybe (Left def) Right
-
-mapLeft :: (a -> b) -> Either a c -> Either b c
-mapLeft f (Left x) = Left (f x)
-mapLeft _ (Right y) = Right y
 
 validateEither :: (a -> Bool) -> b -> Either b a -> Either b a
 validateEither _ _ e@(Left _) = e
@@ -25,15 +17,6 @@ validate p e x = if p then Right x else Left e
 
 nothingIf :: (a -> Bool) -> a -> Maybe a
 nothingIf p x = if p x then Nothing else Just x
-
-whenJust :: (Applicative f) => Maybe a -> (a -> f ()) -> f ()
-whenJust m f = maybe (pure ()) f m
-
-boolToNum :: (Num a) => Bool -> a
-boolToNum = bool 0 1
-
-doubleToFloat :: Double -> Float
-doubleToFloat = realToFrac
 
 pairA :: (Applicative f) => (f a, f b) -> f (a, b)
 pairA = uncurry (liftA2 (,))

@@ -38,6 +38,7 @@ library
       Gltf.Encode.Types
       Gltf.Json
       Gltf.Validate
+      Lib.Assets
       Lib.Base
       Lib.Base64
       Lib.Container
@@ -64,9 +65,11 @@ library
     , bytestring
     , containers
     , directory
+    , extra
     , filepath
     , lens
     , linear
+    , mime-types
     , text
     , transformers
     , validity
@@ -77,6 +80,8 @@ library
 executable gltf-builder-exe
   main-is: Main.hs
   other-modules:
+      Example
+      Example.Square
       Paths_gltf_builder
   autogen-modules:
       Paths_gltf_builder
@@ -97,10 +102,12 @@ executable gltf-builder-exe
     , bytestring
     , containers
     , directory
+    , extra
     , filepath
     , gltf-builder
     , lens
     , linear
+    , mime-types
     , text
     , transformers
     , validity
@@ -138,12 +145,14 @@ test-suite gltf-builder-test
     , bytestring
     , containers
     , directory
+    , extra
     , filepath
     , gltf-builder
     , hspec
     , hspec-discover
     , lens
     , linear
+    , mime-types
     , text
     , transformers
     , validity
