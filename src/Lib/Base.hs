@@ -29,3 +29,6 @@ mzipMax = foldl1Zip max
 
 foldl1Zip :: (MonadZip m, Foldable f) => (a -> a -> a) -> f (m a) -> m a
 foldl1Zip f = foldl1 (mzipWith f)
+
+maybeToM :: (MonadFail m) => String -> Maybe a -> m a
+maybeToM msg = maybe (fail msg) pure

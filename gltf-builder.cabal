@@ -38,12 +38,12 @@ library
       Gltf.Encode.Types
       Gltf.Json
       Gltf.Validate
-      Lib.Assets
       Lib.Base
       Lib.Base64
       Lib.Container
       Lib.File
       Lib.UniqueList
+      Lib.URI
   other-modules:
       Paths_gltf_builder
   autogen-modules:
@@ -70,6 +70,7 @@ library
     , lens
     , linear
     , mime-types
+    , network-uri
     , text
     , transformers
     , validity
@@ -80,6 +81,7 @@ library
 executable gltf-builder-exe
   main-is: Main.hs
   other-modules:
+      Assets
       Example
       Example.Square
       Paths_gltf_builder
@@ -108,6 +110,7 @@ executable gltf-builder-exe
     , lens
     , linear
     , mime-types
+    , network-uri
     , text
     , transformers
     , validity
@@ -153,6 +156,7 @@ test-suite gltf-builder-test
     , lens
     , linear
     , mime-types
+    , network-uri
     , text
     , transformers
     , validity

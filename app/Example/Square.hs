@@ -9,12 +9,13 @@ import Core.Model
     fromV3List,
   )
 import qualified Data.Map as M
+import Example (Example (Example))
 import Linear (V3 (..), V4 (..))
 import System.FilePath
-import Example (Example(Example))
 
 example :: Example
-example = Example ("created-models" </> "scene1.gltf") $
+example =
+  Example ("created-models" </> "square.gltf") $
     scene
       [ primitive $
           Primitive
