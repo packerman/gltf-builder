@@ -1,7 +1,7 @@
-module Example (module Example) where
+module Example (Example (Example), runExample) where
 
-import Core.Model
 import Core.Encode (writeScene)
+import Core.Model
 
 data Example = Example
   { filePath :: FilePath,

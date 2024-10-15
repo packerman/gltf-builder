@@ -84,6 +84,8 @@ executable gltf-builder-exe
       Assets
       Example
       Example.Square
+      Example.TexturedBox
+      Util
       Paths_gltf_builder
   autogen-modules:
       Paths_gltf_builder

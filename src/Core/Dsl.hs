@@ -30,3 +30,12 @@ baseColor c =
           { baseColorFactor = c
           }
     }
+
+baseColorTexture :: TextureInfo -> Material
+baseColorTexture t =
+  defaultMaterial
+    { pbrMetallicRoughness =
+        defaultPbrMetallicRoughness
+          { baseColorTexture = pure t
+          }
+    }

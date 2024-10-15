@@ -9,7 +9,7 @@ import Core.Model
     fromV3List,
   )
 import qualified Data.Map as M
-import Example (Example (Example))
+import Example
 import Linear (V3 (..), V4 (..))
 import System.FilePath
 

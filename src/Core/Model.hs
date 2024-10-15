@@ -19,10 +19,10 @@ data Material = Material
 
 data PbrMetallicRoughness = PbrMetallicRoughness
   { baseColorFactor :: V4 Float,
-    baseColorTexture :: Maybe Texture,
+    baseColorTexture :: Maybe TextureInfo,
     metallicFactor :: Float,
     roughnessFactor :: Float,
-    metallicRoughnessTexture :: Maybe Texture
+    metallicRoughnessTexture :: Maybe TextureInfo
   }
   deriving (Eq, Show, Ord)
 
@@ -147,12 +147,36 @@ sceneMeshes (Scene {nodes}) = concatMap nodeMeshes nodes
   where
     nodeMeshes (Node {mesh, children}) = mcons mesh $ concatMap nodeMeshes children
 
+data TextureInfo = TextureInfo
+  { texture :: Texture,
+    texCoord :: Int
+  }
+  deriving (Eq, Show, Ord)
+
+textureInfo :: Texture -> Int -> TextureInfo
+textureInfo = TextureInfo
+
+defaultTextureInfo :: Image -> TextureInfo
+defaultTextureInfo image =
+  TextureInfo
+    { texture = defaultTexture image,
+      texCoord = 0
+    }
+
 data Texture = Texture
   { name :: Maybe String,
     image :: Image,
     sampler :: Sampler
   }
   deriving (Eq, Show, Ord)
+
+defaultTexture :: Image -> Texture
+defaultTexture image =
+  Texture
+    { name = Nothing,
+      image,
+      sampler = defaultSampler
+    }
 
 data Image = Image
   { name :: Maybe String,

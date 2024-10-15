@@ -32,6 +32,7 @@ import qualified Gltf.Json as Gltf
     Sampler (..),
     Scene (..),
     Texture (..),
+    TextureInfo (..),
     defaultPbrMetallicRoughness,
   )
 import Lib.Container (mapPairsM)
@@ -139,8 +140,8 @@ decodeMaterial textures (Gltf.Material {..}) = do
   where
     decodePbrUnsafe (Gltf.PbrMetallicRoughness {..}) = do
       baseColorFactor <- decodeV4 $ fromJust baseColorFactor
-      baseColorTexture <- traverse (getByIndex textures "texture" . index) baseColorTexture
-      metallicRoughnessTexture <- traverse (getByIndex textures "texture" . index) metallicRoughnessTexture
+      baseColorTexture <- traverse (decodeTextureInfo textures) baseColorTexture
+      metallicRoughnessTexture <- traverse (decodeTextureInfo textures) metallicRoughnessTexture
       return
         Model.PbrMetallicRoughness
           { baseColorFactor,
@@ -149,6 +150,11 @@ decodeMaterial textures (Gltf.Material {..}) = do
             roughnessFactor = fromJust roughnessFactor,
             metallicRoughnessTexture
           }
+
+    decodeTextureInfo :: Vector Model.Texture -> Gltf.TextureInfo -> Either String Model.TextureInfo
+    decodeTextureInfo textures (Gltf.TextureInfo {index, texCoord}) = do
+      texture <- getByIndex textures "texture" index
+      return $ Model.TextureInfo texture (fromMaybe 0 texCoord)
 
     decodeAlpha (Just "OPAQUE") _ = pure Opaque
     decodeAlpha (Just "MASK") alphaCutoff = pure $ Mask $ fromMaybe defaultAlphaCutoff alphaCutoff

@@ -14,7 +14,7 @@ texturesDir :: FilePath
 texturesDir = "downloaded-files" </> "textures"
 
 babylonJsPlaygroundUrl :: String
-babylonJsPlaygroundUrl = "https://raw.githubusercontent.com/BabylonJS/Babylon.js/refs/heads/master/packages/tools/playground"
+babylonJsPlaygroundUrl = "https://raw.githubusercontent.com/BabylonJS/Babylon.js/refs/heads/master/packages/tools/playground/"
 
 getCrate :: IO DataUrl
 getCrate = fetchAsset "public/textures/crate.png" babylonJsPlaygroundUrl (texturesDir </> "crate.png")
