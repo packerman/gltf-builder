@@ -1,6 +1,7 @@
 module Core.Dsl (module Core.Dsl) where
 
 import Core.Model
+import Data.Default
 import Gltf.Json (Number)
 import Linear (V4)
 
@@ -13,7 +14,7 @@ scene nodes =
 
 primitive :: Primitive -> Node
 primitive p =
-  defaultNode
+  def
     { mesh =
         pure $
           Mesh
@@ -24,18 +25,14 @@ primitive p =
 
 baseColor :: V4 Number -> Material
 baseColor c =
-  defaultMaterial
+  def
     { pbrMetallicRoughness =
-        defaultPbrMetallicRoughness
-          { baseColorFactor = c
-          }
+        def {baseColorFactor = c}
     }
 
 baseColorTexture :: TextureInfo -> Material
 baseColorTexture t =
-  defaultMaterial
+  def
     { pbrMetallicRoughness =
-        defaultPbrMetallicRoughness
-          { baseColorTexture = pure t
-          }
+        def {baseColorTexture = pure t}
     }

@@ -14,6 +14,7 @@ import Gltf.Json (Gltf (..))
 import qualified Gltf.Json as Gltf
 import Linear
 import Test.Hspec
+import Data.Default
 
 spec :: Spec
 spec = do
@@ -62,7 +63,7 @@ spec = do
                                       )
                                     ],
                                 indices = Nothing,
-                                material = Model.defaultMaterial,
+                                material = def,
                                 mode = Triangles
                               }
                           ],
@@ -184,8 +185,7 @@ spec = do
                                       )
                                     ],
                                 indices = Nothing,
-                                material =
-                                  Model.defaultMaterial
+                                material = def
                                     { Material.name = pure "Material 1"
                                     },
                                 mode = Triangles
@@ -212,8 +212,7 @@ spec = do
                                       )
                                     ],
                                 indices = Nothing,
-                                material =
-                                  Model.defaultMaterial
+                                material = def
                                     { Material.name = pure "Material 2"
                                     },
                                 mode = Triangles

@@ -1,6 +1,7 @@
 module Core.Model (module Core.Model) where
 
 import Data.ByteString (ByteString)
+import Data.Default
 import Data.Map (Map)
 import Data.Vector (Vector)
 import qualified Data.Vector as V
@@ -26,30 +27,30 @@ data PbrMetallicRoughness = PbrMetallicRoughness
   }
   deriving (Eq, Show, Ord)
 
-defaultPbrMetallicRoughness :: PbrMetallicRoughness
-defaultPbrMetallicRoughness =
-  PbrMetallicRoughness
-    { baseColorFactor = V4 1 1 1 1,
-      baseColorTexture = Nothing,
-      metallicFactor = 1,
-      roughnessFactor = 1,
-      metallicRoughnessTexture = Nothing
-    }
+instance Default PbrMetallicRoughness where
+  def =
+    PbrMetallicRoughness
+      { baseColorFactor = V4 1 1 1 1,
+        baseColorTexture = Nothing,
+        metallicFactor = 1,
+        roughnessFactor = 1,
+        metallicRoughnessTexture = Nothing
+      }
 
-defaultMaterial :: Material
-defaultMaterial =
-  Material
-    { name = Nothing,
-      pbrMetallicRoughness = defaultPbrMetallicRoughness,
-      alpha = Opaque,
-      doubleSided = False
-    }
+instance Default Material where
+  def =
+    Material
+      { name = Nothing,
+        pbrMetallicRoughness = def,
+        alpha = Opaque,
+        doubleSided = False
+      }
 
 data Alpha = Opaque | Mask Float | Blend
   deriving (Eq, Show, Ord)
 
-defaultMask :: Alpha
-defaultMask = Mask 0.5
+instance Default Alpha where
+  def = Mask 0.5
 
 alphaCutoff :: Alpha -> Maybe Float
 alphaCutoff (Mask value) = pure value
@@ -119,14 +120,14 @@ data Node = Node
   }
   deriving (Eq, Show, Ord)
 
-defaultNode :: Node
-defaultNode =
-  Node
-    { matrix = identity,
-      name = Nothing,
-      mesh = Nothing,
-      children = []
-    }
+instance Default Node where
+  def =
+    Node
+      { matrix = identity,
+        name = Nothing,
+        mesh = Nothing,
+        children = []
+      }
 
 data Scene = Scene
   { name :: Maybe String,
@@ -175,7 +176,7 @@ defaultTexture image =
   Texture
     { name = Nothing,
       image,
-      sampler = defaultSampler
+      sampler = def
     }
 
 data Image = Image
@@ -214,12 +215,12 @@ data Sampler = Sampler
   }
   deriving (Eq, Show, Ord)
 
-defaultSampler :: Sampler
-defaultSampler =
-  Sampler
-    { name = Nothing,
-      magFilter = Nothing,
-      minFilter = Nothing,
-      wrapS = Repeat,
-      wrapT = Repeat
-    }
+instance Default Sampler where
+  def =
+    Sampler
+      { name = Nothing,
+        magFilter = Nothing,
+        minFilter = Nothing,
+        wrapS = Repeat,
+        wrapT = Repeat
+      }

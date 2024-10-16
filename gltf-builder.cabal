@@ -64,6 +64,7 @@ library
     , binary
     , bytestring
     , containers
+    , data-default
     , directory
     , extra
     , filepath
@@ -105,6 +106,7 @@ executable gltf-builder-exe
     , binary
     , bytestring
     , containers
+    , data-default
     , directory
     , extra
     , filepath
@@ -149,6 +151,7 @@ test-suite gltf-builder-test
     , binary
     , bytestring
     , containers
+    , data-default
     , directory
     , extra
     , filepath

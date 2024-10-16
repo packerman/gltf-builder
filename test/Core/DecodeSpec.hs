@@ -8,6 +8,7 @@ import Gltf.Array as Array
 import Gltf.Json as Gltf
 import Linear (V2 (..), V3 (..), V4 (..), identity)
 import Test.Hspec
+import Data.Default
 
 spec :: Spec
 spec = do
@@ -109,7 +110,7 @@ spec = do
                                       )
                                     ],
                                 indices = Nothing,
-                                material = Model.defaultMaterial,
+                                material = def,
                                 mode = Triangles
                               }
                           ],

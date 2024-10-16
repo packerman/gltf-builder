@@ -6,6 +6,7 @@ module Core.Decode (decodeScene) where
 import Control.Monad ((>=>))
 import Core.Model as Model
 import qualified Data.ByteString.Lazy as BSL
+import Data.Default
 import Data.Either.Extra (maybeToEither)
 import Data.Maybe
 import Data.Vector (Vector, (!?))
@@ -104,7 +105,7 @@ decodeMesh accessorData materials (Gltf.Mesh name primitives) = Mesh name <$> tr
             (getByIndex accessorData "accessor" >=> decodeAttributeData)
             attributes
           <*> traverse (getByIndex accessorData "accessor" >=> decodeIndexData) indices
-          <*> maybe (Right Model.defaultMaterial) (getByIndex materials "material") material
+          <*> maybe (Right def) (getByIndex materials "material") material
           <*> decodeMode (fromMaybe 4 mode)
 
     decodeAttribute key = case key of
@@ -175,7 +176,7 @@ decodeTexture
     ) =
     Model.Texture name
       <$> (maybeToEither "Source is not present" source >>= getByIndex images "image")
-      <*> maybe (pure Model.defaultSampler) (getByIndex samplers "sampler") sampler
+      <*> maybe (pure def) (getByIndex samplers "sampler") sampler
 
 decodeImage :: Gltf.Image -> Either String Model.Image
 decodeImage image = do
