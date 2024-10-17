@@ -32,3 +32,6 @@ foldl1Zip f = foldl1 (mzipWith f)
 
 maybeToM :: (MonadFail m) => String -> Maybe a -> m a
 maybeToM msg = maybe (fail msg) pure
+
+eitherFail :: (MonadFail m) => Either String a -> m a
+eitherFail = either fail pure

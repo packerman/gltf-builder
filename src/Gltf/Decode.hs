@@ -8,19 +8,22 @@ module Gltf.Decode
   )
 where
 
+import Control.Monad ((<=<))
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
 import Data.Either.Extra (maybeToEither)
 import Data.Maybe (fromMaybe)
+import Data.Validity (prettyValidate)
 import Data.Vector (Vector, (!?))
 import Gltf.Accessor (AccessorData)
 import Gltf.Decode.Accessor (DecodeOptions (..), decodeAccessorData)
 import Gltf.Json
+import Gltf.Validate ()
 import Lib.Base (validate)
 import Lib.Base64 (DataUrl (..), decodeBase64Url)
 
 readGltf :: FilePath -> IO (Either String Gltf)
-readGltf path = eitherDecode <$> BSL.readFile path
+readGltf path = (prettyValidate <=< eitherDecode) <$> BSL.readFile path
 
 decodeBuffer :: Buffer -> Either String BS.ByteString
 decodeBuffer (Buffer {uri = maybeUri, byteLength}) =
