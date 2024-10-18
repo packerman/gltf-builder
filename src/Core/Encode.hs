@@ -18,7 +18,6 @@ import Core.Model
 import qualified Core.Model as Model
 import Data.Foldable (toList)
 import Data.Map (Map)
-import Data.Validity (prettyValidate)
 import Gltf.Accessor (AccessorData (..))
 import qualified Gltf.Array as Array
 import Gltf.Encode (writeGltf)
@@ -39,16 +38,14 @@ import qualified Gltf.Encode.Types as MeshPart (MeshPart (..))
 import Gltf.Json (Gltf (..), defaultAlphaCutoff, defaultDoubleSided)
 import qualified Gltf.Json as Gltf
 import Gltf.Validate ()
-import Lib.Base (eitherFail, nothingIf)
+import Lib.Base (nothingIf)
 import Lib.Container (indexList, lookupAll, mapPairs)
 import Lib.UniqueList (UniqueList)
 import qualified Lib.UniqueList as UniqueList
 import Linear (identity)
 
 writeScene :: FilePath -> Model.Scene -> IO ()
-writeScene filePath =
-  (eitherFail . prettyValidate . encodeScene)
-    >=> writeGltf filePath
+writeScene filePath = writeGltf filePath . encodeScene
 
 encodeScene :: Model.Scene -> Gltf
 encodeScene = encodeSceneWithOptions defaultEncodingOptions
