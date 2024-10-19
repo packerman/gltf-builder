@@ -1,4 +1,5 @@
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE TupleSections #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 
 module Gltf.Validate (Validity (..), Validation) where
@@ -7,8 +8,10 @@ import qualified Data.Map as M
 import Data.Maybe
 import Data.Validity
 import qualified Data.Vector as V
-import Gltf.Array (Array, toList, (!?))
+import Gltf.Array (Array, toList, (!), (!?))
 import Gltf.Json
+import Lib.Base (isSingleton)
+import Lib.Container (groupBy)
 
 instance Validity Gltf where
   validate = validateGltf
@@ -29,7 +32,7 @@ validateGltf
         textures
       }
     ) =
-    validateAccessors accessors
+    validateAccessors bufferViews accessors
       <> validateArrayNotEmpty buffers
       <> validateArrayNotEmpty bufferViews
       <> validateArrayNotEmpty images
@@ -44,8 +47,30 @@ validateGltf
 validateDefaultScene :: Array Scene -> Maybe Index -> Validation
 validateDefaultScene scenes = validateAll (hasIndex scenes)
 
-validateAccessors :: Array Accessor -> Validation
-validateAccessors = validateArray (const valid)
+validateAccessors :: Array BufferView -> Array Accessor -> Validation
+validateAccessors bufferViews accessors =
+  validateArray (const valid) accessors
+    <> validateBufferViewUsage
+  where
+    validateBufferViewUsage =
+      check
+        (null bufferViewsWithoutByteStride)
+        ( unwords
+            [ "The following buffer views should have byte stride defined",
+              "because they are used by more than one accessor:",
+              show bufferViewsWithoutByteStride
+            ]
+        )
+    bufferViewsWithoutByteStride =
+      filter (isNothing . byteStride) $
+        map (bufferViews !) $
+          M.keys $
+            M.filter (not . isSingleton) mapBufferViewsToUsingAccessors
+    mapBufferViewsToUsingAccessors =
+      M.map (snd <$>) $
+        groupBy fst $
+          mapMaybe (\accessor -> (,accessor) <$> bufferView accessor) $
+            toList accessors
 
 validateMeshes :: Array Accessor -> Array Mesh -> Validation
 validateMeshes accessors = validateArray validateMesh

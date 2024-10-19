@@ -43,6 +43,7 @@ import Lib.Container (indexList, lookupAll, mapPairs)
 import Lib.UniqueList (UniqueList)
 import qualified Lib.UniqueList as UniqueList
 import Linear (identity)
+import Data.Default
 
 writeScene :: FilePath -> Model.Scene -> IO ()
 writeScene filePath = writeGltf filePath . encodeScene
@@ -65,7 +66,7 @@ encodeSceneWithOptions encodingOptions scene@(Model.Scene {nodes, name = sceneNa
       nodeIndex = indexList nodeList
       encodedNodes = encodeNodes meshIndex nodeIndex nodeList
    in Gltf
-        { asset = Gltf.defaultAsset,
+        { asset = def,
           scene = Just 0,
           scenes =
             Array.fromList

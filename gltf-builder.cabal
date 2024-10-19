@@ -131,6 +131,7 @@ test-suite gltf-builder-test
       Core.EncodeSpec
       Gltf.AccessorSpec
       Gltf.DecodeSpec
+      Gltf.ValidateSpec
       Lib.Base64Spec
       Paths_gltf_builder
   autogen-modules:

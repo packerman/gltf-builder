@@ -29,7 +29,7 @@ spec = do
                           min = Just [0.0, 0.0, 0.0]
                         }
                     ],
-                asset = defaultAsset,
+                asset = def,
                 buffers =
                   fromList
                     [ Gltf.Buffer

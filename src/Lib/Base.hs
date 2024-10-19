@@ -8,6 +8,10 @@ mcons x xs = maybe xs (: xs) x
 sumWith :: (Functor t, Foldable t, Num b) => (a -> b) -> t a -> b
 sumWith f = sum . fmap f
 
+isSingleton :: [a] -> Bool
+isSingleton [_] = True
+isSingleton _ = False
+
 validateEither :: (a -> Bool) -> b -> Either b a -> Either b a
 validateEither _ _ e@(Left _) = e
 validateEither p d e@(Right x) = if p x then e else Left d

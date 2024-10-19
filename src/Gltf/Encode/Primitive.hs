@@ -21,7 +21,7 @@ import qualified Data.Vector as V
 import Gltf.Accessor (AccessorData (..))
 import Gltf.Encode.Types
 import Gltf.Json (Accessor (..), BufferView (..))
-import Lib.Base (mzipMax, mzipMin, sumWith)
+import Lib.Base (isSingleton, mzipMax, mzipMin, sumWith)
 import Lib.Container (groupBy)
 import Linear (V2 (..), V3 (..))
 
@@ -42,22 +42,15 @@ encodeAttributes :: Map String AccessorData -> EncodingM [Map String Int]
 encodeAttributes attributes =
   let -- attributeCount = fromJust getAttributeCount
       strideGroups = groupBy (stride . snd) (M.assocs attributes)
-   in forM (M.elems strideGroups) encodeWithStride
+   in forM (M.assocs strideGroups) (uncurry encodeWithStride)
   where
-    -- getAttributeCount :: Maybe Int
-    -- getAttributeCount = getSingleWith (elemCount . snd) (M.assocs attributes)
-    --   where
-    --     getSingle :: (Eq a) => [a] -> Maybe a
-    --     getSingle (x : xs) = if all (== x) xs then Just x else Nothing
-    --     getSingle _ = Nothing
-    --     getSingleWith :: (Eq b) => (a -> b) -> [a] -> Maybe b
-    --     getSingleWith f = getSingle . map f
-    encodeWithStride :: [(String, AccessorData)] -> EncodingM (Map String Int)
-    encodeWithStride attributeList = do
+    encodeWithStride :: Int -> [(String, AccessorData)] -> EncodingM (Map String Int)
+    encodeWithStride groupStride attributeList = do
       resetAccessorByteOffset
       let byteSizeSum = sumWith (byteSize . snd) attributeList
       attrs <- forM attributeList (mapM encodeAccessor)
-      createBufferView Nothing (pure 34962) byteSizeSum
+      let bufferViewStride = if isSingleton attributeList then Nothing else Just groupStride
+      createBufferView bufferViewStride (pure 34962) byteSizeSum
       return $ M.fromList attrs
 
 encodeIndices :: AccessorData -> EncodingM Int

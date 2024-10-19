@@ -21,6 +21,7 @@ import Data.Map (Map)
 import Data.Text (Text)
 import GHC.Generics
 import Gltf.Array (Array)
+import Data.Default
 
 type Number = Float
 
@@ -42,11 +43,10 @@ data Gltf = Gltf
   }
   deriving (Generic, Eq, Show)
 
-defaultGltf :: Gltf
-defaultGltf =
-  Gltf
+instance Default Gltf where
+  def = Gltf
     { accessors = Nothing,
-      asset = defaultAsset,
+      asset = def,
       buffers = Nothing,
       bufferViews = Nothing,
       images = Nothing,
@@ -114,9 +114,8 @@ data Asset = Asset
   }
   deriving (Generic, Eq, Show)
 
-defaultAsset :: Asset
-defaultAsset =
-  Asset
+instance Default Asset where
+  def = Asset
     { version = "2.0",
       generator = Nothing
     }

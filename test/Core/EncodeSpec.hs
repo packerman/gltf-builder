@@ -3,6 +3,7 @@ module Core.EncodeSpec (spec) where
 import Core.Encode (encodeScene, encodeSceneWithOptions)
 import Core.Model as Model
 import qualified Core.Model as Material (Material (..))
+import Data.Default
 import Data.Map as M
 import qualified Gltf.Array as Array
 import Gltf.Encode.Types
@@ -14,7 +15,6 @@ import Gltf.Json (Gltf (..))
 import qualified Gltf.Json as Gltf
 import Linear
 import Test.Hspec
-import Data.Default
 
 spec :: Spec
 spec = do
@@ -23,7 +23,7 @@ spec = do
       let input = Model.scene (pure "Empty") []
       encodeScene input
         `shouldBe` Gltf
-          { asset = Gltf.defaultAsset,
+          { asset = def,
             accessors = Array.empty,
             buffers = Array.empty,
             bufferViews = Array.empty,
@@ -185,7 +185,8 @@ spec = do
                                       )
                                     ],
                                 indices = Nothing,
-                                material = def
+                                material =
+                                  def
                                     { Material.name = pure "Material 1"
                                     },
                                 mode = Triangles
@@ -212,7 +213,8 @@ spec = do
                                       )
                                     ],
                                 indices = Nothing,
-                                material = def
+                                material =
+                                  def
                                     { Material.name = pure "Material 2"
                                     },
                                 mode = Triangles
@@ -305,7 +307,7 @@ spec = do
                     Gltf.BufferView {buffer = 0, byteOffset = Just 36, byteLength = 36, byteStride = Nothing, name = Nothing, target = Just 34962},
                     Gltf.BufferView {buffer = 0, byteOffset = Just 72, byteLength = 72, byteStride = Nothing, name = Nothing, target = Just 34963},
                     Gltf.BufferView {buffer = 0, byteOffset = Just 144, byteLength = 192, byteStride = Nothing, name = Nothing, target = Just 34962},
-                    Gltf.BufferView {buffer = 0, byteOffset = Just 336, byteLength = 576, byteStride = Nothing, name = Nothing, target = Just 34962}
+                    Gltf.BufferView {buffer = 0, byteOffset = Just 336, byteLength = 576, byteStride = Just 12, name = Nothing, target = Just 34962}
                   ],
               images = Array.fromList [],
               materials =
@@ -396,7 +398,7 @@ spec = do
                     Gltf.BufferView {buffer = 1, byteOffset = Just 0, byteLength = 36, byteStride = Nothing, name = Nothing, target = Just 34962},
                     Gltf.BufferView {buffer = 2, byteOffset = Just 0, byteLength = 72, byteStride = Nothing, name = Nothing, target = Just 34963},
                     Gltf.BufferView {buffer = 2, byteOffset = Just 72, byteLength = 192, byteStride = Nothing, name = Nothing, target = Just 34962},
-                    Gltf.BufferView {buffer = 2, byteOffset = Just 264, byteLength = 576, byteStride = Nothing, name = Nothing, target = Just 34962}
+                    Gltf.BufferView {buffer = 2, byteOffset = Just 264, byteLength = 576, byteStride = Just 12, name = Nothing, target = Just 34962}
                   ],
               images = Array.fromList [],
               materials =
