@@ -517,7 +517,22 @@ spec = do
                   ],
               materials =
                 Array.fromList
-                  [ Gltf.Material {name = Nothing, pbrMetallicRoughness = Just (Gltf.PbrMetallicRoughness {baseColorFactor = Just [1.0, 1.0, 1.0, 1.0], baseColorTexture = Nothing, metallicFactor = Just 1.0, roughnessFactor = Just 1.0, metallicRoughnessTexture = Nothing}), alphaMode = Nothing, alphaCutoff = Nothing, doubleSided = Nothing}
+                  [ Gltf.Material
+                      { name = Nothing,
+                        pbrMetallicRoughness =
+                          Just
+                            ( Gltf.PbrMetallicRoughness
+                                { baseColorFactor = Just [1.0, 1.0, 1.0, 1.0],
+                                  baseColorTexture = Just (Gltf.TextureInfo {index = 0, texCoord = Just 0}),
+                                  metallicFactor = Just 1.0,
+                                  roughnessFactor = Just 1.0,
+                                  metallicRoughnessTexture = Nothing
+                                }
+                            ),
+                        alphaMode = Nothing,
+                        alphaCutoff = Nothing,
+                        doubleSided = Nothing
+                      }
                   ],
               meshes =
                 Array.fromList
@@ -532,8 +547,11 @@ spec = do
                 Array.fromList
                   [ Gltf.Node {children = Nothing, matrix = Nothing, mesh = Just 0, name = Nothing}
                   ],
-              samplers = Nothing,
+              samplers =
+                Array.fromList
+                  [ Gltf.Sampler {magFilter = Nothing, minFilter = Nothing, name = Nothing, wrapS = Just 10497, wrapT = Just 10497}
+                  ],
               scene = Just 0,
               scenes = Array.fromList [Gltf.Scene {name = Nothing, nodes = Just [0]}],
-              textures = Nothing
+              textures = Array.fromList [Gltf.Texture {name = Nothing, sampler = Just 0, source = Just 0}]
             }

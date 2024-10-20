@@ -12,7 +12,10 @@ import Core.Model
     Attribute (..),
     AttributeData (..),
     IndexData (..),
+    MagFilter (..),
+    MinFilter (..),
     Mode (..),
+    Wrap (..),
     sceneMeshes,
     sceneTextures,
   )
@@ -20,6 +23,7 @@ import qualified Core.Model as Model
 import Data.Default
 import Data.Foldable (toList)
 import Data.Map (Map)
+import Data.Maybe (fromJust)
 import Gltf.Accessor (AccessorData (..))
 import qualified Gltf.Array as Array
 import Gltf.Encode (writeGltf)
@@ -53,13 +57,18 @@ writeScene filePath = writeGltf filePath . encodeScene
 encodeScene :: Model.Scene -> Gltf
 encodeScene = encodeSceneWithOptions defaultEncodingOptions
 
+type TextureIndex = UniqueList Model.Texture
+
 encodeSceneWithOptions :: EncodingOptions -> Model.Scene -> Gltf
 encodeSceneWithOptions encodingOptions scene@(Model.Scene {nodes, name = sceneName}) =
   let textureIndex = UL.fromList $ sceneTextures scene
       imageIndex = UL.map Model.image textureIndex
+      samplerIndex = UL.map Model.sampler textureIndex
       encodedImages = encodeImage <$> UL.toList imageIndex
+      encodedSamplers = encodeSampler <$> UL.toList samplerIndex
+      encodedTextures = encodeTexture imageIndex samplerIndex <$> UL.toList textureIndex
       meshIndex = UL.fromList $ sceneMeshes scene
-      (encodedMeshes, meshPart) = encodeMeshes encodingOptions $ UL.toList meshIndex
+      (encodedMeshes, meshPart) = encodeMeshes encodingOptions textureIndex $ UL.toList meshIndex
       ( MeshPart.MeshPart
           { buffers,
             accessors = encodedAccessors,
@@ -87,8 +96,8 @@ encodeSceneWithOptions encodingOptions scene@(Model.Scene {nodes, name = sceneNa
           materials = Array.fromList materials,
           meshes = Array.fromList encodedMeshes,
           nodes = Array.fromList encodedNodes,
-          samplers = Array.fromList [],
-          textures = Array.fromList []
+          samplers = Array.fromList encodedSamplers,
+          textures = Array.fromList encodedTextures
         }
   where
     encodeNodes :: UniqueList Model.Mesh -> Map Model.Node Int -> [Model.Node] -> [Gltf.Node]
@@ -104,15 +113,16 @@ encodeSceneWithOptions encodingOptions scene@(Model.Scene {nodes, name = sceneNa
               }
           )
 
-encodeMeshes :: EncodingOptions -> [Model.Mesh] -> ([Gltf.Mesh], MeshPart.MeshPart)
-encodeMeshes encodingOptions meshes = evalRWS meshAction encodingOptions initialEncoding
+encodeMeshes :: EncodingOptions -> TextureIndex -> [Model.Mesh] -> ([Gltf.Mesh], MeshPart.MeshPart)
+encodeMeshes encodingOptions textureIndex meshes = evalRWS meshAction encodingOptions initialEncoding
   where
     meshAction = case bufferCreate encodingOptions of
-      SingleBuffer -> do withBuffer $ forM meshes encodeMesh
-      OnePerMesh -> forM meshes (withBuffer . encodeMesh)
+      SingleBuffer -> do withBuffer $ forM meshes (encodeMesh textureIndex)
+      OnePerMesh -> forM meshes (withBuffer . encodeMesh textureIndex)
 
-encodeMesh :: Model.Mesh -> EncodingM Gltf.Mesh
+encodeMesh :: TextureIndex -> Model.Mesh -> EncodingM Gltf.Mesh
 encodeMesh
+  textureIndex
   ( Model.Mesh
       { name,
         primitives
@@ -164,7 +174,9 @@ encodeMesh
                 Model.PbrMetallicRoughness
                   { baseColorFactor,
                     metallicFactor,
-                    roughnessFactor
+                    roughnessFactor,
+                    baseColorTexture,
+                    metallicRoughnessTexture
                   },
               alpha,
               doubleSided
@@ -184,8 +196,8 @@ encodeMesh
                               { baseColorFactor = pure $ toList baseColorFactor,
                                 metallicFactor = pure metallicFactor,
                                 roughnessFactor = pure roughnessFactor,
-                                baseColorTexture = Nothing,
-                                metallicRoughnessTexture = Nothing
+                                baseColorTexture = encodeTextureInfo <$> baseColorTexture,
+                                metallicRoughnessTexture = encodeTextureInfo <$> metallicRoughnessTexture
                               },
                         alphaMode,
                         alphaCutoff,
@@ -205,9 +217,55 @@ encodeMesh
       encodeMode TriangleStrip = 5
       encodeMode TriangleFan = 6
 
+      encodeTextureInfo (Model.TextureInfo {texture, texCoord}) =
+        Gltf.TextureInfo
+          { index = fromJust $ texture `UL.indexOf` textureIndex,
+            texCoord = pure texCoord
+          }
+
 encodeImage :: Model.Image -> Gltf.Image
 encodeImage (Model.Image {name, mimeType, imageData}) =
   Gltf.Image
     { name,
       uri = pure $ encodeDataUrl $ dataUrl mimeType imageData
+    }
+
+encodeSampler :: Model.Sampler -> Gltf.Sampler
+encodeSampler
+  ( Model.Sampler
+      { magFilter,
+        minFilter,
+        wrapS,
+        wrapT
+      }
+    ) =
+    Gltf.Sampler
+      { name = Nothing,
+        magFilter = encodeMagFilter <$> magFilter,
+        minFilter = encodeMinFilter <$> minFilter,
+        wrapS = pure $ encodeWrap wrapS,
+        wrapT = pure $ encodeWrap wrapT
+      }
+    where
+      encodeMagFilter f = case f of
+        MagNearest -> 9728
+        MagLinear -> 9729
+      encodeMinFilter f = case f of
+        MinNearest -> 9728
+        MinLinear -> 9729
+        NearestMipMapNearest -> 9984
+        LinearMipmapNearest -> 9985
+        NearestMipmapLinear -> 9986
+        LinearMipmapLinear -> 9987
+      encodeWrap w = case w of
+        ClampToEdge -> 33071
+        MirroredRepeat -> 33648
+        Repeat -> 10497
+
+encodeTexture :: UniqueList Model.Image -> UniqueList Model.Sampler -> Model.Texture -> Gltf.Texture
+encodeTexture imageIndex samplerIndex (Model.Texture {name, image, sampler}) =
+  Gltf.Texture
+    { name,
+      sampler = sampler `UL.indexOf` samplerIndex,
+      source = image `UL.indexOf` imageIndex
     }
