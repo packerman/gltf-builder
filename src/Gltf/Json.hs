@@ -23,7 +23,7 @@ import Data.Text (Text)
 import GHC.Generics
 import Gltf.Array (Array)
 
-type Number = Float
+type Number = Double
 
 type Index = Int
 

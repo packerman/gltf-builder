@@ -21,10 +21,10 @@ data Material = Material
   deriving (Eq, Show, Ord)
 
 data PbrMetallicRoughness = PbrMetallicRoughness
-  { baseColorFactor :: V4 Float,
+  { baseColorFactor :: V4 Double,
     baseColorTexture :: Maybe TextureInfo,
-    metallicFactor :: Float,
-    roughnessFactor :: Float,
+    metallicFactor :: Double,
+    roughnessFactor :: Double,
     metallicRoughnessTexture :: Maybe TextureInfo
   }
   deriving (Eq, Show, Ord)
@@ -48,13 +48,13 @@ instance Default Material where
         doubleSided = False
       }
 
-data Alpha = Opaque | Mask Float | Blend
+data Alpha = Opaque | Mask Double | Blend
   deriving (Eq, Show, Ord)
 
 instance Default Alpha where
   def = Mask 0.5
 
-alphaCutoff :: Alpha -> Maybe Float
+alphaCutoff :: Alpha -> Maybe Double
 alphaCutoff (Mask value) = pure value
 alphaCutoff _ = Nothing
 
@@ -115,7 +115,7 @@ data Primitive = Primitive
   deriving (Eq, Show, Ord)
 
 data Node = Node
-  { matrix :: M44 Float,
+  { matrix :: M44 Double,
     name :: Maybe String,
     mesh :: Maybe Mesh,
     children :: [Node]

@@ -76,7 +76,7 @@ decodeNode nodes meshes (Gltf.Node {name, matrix = gltfMatrix, mesh = meshIndex,
   children <- traverse (decodeNode nodes meshes) gltfChildren
   return Node {..}
   where
-    decodeMatrix :: Maybe [Number] -> Either String (M44 Float)
+    decodeMatrix :: Maybe [Number] -> Either String (M44 Double)
     decodeMatrix (Just [a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p]) =
       pure $
         V4
@@ -222,7 +222,7 @@ decodeSampler
         10497 -> pure Repeat
         _ -> Left $ unwords ["Unknown wrap mode", show n]
 
-decodeV4 :: [Float] -> Either String (V4 Float)
+decodeV4 :: [Double] -> Either String (V4 Double)
 decodeV4 [a, b, c, d] = Right $ V4 a b c d
 decodeV4 _ = Left "Expected 4 numbers"
 

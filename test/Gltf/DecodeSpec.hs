@@ -85,7 +85,7 @@ spec = do
                             pbrMetallicRoughness =
                               Just
                                 ( PbrMetallicRoughness
-                                    { baseColorFactor = Just [0.8, 0.0, 0.0, 1.0],
+                                    { baseColorFactor = Just [0.800000011920929, 0.0, 0.0, 1.0],
                                       baseColorTexture = Nothing,
                                       metallicFactor = Just 0.0,
                                       roughnessFactor = Nothing,

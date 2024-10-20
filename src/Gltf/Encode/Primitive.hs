@@ -24,6 +24,7 @@ import Gltf.Json (Accessor (..), BufferView (..))
 import Lib.Base (isSingleton, mzipMax, mzipMin, sumWith)
 import Lib.Container (groupBy)
 import Linear (V2 (..), V3 (..))
+import Numeric.Extra (floatToDouble)
 
 encodePrimitive ::
   Map String AccessorData ->
@@ -113,8 +114,8 @@ encodeAccessor
                     count = elemCount accessorData,
                     name = Nothing,
                     accessorType,
-                    max = getMax,
-                    min = getMin
+                    max = floatsToDoubles <$> getMax,
+                    min = floatsToDoubles <$> getMin
                   }
               )
               bytes
@@ -133,6 +134,7 @@ encodeAccessor
           getVectorMin = pure . toList . mzipMin
           getScalarMin :: (Integral a, Num b) => Vector a -> Maybe [b]
           getScalarMin = pure . singleton . fromIntegral . minimum
+      floatsToDoubles = map floatToDouble
       getMax = case accessorData of
         (Vec3Float xs) -> getVectorMax xs
         (Vec2Float xs) -> getVectorMax xs
