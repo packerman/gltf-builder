@@ -3,10 +3,12 @@ module Core.Model (module Core.Model) where
 import Data.ByteString (ByteString)
 import Data.Default
 import Data.Map (Map)
+import Data.Maybe (maybeToList)
 import Data.Vector (Vector)
 import qualified Data.Vector as V
 import Data.Word (Word16)
 import Lib.Base (mcons)
+import Lib.Base64 (DataUrl (..))
 import Linear (M44, V2, V3, V4 (..), identity)
 import Network.Mime (MimeType)
 
@@ -185,6 +187,32 @@ data Image = Image
     imageData :: ByteString
   }
   deriving (Eq, Show, Ord)
+
+dataUrlToImage :: DataUrl -> Image
+dataUrlToImage (DataUrl {mimeType, getData}) =
+  Image
+    { name = Nothing,
+      mimeType,
+      imageData = getData
+    }
+
+sceneTextures :: Scene -> [Texture]
+sceneTextures (Scene {nodes}) = concatMap nodeTextures nodes
+  where
+    nodeTextures (Node {mesh, children}) = maybe [] meshTextures mesh ++ concatMap nodeTextures children
+    meshTextures = concatMap primitiveTextures . primitives
+    primitiveTextures = materialTextures . material
+    materialTextures
+      ( Material
+          { pbrMetallicRoughness =
+              PbrMetallicRoughness
+                { baseColorTexture,
+                  metallicRoughnessTexture
+                }
+          }
+        ) =
+        maybeToList (texture <$> baseColorTexture)
+          ++ maybeToList (texture <$> metallicRoughnessTexture)
 
 data MagFilter
   = MagNearest

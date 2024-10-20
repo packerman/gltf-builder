@@ -16,12 +16,12 @@ import Data.Aeson
     genericParseJSON,
     genericToEncoding,
   )
+import Data.Default
 import Data.Function
 import Data.Map (Map)
 import Data.Text (Text)
 import GHC.Generics
 import Gltf.Array (Array)
-import Data.Default
 
 type Number = Float
 
@@ -44,20 +44,21 @@ data Gltf = Gltf
   deriving (Generic, Eq, Show)
 
 instance Default Gltf where
-  def = Gltf
-    { accessors = Nothing,
-      asset = def,
-      buffers = Nothing,
-      bufferViews = Nothing,
-      images = Nothing,
-      materials = Nothing,
-      meshes = Nothing,
-      nodes = Nothing,
-      samplers = Nothing,
-      scene = Nothing,
-      scenes = Nothing,
-      textures = Nothing
-    }
+  def =
+    Gltf
+      { accessors = Nothing,
+        asset = def,
+        buffers = Nothing,
+        bufferViews = Nothing,
+        images = Nothing,
+        materials = Nothing,
+        meshes = Nothing,
+        nodes = Nothing,
+        samplers = Nothing,
+        scene = Nothing,
+        scenes = Nothing,
+        textures = Nothing
+      }
 
 readOptions :: Options
 readOptions =
@@ -115,10 +116,11 @@ data Asset = Asset
   deriving (Generic, Eq, Show)
 
 instance Default Asset where
-  def = Asset
-    { version = "2.0",
-      generator = Nothing
-    }
+  def =
+    Asset
+      { version = "2.0",
+        generator = Nothing
+      }
 
 instance ToJSON Asset where
   toEncoding = genericToEncoding writeOptions
@@ -161,12 +163,12 @@ data Image = Image
   }
   deriving (Generic, Eq, Show)
 
-defaultImage :: Image
-defaultImage =
-  Image
-    { name = Nothing,
-      uri = Nothing
-    }
+instance Default Image where
+  def =
+    Image
+      { name = Nothing,
+        uri = Nothing
+      }
 
 instance ToJSON Image where
   toEncoding = genericToEncoding writeOptions

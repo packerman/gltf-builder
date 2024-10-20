@@ -40,8 +40,7 @@ encodePrimitive attributes indices = do
 
 encodeAttributes :: Map String AccessorData -> EncodingM [Map String Int]
 encodeAttributes attributes =
-  let -- attributeCount = fromJust getAttributeCount
-      strideGroups = groupBy (stride . snd) (M.assocs attributes)
+  let strideGroups = groupBy (stride . snd) (M.assocs attributes)
    in forM (M.assocs strideGroups) (uncurry encodeWithStride)
   where
     encodeWithStride :: Int -> [(String, AccessorData)] -> EncodingM (Map String Int)

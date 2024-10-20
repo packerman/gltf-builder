@@ -14,8 +14,10 @@ import Core.Model
     IndexData (..),
     Mode (..),
     sceneMeshes,
+    sceneTextures,
   )
 import qualified Core.Model as Model
+import Data.Default
 import Data.Foldable (toList)
 import Data.Map (Map)
 import Gltf.Accessor (AccessorData (..))
@@ -39,11 +41,11 @@ import Gltf.Json (Gltf (..), defaultAlphaCutoff, defaultDoubleSided)
 import qualified Gltf.Json as Gltf
 import Gltf.Validate ()
 import Lib.Base (nothingIf)
+import Lib.Base64
 import Lib.Container (indexList, lookupAll, mapPairs)
 import Lib.UniqueList (UniqueList)
-import qualified Lib.UniqueList as UniqueList
+import qualified Lib.UniqueList as UL
 import Linear (identity)
-import Data.Default
 
 writeScene :: FilePath -> Model.Scene -> IO ()
 writeScene filePath = writeGltf filePath . encodeScene
@@ -53,8 +55,11 @@ encodeScene = encodeSceneWithOptions defaultEncodingOptions
 
 encodeSceneWithOptions :: EncodingOptions -> Model.Scene -> Gltf
 encodeSceneWithOptions encodingOptions scene@(Model.Scene {nodes, name = sceneName}) =
-  let meshIndex = UniqueList.fromList $ sceneMeshes scene
-      (encodedMeshes, meshPart) = encodeMeshes encodingOptions $ UniqueList.toList meshIndex
+  let textureIndex = UL.fromList $ sceneTextures scene
+      imageIndex = UL.map Model.image textureIndex
+      encodedImages = encodeImage <$> UL.toList imageIndex
+      meshIndex = UL.fromList $ sceneMeshes scene
+      (encodedMeshes, meshPart) = encodeMeshes encodingOptions $ UL.toList meshIndex
       ( MeshPart.MeshPart
           { buffers,
             accessors = encodedAccessors,
@@ -78,7 +83,7 @@ encodeSceneWithOptions encodingOptions scene@(Model.Scene {nodes, name = sceneNa
           accessors = Array.fromList encodedAccessors,
           buffers = Array.fromList buffers,
           bufferViews = Array.fromList bufferViews,
-          images = Array.fromList [],
+          images = Array.fromList encodedImages,
           materials = Array.fromList materials,
           meshes = Array.fromList encodedMeshes,
           nodes = Array.fromList encodedNodes,
@@ -94,7 +99,7 @@ encodeSceneWithOptions encodingOptions scene@(Model.Scene {nodes, name = sceneNa
           ( Gltf.Node
               { name,
                 matrix = concatMap toList <$> nothingIf (== identity) matrix,
-                mesh = mesh >>= (`UniqueList.indexOf` meshIndex),
+                mesh = mesh >>= (`UL.indexOf` meshIndex),
                 children = nothingIf null $ lookupAll children nodeIndex
               }
           )
@@ -199,3 +204,10 @@ encodeMesh
       encodeMode Triangles = 4
       encodeMode TriangleStrip = 5
       encodeMode TriangleFan = 6
+
+encodeImage :: Model.Image -> Gltf.Image
+encodeImage (Model.Image {name, mimeType, imageData}) =
+  Gltf.Image
+    { name,
+      uri = pure $ encodeDataUrl $ dataUrl mimeType imageData
+    }

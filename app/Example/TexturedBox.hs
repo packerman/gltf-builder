@@ -7,7 +7,6 @@ import qualified Data.Map as M
 import Example
 import Linear
 import System.FilePath
-import Util (dataUrlToImage)
 
 example :: IO Example
 example = do

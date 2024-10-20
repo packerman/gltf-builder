@@ -27,6 +27,7 @@ library
   exposed-modules:
       Core.Decode
       Core.Dsl
+      Core.Dsl.Color
       Core.Encode
       Core.Model
       Gltf.Accessor
@@ -42,6 +43,7 @@ library
       Lib.Base64
       Lib.Container
       Lib.File
+      Lib.Image
       Lib.UniqueList
       Lib.URI
   other-modules:
@@ -57,7 +59,8 @@ library
       NamedFieldPuns
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      aeson
+      JuicyPixels
+    , aeson
     , aeson-pretty
     , base >=4.7 && <5
     , base64
@@ -99,7 +102,8 @@ executable gltf-builder-exe
       NamedFieldPuns
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      aeson
+      JuicyPixels
+    , aeson
     , aeson-pretty
     , base >=4.7 && <5
     , base64
@@ -145,7 +149,8 @@ test-suite gltf-builder-test
       NamedFieldPuns
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      aeson
+      JuicyPixels
+    , aeson
     , aeson-pretty
     , base >=4.7 && <5
     , base64
