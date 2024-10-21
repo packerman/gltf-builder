@@ -30,6 +30,8 @@ library
       Core.Dsl.Color
       Core.Encode
       Core.Model
+      Geometry.Plane
+      Geometry.Types
       Gltf.Accessor
       Gltf.Array
       Gltf.Decode

@@ -97,6 +97,11 @@ vec2Attribute = Vec2Attribute
 vec3Attribute :: Vector (V3 Float) -> AttributeData
 vec3Attribute = Vec3Attribute
 
+concatAttributeData :: AttributeData -> AttributeData -> Maybe AttributeData
+concatAttributeData (Vec3Attribute v1) (Vec3Attribute v2) = pure $ Vec3Attribute $ v1 V.++ v2
+concatAttributeData (Vec2Attribute v1) (Vec2Attribute v2) = pure $ Vec2Attribute $ v1 V.++ v2
+concatAttributeData _ _ = Nothing
+
 newtype IndexData = ShortIndex (Vector Word16)
   deriving (Eq, Show, Ord)
 
@@ -105,6 +110,12 @@ fromShortList = ShortIndex . V.fromList
 
 shortIndex :: Vector Word16 -> IndexData
 shortIndex = ShortIndex
+
+moveByOffset :: Int -> IndexData -> IndexData
+moveByOffset offset (ShortIndex v) = ShortIndex $ V.map (+ fromIntegral offset) v
+
+concatIndexData :: IndexData -> IndexData -> IndexData
+concatIndexData (ShortIndex v1) (ShortIndex v2) = ShortIndex $ v1 V.++ v2
 
 data Primitive = Primitive
   { attributes :: Map Attribute AttributeData,
