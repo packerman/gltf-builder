@@ -3,6 +3,7 @@ module Core.Model (module Core.Model) where
 import Data.ByteString (ByteString)
 import Data.Default
 import Data.Map (Map)
+import qualified Data.Map as M
 import Data.Maybe (maybeToList)
 import Data.Vector (Vector)
 import qualified Data.Vector as V
@@ -85,6 +86,10 @@ data AttributeData
   | Vec2Attribute (Vector (V2 Float))
   deriving (Eq, Show, Ord)
 
+attributeCount :: AttributeData -> Int
+attributeCount (Vec3Attribute v) = V.length v
+attributeCount (Vec2Attribute v) = V.length v
+
 fromV3List :: [V3 Float] -> AttributeData
 fromV3List = Vec3Attribute . V.fromList
 
@@ -124,6 +129,9 @@ data Primitive = Primitive
     mode :: Mode
   }
   deriving (Eq, Show, Ord)
+
+primitiveCount :: Primitive -> Int
+primitiveCount (Primitive {attributes}) = attributeCount $ attributes M.! Position
 
 data Node = Node
   { matrix :: M44 Double,

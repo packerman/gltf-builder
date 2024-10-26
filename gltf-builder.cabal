@@ -135,6 +135,7 @@ test-suite gltf-builder-test
       Base.WriterSpec
       Core.DecodeSpec
       Core.EncodeSpec
+      Geometry.TypesSpec
       Gltf.AccessorSpec
       Gltf.DecodeSpec
       Gltf.ValidateSpec

@@ -1,6 +1,7 @@
 module Lib.Base (module Lib.Base) where
 
 import Control.Monad.Zip
+import Data.List.Extra (allSame)
 
 mcons :: Maybe a -> [a] -> [a]
 mcons x xs = maybe xs (: xs) x
@@ -11,6 +12,9 @@ sumWith f = sum . fmap f
 isSingleton :: [a] -> Bool
 isSingleton [_] = True
 isSingleton _ = False
+
+allSameBy :: (Eq b) => (a -> b) -> [a] -> Bool
+allSameBy f = allSame . map f
 
 validateEither :: (a -> Bool) -> b -> Either b a -> Either b a
 validateEither _ _ e@(Left _) = e
