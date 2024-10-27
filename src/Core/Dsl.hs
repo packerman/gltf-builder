@@ -2,6 +2,8 @@ module Core.Dsl (module Core.Dsl) where
 
 import Core.Model
 import Data.Default
+import Data.Maybe (fromMaybe)
+import Geometry (Geometry (makePrimitive))
 import Gltf.Json (Number)
 import Linear (V4)
 
@@ -22,6 +24,12 @@ primitive p =
               primitives = [p]
             }
     }
+
+geometry :: Geometry -> Material -> Node
+geometry geom mat =
+  primitive $
+    fromMaybe (error "Cannot create geometry") $
+      makePrimitive geom mat
 
 baseColor :: V4 Number -> Material
 baseColor c =

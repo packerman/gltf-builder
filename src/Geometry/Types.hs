@@ -26,7 +26,7 @@ concatGeometries gs =
               M.unionsWith
                 (\ad -> fromMaybe (error "Attribute data inconsistent") . concatAttributeData ad)
                 (attributes <$> primitives)
-            firstMode = head (mode <$> primitives)
+            firstMode = head $ mode <$> primitives
         pure $
           Primitive
             { attributes = attributeUnion,
