@@ -31,9 +31,15 @@ dependencies:
 - aeson-pretty
 - base64
 - directory
+- data-default
+- extra
 - filepath
+- JuicyPixels
 - lens
 - linear
+- mime-types
+- network-uri
+- optparse-applicative
 - wreq
 - validity
 

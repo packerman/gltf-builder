@@ -27,8 +27,13 @@ library
   exposed-modules:
       Core.Decode
       Core.Dsl
+      Core.Dsl.Color
       Core.Encode
       Core.Model
+      Geometry
+      Geometry.Box
+      Geometry.Plane
+      Geometry.Types
       Gltf.Accessor
       Gltf.Array
       Gltf.Decode
@@ -42,7 +47,9 @@ library
       Lib.Base64
       Lib.Container
       Lib.File
+      Lib.Image
       Lib.UniqueList
+      Lib.URI
   other-modules:
       Paths_gltf_builder
   autogen-modules:
@@ -56,17 +63,23 @@ library
       NamedFieldPuns
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      aeson
+      JuicyPixels
+    , aeson
     , aeson-pretty
     , base >=4.7 && <5
     , base64
     , binary
     , bytestring
     , containers
+    , data-default
     , directory
+    , extra
     , filepath
     , lens
     , linear
+    , mime-types
+    , network-uri
+    , optparse-applicative
     , text
     , transformers
     , validity
@@ -77,6 +90,11 @@ library
 executable gltf-builder-exe
   main-is: Main.hs
   other-modules:
+      Assets
+      Example
+      Example.Square
+      Example.TexturedBox
+      Util
       Paths_gltf_builder
   autogen-modules:
       Paths_gltf_builder
@@ -89,18 +107,24 @@ executable gltf-builder-exe
       NamedFieldPuns
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      aeson
+      JuicyPixels
+    , aeson
     , aeson-pretty
     , base >=4.7 && <5
     , base64
     , binary
     , bytestring
     , containers
+    , data-default
     , directory
+    , extra
     , filepath
     , gltf-builder
     , lens
     , linear
+    , mime-types
+    , network-uri
+    , optparse-applicative
     , text
     , transformers
     , validity
@@ -115,8 +139,10 @@ test-suite gltf-builder-test
       Base.WriterSpec
       Core.DecodeSpec
       Core.EncodeSpec
+      Geometry.TypesSpec
       Gltf.AccessorSpec
       Gltf.DecodeSpec
+      Gltf.ValidateSpec
       Lib.Base64Spec
       Paths_gltf_builder
   autogen-modules:
@@ -130,20 +156,26 @@ test-suite gltf-builder-test
       NamedFieldPuns
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      aeson
+      JuicyPixels
+    , aeson
     , aeson-pretty
     , base >=4.7 && <5
     , base64
     , binary
     , bytestring
     , containers
+    , data-default
     , directory
+    , extra
     , filepath
     , gltf-builder
     , hspec
     , hspec-discover
     , lens
     , linear
+    , mime-types
+    , network-uri
+    , optparse-applicative
     , text
     , transformers
     , validity

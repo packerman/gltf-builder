@@ -8,6 +8,7 @@ import Gltf.Array as Array
 import Gltf.Json as Gltf
 import Linear (V2 (..), V3 (..), V4 (..), identity)
 import Test.Hspec
+import Data.Default
 
 spec :: Spec
 spec = do
@@ -28,7 +29,7 @@ spec = do
                           min = Just [0.0, 0.0, 0.0]
                         }
                     ],
-                asset = defaultAsset,
+                asset = def,
                 buffers =
                   fromList
                     [ Gltf.Buffer
@@ -109,7 +110,7 @@ spec = do
                                       )
                                     ],
                                 indices = Nothing,
-                                material = Model.defaultMaterial,
+                                material = def,
                                 mode = Triangles
                               }
                           ],
@@ -220,7 +221,7 @@ spec = do
                             Just
                               ( Gltf.PbrMetallicRoughness
                                   { baseColorFactor = Nothing,
-                                    baseColorTexture = Just (TextureInfo {index = 0, texCoord = Nothing}),
+                                    baseColorTexture = Just $ Gltf.TextureInfo {index = 0, texCoord = Nothing},
                                     metallicFactor = Just 0.0,
                                     roughnessFactor = Nothing,
                                     metallicRoughnessTexture = Nothing
@@ -323,22 +324,26 @@ spec = do
                                                         { baseColorFactor = V4 1.0 1.0 1.0 1.0,
                                                           baseColorTexture =
                                                             Just $
-                                                              Model.Texture
-                                                                { name = Nothing,
-                                                                  image =
-                                                                    Model.Image
+                                                              Model.TextureInfo
+                                                                { texture =
+                                                                    Model.Texture
                                                                       { name = Nothing,
-                                                                        mimeType = "image/png",
-                                                                        imageData = BS.pack [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 10, 0, 0, 0, 10, 8, 2, 0, 0, 0, 2, 80, 88, 234, 0, 0, 0, 18, 73, 68, 65, 84, 120, 156, 99, 248, 207, 192, 128, 7, 225, 147, 27, 193, 210, 0, 183, 202, 99, 157, 159, 77, 203, 152, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130]
+                                                                        image =
+                                                                          Model.Image
+                                                                            { name = Nothing,
+                                                                              mimeType = "image/png",
+                                                                              imageData = BS.pack [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 10, 0, 0, 0, 10, 8, 2, 0, 0, 0, 2, 80, 88, 234, 0, 0, 0, 18, 73, 68, 65, 84, 120, 156, 99, 248, 207, 192, 128, 7, 225, 147, 27, 193, 210, 0, 183, 202, 99, 157, 159, 77, 203, 152, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130]
+                                                                            },
+                                                                        sampler =
+                                                                          Model.Sampler
+                                                                            { name = Nothing,
+                                                                              magFilter = Just MagLinear,
+                                                                              minFilter = Just NearestMipmapLinear,
+                                                                              wrapS = Repeat,
+                                                                              wrapT = Repeat
+                                                                            }
                                                                       },
-                                                                  sampler =
-                                                                    Model.Sampler
-                                                                      { name = Nothing,
-                                                                        magFilter = Just MagLinear,
-                                                                        minFilter = Just NearestMipmapLinear,
-                                                                        wrapS = Repeat,
-                                                                        wrapT = Repeat
-                                                                      }
+                                                                  texCoord = 0
                                                                 },
                                                           metallicFactor = 0.0,
                                                           roughnessFactor = 1.0,

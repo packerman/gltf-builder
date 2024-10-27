@@ -1,6 +1,9 @@
 module Core.Dsl (module Core.Dsl) where
 
 import Core.Model
+import Data.Default
+import Data.Maybe (fromMaybe)
+import Geometry (Geometry (makePrimitive))
 import Gltf.Json (Number)
 import Linear (V4)
 
@@ -13,7 +16,7 @@ scene nodes =
 
 primitive :: Primitive -> Node
 primitive p =
-  defaultNode
+  def
     { mesh =
         pure $
           Mesh
@@ -22,11 +25,22 @@ primitive p =
             }
     }
 
+geometry :: Geometry -> Material -> Node
+geometry geom mat =
+  primitive $
+    fromMaybe (error "Cannot create geometry") $
+      makePrimitive geom mat
+
 baseColor :: V4 Number -> Material
 baseColor c =
-  defaultMaterial
+  def
     { pbrMetallicRoughness =
-        defaultPbrMetallicRoughness
-          { baseColorFactor = c
-          }
+        def {baseColorFactor = c}
+    }
+
+baseColorTexture :: TextureInfo -> Material
+baseColorTexture t =
+  def
+    { pbrMetallicRoughness =
+        def {baseColorTexture = pure t}
     }

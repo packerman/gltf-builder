@@ -6,6 +6,8 @@ module Core.Decode (decodeScene) where
 import Control.Monad ((>=>))
 import Core.Model as Model
 import qualified Data.ByteString.Lazy as BSL
+import Data.Default
+import Data.Either.Extra (maybeToEither)
 import Data.Maybe
 import Data.Vector (Vector, (!?))
 import Gltf.Accessor (AccessorData (..))
@@ -31,9 +33,9 @@ import qualified Gltf.Json as Gltf
     Sampler (..),
     Scene (..),
     Texture (..),
+    TextureInfo (..),
     defaultPbrMetallicRoughness,
   )
-import Lib.Base (maybeToEither)
 import Lib.Container (mapPairsM)
 import Linear (M44, V4 (V4), identity)
 
@@ -74,7 +76,7 @@ decodeNode nodes meshes (Gltf.Node {name, matrix = gltfMatrix, mesh = meshIndex,
   children <- traverse (decodeNode nodes meshes) gltfChildren
   return Node {..}
   where
-    decodeMatrix :: Maybe [Number] -> Either String (M44 Float)
+    decodeMatrix :: Maybe [Number] -> Either String (M44 Double)
     decodeMatrix (Just [a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p]) =
       pure $
         V4
@@ -103,7 +105,7 @@ decodeMesh accessorData materials (Gltf.Mesh name primitives) = Mesh name <$> tr
             (getByIndex accessorData "accessor" >=> decodeAttributeData)
             attributes
           <*> traverse (getByIndex accessorData "accessor" >=> decodeIndexData) indices
-          <*> maybe (Right Model.defaultMaterial) (getByIndex materials "material") material
+          <*> maybe (Right def) (getByIndex materials "material") material
           <*> decodeMode (fromMaybe 4 mode)
 
     decodeAttribute key = case key of
@@ -139,8 +141,8 @@ decodeMaterial textures (Gltf.Material {..}) = do
   where
     decodePbrUnsafe (Gltf.PbrMetallicRoughness {..}) = do
       baseColorFactor <- decodeV4 $ fromJust baseColorFactor
-      baseColorTexture <- traverse (getByIndex textures "texture" . index) baseColorTexture
-      metallicRoughnessTexture <- traverse (getByIndex textures "texture" . index) metallicRoughnessTexture
+      baseColorTexture <- traverse (decodeTextureInfo textures) baseColorTexture
+      metallicRoughnessTexture <- traverse (decodeTextureInfo textures) metallicRoughnessTexture
       return
         Model.PbrMetallicRoughness
           { baseColorFactor,
@@ -149,6 +151,11 @@ decodeMaterial textures (Gltf.Material {..}) = do
             roughnessFactor = fromJust roughnessFactor,
             metallicRoughnessTexture
           }
+
+    decodeTextureInfo :: Vector Model.Texture -> Gltf.TextureInfo -> Either String Model.TextureInfo
+    decodeTextureInfo textures (Gltf.TextureInfo {index, texCoord}) = do
+      texture <- getByIndex textures "texture" index
+      return $ Model.TextureInfo texture (fromMaybe 0 texCoord)
 
     decodeAlpha (Just "OPAQUE") _ = pure Opaque
     decodeAlpha (Just "MASK") alphaCutoff = pure $ Mask $ fromMaybe defaultAlphaCutoff alphaCutoff
@@ -169,15 +176,15 @@ decodeTexture
     ) =
     Model.Texture name
       <$> (maybeToEither "Source is not present" source >>= getByIndex images "image")
-      <*> maybe (pure Model.defaultSampler) (getByIndex samplers "sampler") sampler
+      <*> maybe (pure def) (getByIndex samplers "sampler") sampler
 
 decodeImage :: Gltf.Image -> Either String Model.Image
 decodeImage image = do
-  DataUrl {getData, mediaType} <- decodeImageData image
+  DataUrl {getData, mimeType} <- decodeImageData image
   return
     Model.Image
       { name = Nothing,
-        mimeType = mediaType,
+        mimeType,
         imageData = getData
       }
 
@@ -215,7 +222,7 @@ decodeSampler
         10497 -> pure Repeat
         _ -> Left $ unwords ["Unknown wrap mode", show n]
 
-decodeV4 :: [Float] -> Either String (V4 Float)
+decodeV4 :: [Double] -> Either String (V4 Double)
 decodeV4 [a, b, c, d] = Right $ V4 a b c d
 decodeV4 _ = Left "Expected 4 numbers"
 

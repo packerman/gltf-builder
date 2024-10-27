@@ -7,24 +7,24 @@ module Lib.Base64
     bytesDataUrl,
     imagePngDataUrl,
     encodeDataUrl,
+    dataUrl,
   )
 where
 
 import qualified Data.ByteString as B
 import Data.ByteString.Base64 (decodeBase64, encodeBase64)
+import Data.Either.Extra (mapLeft)
 import qualified Data.Text as T
-import Data.Text.Encoding (encodeUtf8)
-import Lib.Base (mapLeft)
-
-type MediaType = T.Text
+import Data.Text.Encoding (decodeASCII, encodeUtf8)
+import Network.Mime (MimeType)
 
 data DataUrl = DataUrl
-  { mediaType :: MediaType,
+  { mimeType :: MimeType,
     getData :: B.ByteString
   }
   deriving (Eq, Show)
 
-dataUrl :: MediaType -> B.ByteString -> DataUrl
+dataUrl :: MimeType -> B.ByteString -> DataUrl
 dataUrl = DataUrl
 
 bytesDataUrl :: B.ByteString -> DataUrl
@@ -45,17 +45,17 @@ decodeBase64Url uri = case T.splitOn "," uri of
       ["data", rest] -> decodeMediaType rest
       _ -> unsupportedError "`data` prefix is required"
     decodeMediaType rest = case T.splitOn ";" rest of
-      [mediatype, "base64"] -> Right mediatype
+      [mediatype, "base64"] -> Right $ encodeUtf8 mediatype
       _ -> unsupportedError "`base64` extension is required"
     unsupportedError = Left . ("Unsupported uri format: " <>)
 
-isMediaType :: [MediaType] -> DataUrl -> Maybe MediaType
-isMediaType acceptedMediaType (DataUrl {mediaType}) =
-  if mediaType `elem` acceptedMediaType then Just mediaType else Nothing
+isMediaType :: [MimeType] -> DataUrl -> Maybe MimeType
+isMediaType acceptedMediaType (DataUrl {mimeType}) =
+  if mimeType `elem` acceptedMediaType then Just mimeType else Nothing
 
 encodeBase64Text :: B.ByteString -> T.Text
 encodeBase64Text = encodeBase64
 
 encodeDataUrl :: DataUrl -> T.Text
-encodeDataUrl (DataUrl {mediaType, getData}) =
-  "data:" <> mediaType <> ";base64," <> encodeBase64Text getData
+encodeDataUrl (DataUrl {mimeType, getData}) =
+  "data:" <> decodeASCII mimeType <> ";base64," <> encodeBase64Text getData

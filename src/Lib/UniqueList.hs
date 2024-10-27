@@ -1,7 +1,8 @@
 module Lib.UniqueList (module Lib.UniqueList) where
 
 import Data.Containers.ListUtils
-import Data.Map as M (Map, fromList, lookup)
+import Data.Map (Map)
+import qualified Data.Map as M (fromList, lookup)
 
 data UniqueList a = UniqueList
   { elems :: [a],
@@ -20,3 +21,6 @@ toList (UniqueList {elems}) = elems
 
 indexOf :: (Ord a) => a -> UniqueList a -> Maybe Int
 indexOf x (UniqueList {index}) = M.lookup x index
+
+map :: (Ord b) => (a -> b) -> UniqueList a -> UniqueList b
+map f = fromList . fmap f . toList
