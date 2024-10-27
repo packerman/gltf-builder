@@ -4,7 +4,7 @@ import Assets
 import Core.Dsl as Dsl
 import Core.Model hiding (scene)
 import Example
-import Geometry hiding (geometry)
+import Geometry (box)
 import System.FilePath
 
 example :: IO Example

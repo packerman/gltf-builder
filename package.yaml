@@ -39,6 +39,7 @@ dependencies:
 - linear
 - mime-types
 - network-uri
+- optparse-applicative
 - wreq
 - validity
 

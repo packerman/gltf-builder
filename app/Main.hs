@@ -5,6 +5,7 @@ import Example
 import Example.Square
 import Example.TexturedBox
 import Lib.Base (maybeToM)
+import Options.Applicative
 
 examples :: M.Map String (IO Example)
 examples =
@@ -13,9 +14,33 @@ examples =
       ("textured-box", Example.TexturedBox.example)
     ]
 
+newtype Options = Options
+  { exampleName :: String
+  }
+  deriving (Eq, Show)
+
+parseOptions :: Parser Options
+parseOptions =
+  Options
+    <$> strOption
+      ( long "example"
+          <> help "Name of the example"
+      )
+
 main :: IO ()
 main =
-  let name = "textured-box"
-   in sequence (M.lookup name examples)
-        >>= maybeToM (unwords ["Example", name, "not found"])
-        >>= runExample
+  mainExample =<< execParser parserInfo
+  where
+    mainExample
+      ( Options
+          { exampleName
+          }
+        ) =
+        sequence (M.lookup exampleName examples)
+          >>= maybeToM
+            ( unwords $
+                ["Example", exampleName, "not found. Available examples:"] ++ M.keys examples
+            )
+          >>= runExample
+
+    parserInfo = info parseOptions fullDesc

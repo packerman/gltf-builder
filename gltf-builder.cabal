@@ -79,6 +79,7 @@ library
     , linear
     , mime-types
     , network-uri
+    , optparse-applicative
     , text
     , transformers
     , validity
@@ -123,6 +124,7 @@ executable gltf-builder-exe
     , linear
     , mime-types
     , network-uri
+    , optparse-applicative
     , text
     , transformers
     , validity
@@ -173,6 +175,7 @@ test-suite gltf-builder-test
     , linear
     , mime-types
     , network-uri
+    , optparse-applicative
     , text
     , transformers
     , validity
