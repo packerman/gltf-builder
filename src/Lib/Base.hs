@@ -1,5 +1,6 @@
 module Lib.Base (module Lib.Base) where
 
+import Control.Applicative
 import Control.Monad.Zip
 import Data.List.Extra (allSame)
 
@@ -43,3 +44,6 @@ maybeToM msg = maybe (fail msg) pure
 
 eitherFail :: (MonadFail m) => Either String a -> m a
 eitherFail = either fail pure
+
+guarded :: (Alternative m) => (a -> Bool) -> a -> m a
+guarded p x = if p x then pure x else empty
