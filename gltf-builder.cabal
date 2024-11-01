@@ -30,6 +30,7 @@ library
       Core.Dsl.Color
       Core.Encode
       Core.Model
+      Core.Translate.Enums
       Geometry
       Geometry.Box
       Geometry.Plane

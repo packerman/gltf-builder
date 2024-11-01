@@ -5,6 +5,7 @@ module Core.Decode (decodeScene) where
 
 import Control.Monad ((>=>))
 import Core.Model as Model
+import Core.Translate.Enums
 import qualified Data.ByteString.Lazy as BSL
 import Data.Default
 import Data.Either.Extra (maybeToEither)
@@ -19,7 +20,6 @@ import Gltf.Json
     Material (pbrMetallicRoughness),
     Number,
     TextureInfo (..),
-    defaultAlphaCutoff,
     defaultDoubleSided,
   )
 import qualified Gltf.Json as Gltf
@@ -108,27 +108,14 @@ decodeMesh accessorData materials (Gltf.Mesh name primitives) = Mesh name <$> tr
           <*> maybe (Right def) (getByIndex materials "material") material
           <*> decodeMode (fromMaybe 4 mode)
 
-    decodeAttribute key = case key of
-      "POSITION" -> pure Position
-      "NORMAL" -> pure Normal
-      "TEXCOORD_0" -> pure $ TexCoord 0
-      _ -> Left $ unwords ["Unknown attribute: ", key]
     decodeAttributeData accessorData = case accessorData of
       (Vec3Float xs) -> pure $ vec3Attribute xs
       (Vec2Float xs) -> pure $ vec2Attribute xs
       _ -> Left $ unwords ["Unsupported attribute accessor data:", show accessorData]
+
     decodeIndexData accessorData = case accessorData of
       (ScalarShort xs) -> Right $ shortIndex xs
       _ -> Left $ unwords ["Unsupported index accessor data:", show accessorData]
-    decodeMode n = case n of
-      0 -> pure Points
-      1 -> pure Lines
-      2 -> pure LineLoop
-      3 -> pure LineStrip
-      4 -> pure Triangles
-      5 -> pure TriangleStrip
-      6 -> pure TriangleFan
-      _ -> Left $ unwords ["Unkown mode:", show n]
 
 decodeMaterial :: Vector Model.Texture -> Gltf.Material -> Either String Model.Material
 decodeMaterial textures (Gltf.Material {..}) = do
@@ -156,13 +143,6 @@ decodeMaterial textures (Gltf.Material {..}) = do
     decodeTextureInfo textures (Gltf.TextureInfo {index, texCoord}) = do
       texture <- getByIndex textures "texture" index
       return $ Model.TextureInfo texture (fromMaybe 0 texCoord)
-
-    decodeAlpha (Just "OPAQUE") _ = pure Opaque
-    decodeAlpha (Just "MASK") alphaCutoff = pure $ Mask $ fromMaybe defaultAlphaCutoff alphaCutoff
-    decodeAlpha (Just "BLEND") _ = pure Blend
-    decodeAlpha (Just mode) _ = Left $ unwords ["Unknown alpha mode:", mode]
-    decodeAlpha Nothing (Just _) = Left "Alpha cutoff is not allowed"
-    decodeAlpha _ _ = pure Opaque
 
 decodeTexture :: Vector Model.Image -> Vector Model.Sampler -> Gltf.Texture -> Either String Model.Texture
 decodeTexture
@@ -203,24 +183,6 @@ decodeSampler
       <*> traverse decodeMinFilter minFilter
       <*> maybe (pure Repeat) decodeWrap wrapS
       <*> maybe (pure Repeat) decodeWrap wrapT
-    where
-      decodeMagFilter n = case n of
-        9728 -> pure MagNearest
-        9729 -> pure MagLinear
-        _ -> Left $ unwords ["Unknown mag filter", show n]
-      decodeMinFilter n = case n of
-        9728 -> pure MinNearest
-        9729 -> pure MinLinear
-        9984 -> pure NearestMipMapNearest
-        9985 -> pure LinearMipmapNearest
-        9986 -> pure NearestMipmapLinear
-        9987 -> pure LinearMipmapLinear
-        _ -> Left $ unwords ["Unknown min filter", show n]
-      decodeWrap n = case n of
-        33071 -> pure ClampToEdge
-        33648 -> pure MirroredRepeat
-        10497 -> pure Repeat
-        _ -> Left $ unwords ["Unknown wrap mode", show n]
 
 decodeV4 :: [Double] -> Either String (V4 Double)
 decodeV4 [a, b, c, d] = Right $ V4 a b c d
