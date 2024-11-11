@@ -3,6 +3,7 @@ module Gltf.Encode.Primitive
     EncodingM,
     EncodedPrimitive,
     MeshPart,
+    encodeAccessorData,
   )
 where
 

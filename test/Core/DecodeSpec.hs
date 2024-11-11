@@ -3,12 +3,12 @@ module Core.DecodeSpec (spec) where
 import Core.Decode (decodeScene)
 import Core.Model as Model
 import qualified Data.ByteString as BS
+import Data.Default
 import qualified Data.Map as M
 import Gltf.Array as Array
 import Gltf.Json as Gltf
 import Linear (V2 (..), V3 (..), V4 (..), identity)
 import Test.Hspec
-import Data.Default
 
 spec :: Spec
 spec = do
@@ -362,4 +362,91 @@ spec = do
                       ]
                   }
               ]
+          )
+    it "Decoded interleaved box" $ do
+      let input =
+            Gltf
+              { accessors =
+                  fromList
+                    [ Accessor {bufferView = Just 0, byteOffset = Just 0, componentType = 5123, count = 36, name = Nothing, accessorType = "SCALAR", max = Just [23.0], min = Just [0.0]},
+                      Accessor {bufferView = Just 1, byteOffset = Just 0, componentType = 5126, count = 24, name = Nothing, accessorType = "VEC3", max = Just [1.0, 1.0, 1.0], min = Just [-1.0, -1.0, -1.0]},
+                      Accessor {bufferView = Just 1, byteOffset = Just 12, componentType = 5126, count = 24, name = Nothing, accessorType = "VEC3", max = Just [0.5, 0.5, 0.5], min = Just [-0.5, -0.5, -0.5]}
+                    ],
+                asset = Asset {generator = Just "COLLADA2GLTF", version = "2.0"},
+                buffers =
+                  fromList
+                    [ Buffer {byteLength = 648, name = Nothing, uri = Just "data:application/octet-stream;base64,AAAAAAAAAAAAAIA/AAAAvwAAAL8AAAA/AAAAAAAAAAAAAIA/AAAAPwAAAL8AAAA/AAAAAAAAAAAAAIA/AAAAvwAAAD8AAAA/AAAAAAAAAAAAAIA/AAAAPwAAAD8AAAA/AAAAAAAAgL8AAAAAAAAAPwAAAL8AAAA/AAAAAAAAgL8AAAAAAAAAvwAAAL8AAAA/AAAAAAAAgL8AAAAAAAAAPwAAAL8AAAC/AAAAAAAAgL8AAAAAAAAAvwAAAL8AAAC/AACAPwAAAAAAAAAAAAAAPwAAAD8AAAA/AACAPwAAAAAAAAAAAAAAPwAAAL8AAAA/AACAPwAAAAAAAAAAAAAAPwAAAD8AAAC/AACAPwAAAAAAAAAAAAAAPwAAAL8AAAC/AAAAAAAAgD8AAAAAAAAAvwAAAD8AAAA/AAAAAAAAgD8AAAAAAAAAPwAAAD8AAAA/AAAAAAAAgD8AAAAAAAAAvwAAAD8AAAC/AAAAAAAAgD8AAAAAAAAAPwAAAD8AAAC/AACAvwAAAAAAAAAAAAAAvwAAAL8AAAA/AACAvwAAAAAAAAAAAAAAvwAAAD8AAAA/AACAvwAAAAAAAAAAAAAAvwAAAL8AAAC/AACAvwAAAAAAAAAAAAAAvwAAAD8AAAC/AAAAAAAAAAAAAIC/AAAAvwAAAL8AAAC/AAAAAAAAAAAAAIC/AAAAvwAAAD8AAAC/AAAAAAAAAAAAAIC/AAAAPwAAAL8AAAC/AAAAAAAAAAAAAIC/AAAAPwAAAD8AAAC/AAABAAIAAwACAAEABAAFAAYABwAGAAUACAAJAAoACwAKAAkADAANAA4ADwAOAA0AEAARABIAEwASABEAFAAVABYAFwAWABUA"}
+                    ],
+                bufferViews =
+                  fromList
+                    [ BufferView {buffer = 0, byteOffset = Just 576, byteLength = 72, byteStride = Nothing, name = Nothing, target = Just 34963},
+                      BufferView {buffer = 0, byteOffset = Just 0, byteLength = 576, byteStride = Just 24, name = Nothing, target = Just 34962}
+                    ],
+                images = Nothing,
+                materials =
+                  fromList
+                    [ Gltf.Material {name = Nothing, pbrMetallicRoughness = Just (Gltf.PbrMetallicRoughness {baseColorFactor = Just [0.800000011920929, 0.0, 0.0, 1.0], baseColorTexture = Nothing, metallicFactor = Nothing, roughnessFactor = Nothing, metallicRoughnessTexture = Nothing}), alphaMode = Nothing, alphaCutoff = Nothing, doubleSided = Nothing}
+                    ],
+                meshes =
+                  fromList
+                    [ Gltf.Mesh
+                        { name = Just "Mesh",
+                          primitives =
+                            [ Gltf.Primitive {attributes = M.fromList [("NORMAL", 1), ("POSITION", 2)], indices = Just 0, material = Just 0, mode = Just 4}
+                            ]
+                        }
+                    ],
+                nodes =
+                  fromList
+                    [ Gltf.Node {children = Just [1], matrix = Just [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0], mesh = Nothing, name = Nothing},
+                      Gltf.Node {children = Nothing, matrix = Nothing, mesh = Just 0, name = Nothing}
+                    ],
+                samplers = Nothing,
+                scene = Just 0,
+                scenes =
+                  fromList
+                    [ Gltf.Scene {name = Nothing, nodes = Just [0]}
+                    ],
+                textures = Nothing
+              }
+      let decoded = decodeScene 0 input
+      decoded
+        `shouldBe` Right
+          ( Model.Scene
+              { name = Nothing,
+                nodes =
+                  [ Model.Node
+                      { matrix = V4 (V4 1.0 0.0 0.0 0.0) (V4 0.0 0.0 (-1.0) 0.0) (V4 0.0 1.0 0.0 0.0) (V4 0.0 0.0 0.0 1.0),
+                        name = Nothing,
+                        mesh = Nothing,
+                        children =
+                          [ Model.Node
+                              { matrix = V4 (V4 1.0 0.0 0.0 0.0) (V4 0.0 1.0 0.0 0.0) (V4 0.0 0.0 1.0 0.0) (V4 0.0 0.0 0.0 1.0),
+                                name = Nothing,
+                                mesh =
+                                  Just
+                                    ( Model.Mesh
+                                        { name = Just "Mesh",
+                                          primitives =
+                                            [ Model.Primitive
+                                                { attributes =
+                                                    M.fromList
+                                                      [ ( Position,
+                                                          fromV3List [V3 (-0.5) (-0.5) 0.5, V3 0.5 (-0.5) 0.5, V3 (-0.5) 0.5 0.5, V3 0.5 0.5 0.5, V3 0.5 (-0.5) 0.5, V3 (-0.5) (-0.5) 0.5, V3 0.5 (-0.5) (-0.5), V3 (-0.5) (-0.5) (-0.5), V3 0.5 0.5 0.5, V3 0.5 (-0.5) 0.5, V3 0.5 0.5 (-0.5), V3 0.5 (-0.5) (-0.5), V3 (-0.5) 0.5 0.5, V3 0.5 0.5 0.5, V3 (-0.5) 0.5 (-0.5), V3 0.5 0.5 (-0.5), V3 (-0.5) (-0.5) 0.5, V3 (-0.5) 0.5 0.5, V3 (-0.5) (-0.5) (-0.5), V3 (-0.5) 0.5 (-0.5), V3 (-0.5) (-0.5) (-0.5), V3 (-0.5) 0.5 (-0.5), V3 0.5 (-0.5) (-0.5), V3 0.5 0.5 (-0.5)]
+                                                        ),
+                                                        (Normal, fromV3List [V3 0.0 0.0 1.0, V3 0.0 0.0 1.0, V3 0.0 0.0 1.0, V3 0.0 0.0 1.0, V3 0.0 (-1.0) 0.0, V3 0.0 (-1.0) 0.0, V3 0.0 (-1.0) 0.0, V3 0.0 (-1.0) 0.0, V3 1.0 0.0 0.0, V3 1.0 0.0 0.0, V3 1.0 0.0 0.0, V3 1.0 0.0 0.0, V3 0.0 1.0 0.0, V3 0.0 1.0 0.0, V3 0.0 1.0 0.0, V3 0.0 1.0 0.0, V3 (-1.0) 0.0 0.0, V3 (-1.0) 0.0 0.0, V3 (-1.0) 0.0 0.0, V3 (-1.0) 0.0 0.0, V3 0.0 0.0 (-1.0), V3 0.0 0.0 (-1.0), V3 0.0 0.0 (-1.0), V3 0.0 0.0 (-1.0)])
+                                                      ],
+                                                  indices = Just (fromShortList [0, 1, 2, 3, 2, 1, 4, 5, 6, 7, 6, 5, 8, 9, 10, 11, 10, 9, 12, 13, 14, 15, 14, 13, 16, 17, 18, 19, 18, 17, 20, 21, 22, 23, 22, 21]),
+                                                  material = Model.Material {name = Nothing, pbrMetallicRoughness = Model.PbrMetallicRoughness {baseColorFactor = V4 0.800000011920929 0.0 0.0 1.0, baseColorTexture = Nothing, metallicFactor = 1.0, roughnessFactor = 1.0, metallicRoughnessTexture = Nothing}, alpha = Opaque, doubleSided = False},
+                                                  mode = Triangles
+                                                }
+                                            ]
+                                        }
+                                    ),
+                                children = []
+                              }
+                          ]
+                      }
+                  ]
+              }
           )

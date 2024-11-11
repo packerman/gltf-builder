@@ -95,7 +95,6 @@ executable gltf-builder-exe
       Example
       Example.Square
       Example.TexturedBox
-      Util
       Paths_gltf_builder
   autogen-modules:
       Paths_gltf_builder
@@ -141,8 +140,9 @@ test-suite gltf-builder-test
       Core.DecodeSpec
       Core.EncodeSpec
       Geometry.TypesSpec
-      Gltf.AccessorSpec
+      Gltf.Decode.AccessorSpec
       Gltf.DecodeSpec
+      Gltf.Encode.PrimitiveSpec
       Gltf.ValidateSpec
       Lib.Base64Spec
       Paths_gltf_builder
