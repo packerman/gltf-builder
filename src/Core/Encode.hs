@@ -8,18 +8,13 @@ where
 import Control.Monad
 import Control.Monad.Trans.RWS (evalRWS, get, modify, tell)
 import Core.Model
-  ( Alpha (..),
-    Attribute (..),
-    AttributeData (..),
+  ( AttributeData (..),
     IndexData (..),
-    MagFilter (..),
-    MinFilter (..),
-    Mode (..),
-    Wrap (..),
     sceneMeshes,
     sceneTextures,
   )
 import qualified Core.Model as Model
+import Core.Translate.Enums
 import Data.Default
 import Data.Foldable (toList)
 import Data.Map (Map)
@@ -41,7 +36,7 @@ import Gltf.Encode.Types
     withBuffer,
   )
 import qualified Gltf.Encode.Types as MeshPart (MeshPart (..))
-import Gltf.Json (Gltf (..), defaultAlphaCutoff, defaultDoubleSided)
+import Gltf.Json (Gltf (..), defaultDoubleSided)
 import qualified Gltf.Json as Gltf
 import Gltf.Validate ()
 import Lib.Base (nothingIf)
@@ -157,10 +152,6 @@ encodeMesh
                 mode = pure $ encodeMode mode
               }
 
-      encodeAttribute Position = "POSITION"
-      encodeAttribute (TexCoord n) = "TEXCOORD_" <> show n
-      encodeAttribute Normal = "NORMAL"
-
       encodeAttributeData (Vec2Attribute xs) = Vec2Float xs
       encodeAttributeData (Vec3Attribute xs) = Vec3Float xs
 
@@ -205,18 +196,6 @@ encodeMesh
                       }
                 return materialIndex
 
-      encodeAlphaMode Opaque = (Nothing, Nothing)
-      encodeAlphaMode (Mask alphaCutoff) = (pure "MASK", nothingIf (== defaultAlphaCutoff) alphaCutoff)
-      encodeAlphaMode Blend = (pure "BLEND", Nothing)
-
-      encodeMode Points = 0
-      encodeMode Lines = 1
-      encodeMode LineLoop = 2
-      encodeMode LineStrip = 3
-      encodeMode Triangles = 4
-      encodeMode TriangleStrip = 5
-      encodeMode TriangleFan = 6
-
       encodeTextureInfo (Model.TextureInfo {texture, texCoord}) =
         Gltf.TextureInfo
           { index = fromJust $ texture `UL.indexOf` textureIndex,
@@ -246,21 +225,6 @@ encodeSampler
         wrapS = pure $ encodeWrap wrapS,
         wrapT = pure $ encodeWrap wrapT
       }
-    where
-      encodeMagFilter f = case f of
-        MagNearest -> 9728
-        MagLinear -> 9729
-      encodeMinFilter f = case f of
-        MinNearest -> 9728
-        MinLinear -> 9729
-        NearestMipMapNearest -> 9984
-        LinearMipmapNearest -> 9985
-        NearestMipmapLinear -> 9986
-        LinearMipmapLinear -> 9987
-      encodeWrap w = case w of
-        ClampToEdge -> 33071
-        MirroredRepeat -> 33648
-        Repeat -> 10497
 
 encodeTexture :: UniqueList Model.Image -> UniqueList Model.Sampler -> Model.Texture -> Gltf.Texture
 encodeTexture imageIndex samplerIndex (Model.Texture {name, image, sampler}) =

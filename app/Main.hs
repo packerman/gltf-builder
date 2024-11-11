@@ -37,10 +37,11 @@ main =
           }
         ) =
         sequence (M.lookup exampleName examples)
-          >>= maybeToM
-            ( unwords $
-                ["Example", exampleName, "not found. Available examples:"] ++ M.keys examples
-            )
+          >>= checkIfFound exampleName
           >>= runExample
+
+    checkIfFound exampleName =
+      maybeToM $
+        unwords ["Example", exampleName, "not found. Available examples:", show $ M.keys examples]
 
     parserInfo = info parseOptions fullDesc

@@ -37,19 +37,20 @@ decodeBuffer (Buffer {uri = maybeUri, byteLength}) =
       let actual = BS.length value
        in validate
             (actual == expected)
-            (unwords ["Expected buffer length:", show expected, "but actual length is" ++ show actual])
+            (unwords ["Expected buffer length:", show expected, "but actual length is", show actual])
             value
 
 decodeOptions :: BufferView -> Accessor -> DecodeOptions
 decodeOptions
-  (BufferView {byteOffset = bufferViewOffset})
+  (BufferView {byteOffset = bufferViewOffset, byteStride})
   (Accessor {count, accessorType, componentType, byteOffset = accessorOffset}) =
     let byteOffset = fromMaybe 0 bufferViewOffset + fromMaybe 0 accessorOffset
      in DecodeOptions
           { count,
             accessorType,
             componentType,
-            byteOffset
+            byteOffset,
+            byteStride
           }
 
 decodeAccessor :: Vector BSL.ByteString -> Vector BufferView -> Accessor -> Either String AccessorData
