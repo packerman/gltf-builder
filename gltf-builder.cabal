@@ -95,6 +95,7 @@ executable gltf-builder-exe
       Example
       Example.Square
       Example.TexturedBox
+      Options
       Paths_gltf_builder
   autogen-modules:
       Paths_gltf_builder

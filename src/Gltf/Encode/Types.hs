@@ -2,6 +2,7 @@ module Gltf.Encode.Types (module Gltf.Encode.Types) where
 
 import Control.Monad.Trans.RWS
 import Data.ByteString.Lazy as BSL
+import Data.Default
 import qualified Data.List as L
 import Data.Map
 import Gltf.Json (Accessor, Buffer (..), BufferView, Material)
@@ -130,16 +131,18 @@ instance Monoid MeshPart where
         materials = []
       }
 
-newtype EncodingOptions = EncodingOptions
-  { bufferCreate :: BufferCreate
+data EncodingOptions = EncodingOptions
+  { bufferCreate :: BufferCreate,
+    prettyPrint :: Bool
   }
   deriving (Eq, Show)
 
-defaultEncodingOptions :: EncodingOptions
-defaultEncodingOptions =
-  EncodingOptions
-    { bufferCreate = SingleBuffer
-    }
+instance Default EncodingOptions where
+  def =
+    EncodingOptions
+      { bufferCreate = SingleBuffer,
+        prettyPrint = False
+      }
 
 data BufferCreate = SingleBuffer | OnePerMesh
   deriving (Eq, Show, Enum)

@@ -79,4 +79,4 @@ getVectorArray :: Int -> Get a -> Int -> Get (Vector a)
 getVectorArray count vectorGet toSkip
   | toSkip <= 0 = replicateM count vectorGet
   | count == 1 = V.singleton <$> vectorGet
-  | otherwise = V.cons <$> vectorGet <*> replicateM (count - 1) (do skip toSkip; vectorGet)
+  | otherwise = V.cons <$> vectorGet <*> replicateM (count - 1) (skip toSkip >> vectorGet)

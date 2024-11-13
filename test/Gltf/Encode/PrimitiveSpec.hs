@@ -1,7 +1,7 @@
 module Gltf.Encode.PrimitiveSpec (spec) where
 
-import Gltf.Accessor (fromV3List)
 import qualified Data.ByteString.Lazy as BL
+import Gltf.Accessor (fromV3List)
 import Gltf.Encode.Primitive
 import Linear
 import Test.Hspec

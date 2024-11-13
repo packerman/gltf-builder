@@ -12,7 +12,6 @@ import qualified Gltf.Array as Array
 import Gltf.Encode.Types
   ( BufferCreate (..),
     EncodingOptions (..),
-    defaultEncodingOptions,
   )
 import Gltf.Json (Gltf (..))
 import qualified Gltf.Json as Gltf
@@ -359,7 +358,7 @@ spec = do
             }
       it "with many buffers" $ do
         encodeSceneWithOptions
-          ( defaultEncodingOptions
+          ( def
               { bufferCreate = OnePerMesh
               }
           )
