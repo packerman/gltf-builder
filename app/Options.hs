@@ -1,7 +1,7 @@
 module Options (module Options) where
 
+import Gltf.Encode.Types (BufferCreate (..), EncodingOptions (..))
 import Options.Applicative
-import Gltf.Encode.Types (BufferCreate(..), EncodingOptions(..))
 
 data Options = Options
   { exampleName :: String,
@@ -29,5 +29,5 @@ parseOptions =
       )
 
 toEncodingOptions :: Options -> EncodingOptions
-toEncodingOptions (Options { prettyPrint, bufferCreate }) =
-  EncodingOptions { prettyPrint, bufferCreate }
+toEncodingOptions (Options {prettyPrint, bufferCreate}) =
+  EncodingOptions {prettyPrint, bufferCreate}
