@@ -64,14 +64,8 @@ encodeIndices accessorData =
 
 createBufferView :: Maybe Int -> Maybe Int -> Int -> EncodingM ()
 createBufferView byteStride target byteLength = do
-  (EncodingState {bufferIndex, bufferViewByteOffset, bufferViewIndex}) <- get
-  modify
-    ( \s ->
-        s
-          { bufferViewIndex = bufferViewIndex + 1,
-            bufferViewByteOffset = bufferViewByteOffset + byteLength
-          }
-    )
+  (EncodingState {bufferIndex, bufferViewByteOffset}) <- get
+  modify bufferViewState
   tell $
     fromBufferView $
       BufferView
@@ -81,6 +75,12 @@ createBufferView byteStride target byteLength = do
           byteStride,
           name = Nothing,
           target
+        }
+  where
+    bufferViewState st@(EncodingState {bufferViewByteOffset, bufferViewIndex}) =
+      st
+        { bufferViewIndex = bufferViewIndex + 1,
+          bufferViewByteOffset = bufferViewByteOffset + byteLength
         }
 
 resetAccessorByteOffset :: EncodingM ()
@@ -99,13 +99,7 @@ encodeAccessor
               }
             ) <-
             get
-          modify
-            ( \s ->
-                s
-                  { accessorIndexOffset = accessorIndexOffset + 1,
-                    accessorByteOffset = accessorByteOffset + fromIntegral (BSL.length bytes)
-                  }
-            )
+          modify $ accessorState $ BSL.length bytes
           tell $
             fromAccessor
               ( Accessor
@@ -122,6 +116,11 @@ encodeAccessor
               bytes
           return accessorIndexOffset
     where
+      accessorState byteLength st@(EncodingState {accessorIndexOffset, accessorByteOffset}) =
+        st
+          { accessorIndexOffset = accessorIndexOffset + 1,
+            accessorByteOffset = accessorByteOffset + fromIntegral byteLength
+          }
       getAccessorTypes = case accessorData of
         (Vec3Float _) -> ("VEC3", 5126)
         (Vec2Float _) -> ("VEC2", 5126)
