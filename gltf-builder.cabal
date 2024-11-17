@@ -143,7 +143,6 @@ test-suite gltf-builder-test
       Geometry.TypesSpec
       Gltf.Decode.AccessorSpec
       Gltf.DecodeSpec
-      Gltf.Encode.PrimitiveSpec
       Gltf.ValidateSpec
       Lib.Base64Spec
       Paths_gltf_builder

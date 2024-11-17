@@ -64,6 +64,13 @@ fromAccessor accessor bytes =
       bytes = L.singleton bytes
     }
 
+fromAccessors :: [Accessor] -> ByteString -> MeshPart
+fromAccessors accessors bytes =
+  mempty
+    { accessors,
+      bytes = L.singleton bytes
+    }
+
 fromMaterial :: Material -> MeshPart
 fromMaterial material = mempty {materials = L.singleton material}
 
@@ -133,7 +140,8 @@ instance Monoid MeshPart where
 
 data EncodingOptions = EncodingOptions
   { bufferCreate :: BufferCreate,
-    prettyPrint :: Bool
+    prettyPrint :: Bool,
+    interleaved :: Bool
   }
   deriving (Eq, Show)
 
@@ -141,7 +149,8 @@ instance Default EncodingOptions where
   def =
     EncodingOptions
       { bufferCreate = SingleBuffer,
-        prettyPrint = False
+        prettyPrint = False,
+        interleaved = False
       }
 
 data BufferCreate = SingleBuffer | OnePerMesh

@@ -6,7 +6,8 @@ import Options.Applicative
 data Options = Options
   { exampleName :: String,
     prettyPrint :: Bool,
-    bufferCreate :: BufferCreate
+    bufferCreate :: BufferCreate,
+    interleaved :: Bool
   }
   deriving (Eq, Show)
 
@@ -27,7 +28,11 @@ parseOptions =
       ( long "buffer-per-mesh"
           <> help "Create one buffer per mesh"
       )
+    <*> switch
+      ( long "interleaved"
+          <> help "Serialize vertex data in interleaved form"
+      )
 
 toEncodingOptions :: Options -> EncodingOptions
-toEncodingOptions (Options {prettyPrint, bufferCreate}) =
-  EncodingOptions {prettyPrint, bufferCreate}
+toEncodingOptions (Options {prettyPrint, bufferCreate, interleaved}) =
+  EncodingOptions {prettyPrint, bufferCreate, interleaved}

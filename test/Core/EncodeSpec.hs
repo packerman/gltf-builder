@@ -565,7 +565,7 @@ spec = do
             Dsl.scene
               [ geometry (box 1 1 1) (Dsl.baseColorTexture $ defaultTextureInfo img)
               ]
-      encodeScene input
+      encodeSceneWithOptions (def {interleaved = True}) input
         `shouldBe` ( Gltf
                        { accessors =
                            Array.fromList
@@ -615,7 +615,20 @@ spec = do
                                    doubleSided = Nothing
                                  }
                              ],
-                         meshes = Array.fromList [Gltf.Mesh {name = Nothing, primitives = [Gltf.Primitive {attributes = fromList [("NORMAL", 3), ("POSITION", 2), ("TEXCOORD_0", 1)], indices = Just 0, material = Just 0, mode = Just 4}]}],
+                         meshes =
+                           Array.fromList
+                             [ Gltf.Mesh
+                                 { name = Nothing,
+                                   primitives =
+                                     [ Gltf.Primitive
+                                         { attributes = fromList [("NORMAL", 3), ("POSITION", 2), ("TEXCOORD_0", 1)],
+                                           indices = Just 0,
+                                           material = Just 0,
+                                           mode = Just 4
+                                         }
+                                     ]
+                                 }
+                             ],
                          nodes = Array.fromList [Gltf.Node {children = Nothing, matrix = Nothing, mesh = Just 0, name = Nothing}],
                          samplers = Array.fromList [Gltf.Sampler {magFilter = Nothing, minFilter = Nothing, name = Nothing, wrapS = Just 10497, wrapT = Just 10497}],
                          scene = Just 0,
