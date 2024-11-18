@@ -15,6 +15,7 @@ import Data.Aeson
     eitherDecode,
     genericParseJSON,
     genericToEncoding,
+    genericToJSON,
   )
 import Data.Default
 import Data.Function
@@ -73,6 +74,7 @@ writeOptions =
     }
 
 instance ToJSON Gltf where
+  toJSON = genericToJSON writeOptions
   toEncoding = genericToEncoding writeOptions
 
 instance FromJSON Gltf where
@@ -91,11 +93,8 @@ data Accessor = Accessor
   deriving (Generic, Eq, Show)
 
 instance ToJSON Accessor where
-  toEncoding =
-    genericToEncoding
-      writeOptions
-        { fieldLabelModifier = accessorFieldLabelModifier
-        }
+  toJSON = genericToJSON accessorWriteOptions
+  toEncoding = genericToEncoding accessorWriteOptions
 
 instance FromJSON Accessor where
   parseJSON =
@@ -103,6 +102,12 @@ instance FromJSON Accessor where
       readOptions
         { fieldLabelModifier = accessorFieldLabelModifier
         }
+
+accessorWriteOptions :: Options
+accessorWriteOptions =
+  writeOptions
+    { fieldLabelModifier = accessorFieldLabelModifier
+    }
 
 accessorFieldLabelModifier :: String -> String
 accessorFieldLabelModifier label = case label of
@@ -123,6 +128,7 @@ instance Default Asset where
       }
 
 instance ToJSON Asset where
+  toJSON = genericToJSON writeOptions
   toEncoding = genericToEncoding writeOptions
 
 instance FromJSON Asset where
@@ -136,6 +142,7 @@ data Buffer = Buffer
   deriving (Generic, Eq, Show)
 
 instance ToJSON Buffer where
+  toJSON = genericToJSON writeOptions
   toEncoding = genericToEncoding writeOptions
 
 instance FromJSON Buffer where
@@ -152,6 +159,7 @@ data BufferView = BufferView
   deriving (Generic, Eq, Show)
 
 instance ToJSON BufferView where
+  toJSON = genericToJSON writeOptions
   toEncoding = genericToEncoding writeOptions
 
 instance FromJSON BufferView where
@@ -171,6 +179,7 @@ instance Default Image where
       }
 
 instance ToJSON Image where
+  toJSON = genericToJSON writeOptions
   toEncoding = genericToEncoding writeOptions
 
 instance FromJSON Image where
@@ -205,6 +214,7 @@ defaultMaterial =
     }
 
 instance ToJSON Material where
+  toJSON = genericToJSON writeOptions
   toEncoding = genericToEncoding writeOptions
 
 instance FromJSON Material where
@@ -240,6 +250,7 @@ instance Semigroup PbrMetallicRoughness where
       }
 
 instance ToJSON PbrMetallicRoughness where
+  toJSON = genericToJSON writeOptions
   toEncoding = genericToEncoding writeOptions
 
 instance FromJSON PbrMetallicRoughness where
@@ -252,6 +263,7 @@ data Mesh = Mesh
   deriving (Generic, Eq, Show)
 
 instance ToJSON Mesh where
+  toJSON = genericToJSON writeOptions
   toEncoding = genericToEncoding writeOptions
 
 instance FromJSON Mesh where
@@ -266,6 +278,7 @@ data Primitive = Primitive
   deriving (Generic, Eq, Show)
 
 instance ToJSON Primitive where
+  toJSON = genericToJSON writeOptions
   toEncoding = genericToEncoding writeOptions
 
 instance FromJSON Primitive where
@@ -289,6 +302,7 @@ defaultNode =
     }
 
 instance ToJSON Node where
+  toJSON = genericToJSON writeOptions
   toEncoding = genericToEncoding writeOptions
 
 instance FromJSON Node where
@@ -314,6 +328,7 @@ defaultSampler =
     }
 
 instance ToJSON Sampler where
+  toJSON = genericToJSON writeOptions
   toEncoding = genericToEncoding writeOptions
 
 instance FromJSON Sampler where
@@ -333,6 +348,7 @@ defaultScene =
     }
 
 instance ToJSON Scene where
+  toJSON = genericToJSON writeOptions
   toEncoding = genericToEncoding writeOptions
 
 instance FromJSON Scene where
@@ -354,6 +370,7 @@ defaultTexture =
     }
 
 instance ToJSON Texture where
+  toJSON = genericToJSON writeOptions
   toEncoding = genericToEncoding writeOptions
 
 instance FromJSON Texture where
@@ -366,6 +383,7 @@ data TextureInfo = TextureInfo
   deriving (Generic, Eq, Show)
 
 instance ToJSON TextureInfo where
+  toJSON = genericToJSON writeOptions
   toEncoding = genericToEncoding writeOptions
 
 instance FromJSON TextureInfo where

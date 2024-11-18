@@ -1,7 +1,8 @@
 module Example (Example (Example), runExample) where
 
-import Core.Encode (writeScene)
+import Core.Encode (writeSceneWithOptions)
 import Core.Model
+import Options
 
 data Example = Example
   { filePath :: FilePath,
@@ -9,5 +10,6 @@ data Example = Example
   }
   deriving (Eq, Show)
 
-runExample :: Example -> IO ()
-runExample (Example {filePath, scene = exampleScene}) = writeScene filePath exampleScene
+runExample :: Options -> Example -> IO ()
+runExample options (Example {filePath, scene = exampleScene}) =
+  writeSceneWithOptions (toEncodingOptions options) filePath exampleScene

@@ -2,6 +2,7 @@ module Core.Encode
   ( encodeScene,
     encodeSceneWithOptions,
     writeScene,
+    writeSceneWithOptions,
   )
 where
 
@@ -21,7 +22,7 @@ import Data.Map (Map)
 import Data.Maybe (fromJust)
 import Gltf.Accessor (AccessorData (..))
 import qualified Gltf.Array as Array
-import Gltf.Encode (writeGltf)
+import Gltf.Encode (writeGltf, writeGltfPretty)
 import Gltf.Encode.Primitive (EncodingM)
 import qualified Gltf.Encode.Primitive as GltfPrimitive (encodePrimitive)
 import Gltf.Encode.Types
@@ -29,7 +30,6 @@ import Gltf.Encode.Types
     EncodedPrimitive (..),
     EncodingOptions (..),
     EncodingState (..),
-    defaultEncodingOptions,
     fromMaterial,
     initialEncoding,
     setMaterialIndex,
@@ -49,8 +49,13 @@ import Linear (identity)
 writeScene :: FilePath -> Model.Scene -> IO ()
 writeScene filePath = writeGltf filePath . encodeScene
 
+writeSceneWithOptions :: EncodingOptions -> FilePath -> Model.Scene -> IO ()
+writeSceneWithOptions options@(EncodingOptions {prettyPrint}) filePath =
+  let writeFn = if prettyPrint then writeGltfPretty else writeGltf
+   in writeFn filePath . encodeSceneWithOptions options
+
 encodeScene :: Model.Scene -> Gltf
-encodeScene = encodeSceneWithOptions defaultEncodingOptions
+encodeScene = encodeSceneWithOptions def
 
 type TextureIndex = UniqueList Model.Texture
 
