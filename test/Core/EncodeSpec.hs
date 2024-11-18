@@ -570,9 +570,9 @@ spec = do
                        { accessors =
                            Array.fromList
                              [ Gltf.Accessor {bufferView = Just 0, byteOffset = Just 0, componentType = 5123, count = 36, name = Nothing, accessorType = "SCALAR", max = Just [23.0], min = Just [0.0]},
-                               Gltf.Accessor {bufferView = Just 1, byteOffset = Just 0, componentType = 5126, count = 24, name = Nothing, accessorType = "VEC2", max = Just [1.0, 1.0], min = Just [0.0, 0.0]},
-                               Gltf.Accessor {bufferView = Just 2, byteOffset = Just 0, componentType = 5126, count = 24, name = Nothing, accessorType = "VEC3", max = Just [0.5, 0.5, 0.5], min = Just [-0.5, -0.5, -0.5]},
-                               Gltf.Accessor {bufferView = Just 2, byteOffset = Just 288, componentType = 5126, count = 24, name = Nothing, accessorType = "VEC3", max = Just [1.0, 1.0, 1.0], min = Just [-1.0, -1.0, -1.0]}
+                               Gltf.Accessor {bufferView = Just 1, byteOffset = Just 0, componentType = 5126, count = 24, name = Nothing, accessorType = "VEC3", max = Just [1.0, 1.0, 1.0], min = Just [-1.0, -1.0, -1.0]},
+                               Gltf.Accessor {bufferView = Just 1, byteOffset = Just 12, componentType = 5126, count = 24, name = Nothing, accessorType = "VEC3", max = Just [0.5, 0.5, 0.5], min = Just [-0.5, -0.5, -0.5]},
+                               Gltf.Accessor {bufferView = Just 1, byteOffset = Just 24, componentType = 5126, count = 24, name = Nothing, accessorType = "VEC2", max = Just [1.0, 1.0], min = Just [0.0, 0.0]}
                              ],
                          asset = def,
                          buffers =
@@ -580,14 +580,13 @@ spec = do
                              [ Gltf.Buffer
                                  { byteLength = 840,
                                    name = Nothing,
-                                   uri = Just "data:application/octet-stream;base64,AAABAAIAAAACAAMABAAFAAYABAAGAAcACAAJAAoACAAKAAsADAANAA4ADAAOAA8AEAARABIAEAASABMAFAAVABYAFAAWABcAAAAAAAAAAAAAAIA/AAAAAAAAgD8AAIA/AAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAACAPwAAgD8AAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAIA/AACAPwAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAgD8AAIA/AAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAACAPwAAgD8AAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAIA/AACAPwAAAAAAAIA/AAAAvwAAAL8AAAA/AAAAPwAAAL8AAAA/AAAAPwAAAD8AAAA/AAAAvwAAAD8AAAA/AAAAPwAAAL8AAAA/AAAAPwAAAL8AAAC/AAAAPwAAAD8AAAC/AAAAPwAAAD8AAAA/AAAAPwAAAL8AAAC/AAAAvwAAAL8AAAC/AAAAvwAAAD8AAAC/AAAAPwAAAD8AAAC/AAAAvwAAAL8AAAC/AAAAvwAAAL8AAAA/AAAAvwAAAD8AAAA/AAAAvwAAAD8AAAC/AAAAvwAAAD8AAAA/AAAAPwAAAD8AAAA/AAAAPwAAAD8AAAC/AAAAvwAAAD8AAAC/AAAAvwAAAL8AAAC/AAAAPwAAAL8AAAC/AAAAPwAAAL8AAAA/AAAAvwAAAL8AAAA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AACAPwAAAIAAAAAAAACAPwAAAIAAAAAAAACAPwAAAIAAAAAAAACAPwAAAIAAAAAAAAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAAAAgAAAgD8AAAAAAAAAgAAAgD8AAAAAAAAAgAAAgD8AAAAAAAAAgAAAgD8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAA"
+                                   uri = Just "data:application/octet-stream;base64,AAABAAIAAAACAAMABAAFAAYABAAGAAcACAAJAAoACAAKAAsADAANAA4ADAAOAA8AEAARABIAEAASABMAFAAVABYAFAAWABcAAAAAAAAAAAAAAIA/AAAAvwAAAL8AAAA/AAAAAAAAAAAAAAAAAAAAAAAAgD8AAAA/AAAAvwAAAD8AAIA/AAAAAAAAAAAAAAAAAACAPwAAAD8AAAA/AAAAPwAAgD8AAIA/AAAAAAAAAAAAAIA/AAAAvwAAAD8AAAA/AAAAAAAAgD8AAIA/AAAAgAAAAAAAAAA/AAAAvwAAAD8AAAAAAAAAAAAAgD8AAACAAAAAAAAAAD8AAAC/AAAAvwAAgD8AAAAAAACAPwAAAIAAAAAAAAAAPwAAAD8AAAC/AACAPwAAgD8AAIA/AAAAgAAAAAAAAAA/AAAAPwAAAD8AAAAAAACAPwAAAAAAAAAAAACAvwAAAD8AAAC/AAAAvwAAAAAAAAAAAAAAAAAAAAAAAIC/AAAAvwAAAL8AAAC/AACAPwAAAAAAAAAAAAAAAAAAgL8AAAC/AAAAPwAAAL8AAIA/AACAPwAAAAAAAAAAAACAvwAAAD8AAAA/AAAAvwAAAAAAAIA/AACAvwAAAAAAAAAAAAAAvwAAAL8AAAC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAAC/AAAAvwAAAD8AAIA/AAAAAAAAgL8AAAAAAAAAAAAAAL8AAAA/AAAAPwAAgD8AAIA/AACAvwAAAAAAAAAAAAAAvwAAAD8AAAC/AAAAAAAAgD8AAACAAACAPwAAAAAAAAC/AAAAPwAAAD8AAAAAAAAAAAAAAIAAAIA/AAAAAAAAAD8AAAA/AAAAPwAAgD8AAAAAAAAAgAAAgD8AAAAAAAAAPwAAAD8AAAC/AACAPwAAgD8AAACAAACAPwAAAAAAAAC/AAAAPwAAAL8AAAAAAACAPwAAAAAAAIC/AAAAAAAAAL8AAAC/AAAAvwAAAAAAAAAAAAAAAAAAgL8AAAAAAAAAPwAAAL8AAAC/AACAPwAAAAAAAAAAAACAvwAAAAAAAAA/AAAAvwAAAD8AAIA/AACAPwAAAAAAAIC/AAAAAAAAAL8AAAC/AAAAPwAAAAAAAIA/"
                                  }
                              ],
                          bufferViews =
                            Array.fromList
                              [ Gltf.BufferView {buffer = 0, byteOffset = Just 0, byteLength = 72, byteStride = Nothing, name = Nothing, target = Just 34963},
-                               Gltf.BufferView {buffer = 0, byteOffset = Just 72, byteLength = 192, byteStride = Nothing, name = Nothing, target = Just 34962},
-                               Gltf.BufferView {buffer = 0, byteOffset = Just 264, byteLength = 576, byteStride = Just 12, name = Nothing, target = Just 34962}
+                               Gltf.BufferView {buffer = 0, byteOffset = Just 72, byteLength = 768, byteStride = Just 32, name = Nothing, target = Just 34962}
                              ],
                          images =
                            Array.fromList
@@ -621,7 +620,7 @@ spec = do
                                  { name = Nothing,
                                    primitives =
                                      [ Gltf.Primitive
-                                         { attributes = fromList [("NORMAL", 3), ("POSITION", 2), ("TEXCOORD_0", 1)],
+                                         { attributes = fromList [("NORMAL", 1), ("POSITION", 2), ("TEXCOORD_0", 3)],
                                            indices = Just 0,
                                            material = Just 0,
                                            mode = Just 4

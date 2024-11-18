@@ -31,8 +31,10 @@ encodePrimitive ::
   Maybe AccessorData ->
   EncodingM EncodedPrimitive
 encodePrimitive attributes indices = do
+  (EncodingOptions {interleaved} ) <- ask
+  let encodeAttributesFn = if interleaved then encodeAttributesInterleaved else encodeAttributes
   encodedIndices <- traverse encodeIndices indices
-  encodedAttributes <- encodeAttributes attributes
+  encodedAttributes <- encodeAttributesFn attributes
   return
     EncodedPrimitive
       { attributes = M.unions encodedAttributes,
@@ -53,18 +55,17 @@ encodeAttributes attributes =
       createBufferView bufferViewStride (pure 34962) byteSizeSum
       return $ M.fromList attrs
 
-encodeAttributesInterleaved :: Map String AccessorData -> EncodingM (Map String Int)
+encodeAttributesInterleaved :: Map String AccessorData -> EncodingM [Map String Int]
 encodeAttributesInterleaved attributes =
   let assocs = M.assocs attributes
       byteSizeSum = sumWith (byteSize . snd) assocs
       totalStride = sumWith (stride . snd) assocs
       count = elemCount $ snd $ head assocs
-      strides = scanl (+) 0 $ map (stride . snd) assocs
    in do
         resetAccessorByteOffset
         attrs <- encodeAccessors assocs count
         createBufferView (pure totalStride) (pure 34962) byteSizeSum
-        return $ M.fromList attrs
+        return [M.fromList attrs]
   where
     putAt :: Int -> AccessorData -> Put
     putAt i (Vec3Float vector) = putV3 putFloatle $ vector V.! i
@@ -74,8 +75,21 @@ encodeAttributesInterleaved attributes =
     encodeAccessorData assocs count = foldMap (\i -> foldMap (putAt i . snd) assocs) [0 .. (count - 1)]
 
     encodeAccessors assocs count =
-      let bytes = encodeAccessorData assocs count
-       in do undefined
+      let bytes = runPut $ encodeAccessorData assocs count
+          strides = scanl (+) 0 $ map (stride . snd) assocs
+       in do
+            ( EncodingState
+              { bufferViewIndex,
+                accessorByteOffset,
+                accessorIndexOffset
+              }
+              ) <- get
+            modify $ accessorState (length assocs) (BSL.length bytes)
+            let accessors = zipWith (dataToAccessor bufferViewIndex)
+                  ((+ accessorByteOffset) <$> strides)
+                  (snd <$> assocs)
+            tell $ fromAccessors accessors bytes
+            return $ zip (fst <$> assocs) [accessorIndexOffset..]
 
 encodeIndices :: AccessorData -> EncodingM Int
 encodeIndices accessorData =
@@ -121,19 +135,13 @@ encodeAccessor
               }
             ) <-
             get
-          modify $ accessorState $ BSL.length bytes
+          modify $ accessorState 1 $ BSL.length bytes
           tell $
             fromAccessor
               (dataToAccessor bufferViewIndex accessorByteOffset accessorData)
               bytes
           return accessorIndexOffset
     where
-      accessorState byteLength st@(EncodingState {accessorIndexOffset, accessorByteOffset}) =
-        st
-          { accessorIndexOffset = accessorIndexOffset + 1,
-            accessorByteOffset = accessorByteOffset + fromIntegral byteLength
-          }
-
       encodeAccessorData :: AccessorData -> ByteString
       encodeAccessorData = runPut . putAccessorData
         where
@@ -150,6 +158,13 @@ encodeAccessor
 
           putScalarArray :: (a -> Put) -> Vector a -> Put
           putScalarArray = V.mapM_
+
+accessorState :: Integral a => Int -> a -> EncodingState -> EncodingState
+accessorState accessorCount byteLength st@(EncodingState {accessorIndexOffset, accessorByteOffset}) =
+        st
+          { accessorIndexOffset = accessorIndexOffset + accessorCount,
+            accessorByteOffset = accessorByteOffset + fromIntegral byteLength
+          }
 
 dataToAccessor :: Int -> Int -> AccessorData -> Accessor
 dataToAccessor bufferViewIndex accessorByteOffset accessorData =
