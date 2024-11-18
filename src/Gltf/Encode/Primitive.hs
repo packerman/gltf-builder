@@ -31,7 +31,7 @@ encodePrimitive ::
   Maybe AccessorData ->
   EncodingM EncodedPrimitive
 encodePrimitive attributes indices = do
-  (EncodingOptions {interleaved} ) <- ask
+  (EncodingOptions {interleaved}) <- ask
   let encodeAttributesFn = if interleaved then encodeAttributesInterleaved else encodeAttributes
   encodedIndices <- traverse encodeIndices indices
   encodedAttributes <- encodeAttributesFn attributes
@@ -79,17 +79,20 @@ encodeAttributesInterleaved attributes =
           strides = scanl (+) 0 $ map (stride . snd) assocs
        in do
             ( EncodingState
-              { bufferViewIndex,
-                accessorByteOffset,
-                accessorIndexOffset
-              }
-              ) <- get
+                { bufferViewIndex,
+                  accessorByteOffset,
+                  accessorIndexOffset
+                }
+              ) <-
+              get
             modify $ accessorState (length assocs) (BSL.length bytes)
-            let accessors = zipWith (dataToAccessor bufferViewIndex)
-                  ((+ accessorByteOffset) <$> strides)
-                  (snd <$> assocs)
+            let accessors =
+                  zipWith
+                    (dataToAccessor bufferViewIndex)
+                    ((+ accessorByteOffset) <$> strides)
+                    (snd <$> assocs)
             tell $ fromAccessors accessors bytes
-            return $ zip (fst <$> assocs) [accessorIndexOffset..]
+            return $ zip (fst <$> assocs) [accessorIndexOffset ..]
 
 encodeIndices :: AccessorData -> EncodingM Int
 encodeIndices accessorData =
@@ -159,12 +162,12 @@ encodeAccessor
           putScalarArray :: (a -> Put) -> Vector a -> Put
           putScalarArray = V.mapM_
 
-accessorState :: Integral a => Int -> a -> EncodingState -> EncodingState
+accessorState :: (Integral a) => Int -> a -> EncodingState -> EncodingState
 accessorState accessorCount byteLength st@(EncodingState {accessorIndexOffset, accessorByteOffset}) =
-        st
-          { accessorIndexOffset = accessorIndexOffset + accessorCount,
-            accessorByteOffset = accessorByteOffset + fromIntegral byteLength
-          }
+  st
+    { accessorIndexOffset = accessorIndexOffset + accessorCount,
+      accessorByteOffset = accessorByteOffset + fromIntegral byteLength
+    }
 
 dataToAccessor :: Int -> Int -> AccessorData -> Accessor
 dataToAccessor bufferViewIndex accessorByteOffset accessorData =
