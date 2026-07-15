@@ -2,7 +2,7 @@ module Gltf.DecodeSpec (spec) where
 
 import qualified Data.Map as M
 import Gltf.Array
-import Gltf.Decode
+import Gltf.Delivery
 import Gltf.Json
 import Test.Hspec
 
@@ -127,4 +127,4 @@ spec = do
                   textures = Nothing
                 }
             )
-      readGltf "test/data-files/Box.gltf" `shouldReturn` Right expected
+      (deliveryJson <$> readGltfFile "test/data-files/Box.gltf") `shouldReturn` expected

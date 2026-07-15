@@ -1,13 +1,21 @@
 module Options (module Options) where
 
-import Gltf.Encode.Types (BufferCreate (..), EncodingOptions (..))
+import Data.Default
+import Gltf.Encode.Types
+  ( EncodingOptions (..),
+    setBufferImages,
+    setSingleBuffer,
+  )
 import Options.Applicative
+import Types (GltfVariant (..))
 
 data Options = Options
   { exampleName :: String,
+    gltfVariant :: GltfVariant,
     prettyPrint :: Bool,
-    bufferCreate :: BufferCreate,
-    interleaved :: Bool
+    manyBuffers :: Bool,
+    interleaved :: Bool,
+    bufferImages :: Bool
   }
   deriving (Eq, Show)
 
@@ -18,21 +26,35 @@ parseOptions =
       ( long "example"
           <> help "Name of the example"
       )
+    <*> flag
+      GltfEmbedded
+      GltfBinary
+      ( long "binary"
+          <> help "Output binary format"
+      )
     <*> switch
       ( long "pretty-print"
           <> help "Pretty print output JSON"
       )
-    <*> flag
-      SingleBuffer
-      OnePerMesh
-      ( long "buffer-per-mesh"
+    <*> switch
+      ( long "many-buffers"
           <> help "Create one buffer per mesh"
       )
     <*> switch
       ( long "interleaved"
           <> help "Serialize vertex data in interleaved form"
       )
+    <*> switch
+      ( long "buffer-images"
+          <> help "Store images in buffers"
+      )
 
 toEncodingOptions :: Options -> EncodingOptions
-toEncodingOptions (Options {prettyPrint, bufferCreate, interleaved}) =
-  EncodingOptions {prettyPrint, bufferCreate, interleaved}
+toEncodingOptions (Options {gltfVariant, prettyPrint, manyBuffers, interleaved, bufferImages}) =
+  def
+    { outputVariant = gltfVariant,
+      prettyPrint,
+      interleaved
+    }
+    `setSingleBuffer` (not manyBuffers)
+    `setBufferImages` bufferImages

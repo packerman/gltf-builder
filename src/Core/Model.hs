@@ -65,6 +65,9 @@ data Mesh = Mesh
   }
   deriving (Eq, Show, Ord)
 
+meshMaterials :: Mesh -> [Material]
+meshMaterials = fmap material . primitives
+
 data Attribute
   = Position
   | Normal

@@ -1,44 +1,29 @@
 module Gltf.Decode
-  ( readGltf,
-    decodeBuffer,
-    decodeImageData,
-    BSL.fromStrict,
-    decodeAccessor,
+  ( decodeAccessor,
     DataUrl (..),
+    getBufferViewBytes,
   )
 where
 
+import Data.ByteString (ByteString)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
 import Data.Either.Extra (maybeToEither)
 import Data.Maybe (fromMaybe)
-import Data.Validity (Validity, prettyValidate)
 import Data.Vector (Vector, (!?))
+import qualified Data.Vector as V
 import Gltf.Accessor (AccessorData)
 import Gltf.Decode.Accessor (DecodeOptions (..), decodeAccessorData)
 import Gltf.Json
-import Gltf.Validate ()
-import Lib.Base (eitherFail, validate)
-import Lib.Base64 (DataUrl (..), decodeBase64Url)
+import Lib.Base64 (DataUrl (..))
 
-readGltf :: FilePath -> IO (Either String Gltf)
-readGltf path = validateAfter $ eitherDecode <$> BSL.readFile path
-
-validateAfter :: (MonadFail m, Validity a) => m a -> m a
-validateAfter action = action >>= (eitherFail . prettyValidate)
-
-decodeBuffer :: Buffer -> Either String BS.ByteString
-decodeBuffer (Buffer {uri = maybeUri, byteLength}) =
-  case maybeUri of
-    Just uri -> decodeBase64Url uri >>= validateLength byteLength . getData
-    Nothing -> error "No uri in buffer"
-  where
-    validateLength expected value =
-      let actual = BS.length value
-       in validate
-            (actual == expected)
-            (unwords ["Expected buffer length:", show expected, "but actual length is", show actual])
-            value
+getBufferViewBytes :: Vector ByteString -> BufferView -> ByteString
+getBufferViewBytes
+  deliveryBuffers
+  (BufferView {buffer, byteOffset, byteLength}) =
+    slice (fromMaybe 0 byteOffset) byteLength $ deliveryBuffers V.! buffer
+    where
+      slice offset sliceLength = BS.take sliceLength . BS.drop offset
 
 decodeOptions :: BufferView -> Accessor -> DecodeOptions
 decodeOptions
@@ -62,7 +47,3 @@ decodeAccessor
     buffer <- maybeToEither "buffer index error" (buffers !? buffer bufferView)
     let options = decodeOptions bufferView accessor
     decodeAccessorData options buffer
-
-decodeImageData :: Image -> Either String DataUrl
-decodeImageData (Image {uri}) =
-  maybeToEither "Image uri is absent" uri >>= decodeBase64Url

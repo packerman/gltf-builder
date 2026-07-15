@@ -1,6 +1,6 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.37.0.
+-- This file has been generated from package.yaml by hpack version 0.39.6.
 --
 -- see: https://github.com/sol/hpack
 
@@ -37,9 +37,12 @@ library
       Geometry.Types
       Gltf.Accessor
       Gltf.Array
+      Gltf.Binary.Chunk
       Gltf.Decode
       Gltf.Decode.Accessor
+      Gltf.Delivery
       Gltf.Encode
+      Gltf.Encode.Operations
       Gltf.Encode.Primitive
       Gltf.Encode.Types
       Gltf.Json
@@ -49,8 +52,11 @@ library
       Lib.Container
       Lib.File
       Lib.Image
+      Lib.MimeType
       Lib.UniqueList
       Lib.URI
+      Lib.Validity
+      Types
   other-modules:
       Paths_gltf_builder
   autogen-modules:
@@ -60,7 +66,7 @@ library
   default-extensions:
       OverloadedStrings
       DuplicateRecordFields
-      DisambiguateRecordFields
+      RecordWildCards
       NamedFieldPuns
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
@@ -95,6 +101,7 @@ executable gltf-builder-exe
       Example
       Example.Square
       Example.TexturedBox
+      Example.TexturedBoxBinary
       Options
       Paths_gltf_builder
   autogen-modules:
@@ -104,7 +111,7 @@ executable gltf-builder-exe
   default-extensions:
       OverloadedStrings
       DuplicateRecordFields
-      DisambiguateRecordFields
+      RecordWildCards
       NamedFieldPuns
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
@@ -140,6 +147,7 @@ test-suite gltf-builder-test
       Base.WriterSpec
       Core.DecodeSpec
       Core.EncodeSpec
+      Core.ImageEncodeSpec
       Geometry.TypesSpec
       Gltf.Decode.AccessorSpec
       Gltf.DecodeSpec
@@ -153,7 +161,7 @@ test-suite gltf-builder-test
   default-extensions:
       OverloadedStrings
       DuplicateRecordFields
-      DisambiguateRecordFields
+      RecordWildCards
       NamedFieldPuns
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:

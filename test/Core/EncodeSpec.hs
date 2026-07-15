@@ -10,10 +10,8 @@ import Data.Default
 import Data.Map as M
 import Geometry (box)
 import qualified Gltf.Array as Array
-import Gltf.Encode.Types
-  ( BufferCreate (..),
-    EncodingOptions (..),
-  )
+import Gltf.Delivery (deliveryJson)
+import Gltf.Encode.Types (EncodingOptions (..), setSingleBuffer)
 import Gltf.Json (Gltf (..))
 import qualified Gltf.Json as Gltf
 import Lib.Base64
@@ -26,7 +24,7 @@ spec = do
   describe "Encode" $ do
     it "encodes empty scene" $ do
       let input = Model.scene (pure "Empty") []
-      encodeScene input
+      (deliveryJson $ encodeScene input)
         `shouldBe` Gltf
           { asset = def,
             accessors = Array.empty,
@@ -77,7 +75,7 @@ spec = do
                     name = Nothing
                   }
               ]
-      encodeScene input
+      (deliveryJson $ encodeScene input)
         `shouldBe` Gltf
           { asset =
               Gltf.Asset
@@ -282,7 +280,7 @@ spec = do
                   }
               ]
       it "with single buffer" $ do
-        encodeScene input
+        (deliveryJson $ encodeScene input)
           `shouldBe` Gltf
             { asset =
                 Gltf.Asset
@@ -358,12 +356,11 @@ spec = do
               textures = Array.fromList []
             }
       it "with many buffers" $ do
-        encodeSceneWithOptions
-          ( def
-              { bufferCreate = OnePerMesh
-              }
+        ( deliveryJson $
+            encodeSceneWithOptions
+              (def `setSingleBuffer` False)
+              input
           )
-          input
           `shouldBe` Gltf
             { asset =
                 Gltf.Asset
@@ -491,7 +488,7 @@ spec = do
                         mode = Triangles
                       }
                 ]
-        encodeScene s
+        (deliveryJson $ encodeScene s)
           `shouldBe` Gltf
             { accessors =
                 Array.fromList
@@ -513,7 +510,12 @@ spec = do
                   ],
               images =
                 Array.fromList
-                  [ Gltf.Image {name = Nothing, uri = Just "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAALElEQVR4nGNg+M+AHancxo4YPLdhRwy5k7Ajhkm52BHDNk/siOG2CnaE07UACR8/wRZkXoIAAAAASUVORK5CYII="}
+                  [ Gltf.Image
+                      { name = Nothing,
+                        uri = Just "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAALklEQVR4nHXOgRAAQAgAwYNJJphkgkkmmF7gfmYBlgPFhmPS0eWoduQ4Yt0nezwJHz/BilkdCwAAAABJRU5ErkJggg==",
+                        mimeType = Nothing,
+                        bufferView = Nothing
+                      }
                   ],
               materials =
                 Array.fromList
@@ -565,7 +567,7 @@ spec = do
             Dsl.scene
               [ geometry (box 1 1 1) (Dsl.baseColorTexture $ defaultTextureInfo img)
               ]
-      encodeSceneWithOptions (def {interleaved = True}) input
+      (deliveryJson $ encodeSceneWithOptions (def {interleaved = True}) input)
         `shouldBe` ( Gltf
                        { accessors =
                            Array.fromList
@@ -592,7 +594,9 @@ spec = do
                            Array.fromList
                              [ Gltf.Image
                                  { name = Nothing,
-                                   uri = Just "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAALElEQVR4nGNg+M+AHancxo4YPLdhRwy5k7Ajhkm52BHDNk/siOG2CnaE07UACR8/wRZkXoIAAAAASUVORK5CYII="
+                                   uri = Just "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAALklEQVR4nHXOgRAAQAgAwYNJJphkgkkmmF7gfmYBlgPFhmPS0eWoduQ4Yt0nezwJHz/BilkdCwAAAABJRU5ErkJggg==",
+                                   mimeType = Nothing,
+                                   bufferView = Nothing
                                  }
                              ],
                          materials =

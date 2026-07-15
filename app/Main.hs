@@ -4,6 +4,7 @@ import qualified Data.Map as M
 import Example
 import Example.Square
 import Example.TexturedBox
+import qualified Example.TexturedBoxBinary
 import Lib.Base (maybeToM)
 import Options
 import Options.Applicative
@@ -12,7 +13,8 @@ examples :: M.Map String (IO Example)
 examples =
   M.fromList
     [ ("square", pure Example.Square.example),
-      ("textured-box", Example.TexturedBox.example)
+      ("textured-box", Example.TexturedBox.example),
+      ("textured-box-binary", Example.TexturedBoxBinary.example)
     ]
 
 main :: IO ()

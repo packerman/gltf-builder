@@ -2,11 +2,18 @@ module Gltf.Encode (module Gltf.Encode) where
 
 import Data.Aeson (encode)
 import Data.Aeson.Encode.Pretty
+import Data.ByteString.Lazy (ByteString)
 import Data.Validity (prettyValidate)
 import Gltf.Json (Gltf)
 import Gltf.Validate (Validity)
 import Lib.Base (eitherFail)
 import Lib.File (writeNestedFile)
+
+encodeJson :: Gltf -> ByteString
+encodeJson = encode
+
+encodeJsonPretty :: Gltf -> ByteString
+encodeJsonPretty = encodePretty
 
 writeGltf :: FilePath -> Gltf -> IO ()
 writeGltf filePath = validateBefore $ writeNestedFile filePath . encode

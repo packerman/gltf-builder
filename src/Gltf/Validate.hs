@@ -10,6 +10,7 @@ import Data.Validity
 import qualified Data.Vector as V
 import Gltf.Array (Array, toList, (!), (!?))
 import Gltf.Json
+import qualified Gltf.Json as Accessor (Accessor (..))
 import Lib.Base (isSingleton)
 import Lib.Container (groupBy)
 
@@ -69,7 +70,7 @@ validateAccessors bufferViews accessors =
     mapBufferViewsToUsingAccessors =
       M.map (snd <$>) $
         groupBy fst $
-          mapMaybe (\accessor -> (,accessor) <$> bufferView accessor) $
+          mapMaybe (\accessor -> (,accessor) <$> Accessor.bufferView accessor) $
             toList accessors
 
 validateMeshes :: Array Accessor -> Array Mesh -> Validation
