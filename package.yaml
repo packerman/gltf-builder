@@ -86,3 +86,4 @@ tests:
     - gltf-builder
     - hspec
     - hspec-discover
+    - temporary

@@ -185,6 +185,7 @@ test-suite gltf-builder-test
     , mime-types
     , network-uri
     , optparse-applicative
+    , temporary
     , text
     , transformers
     , validity

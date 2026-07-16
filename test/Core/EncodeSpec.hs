@@ -2,16 +2,23 @@ module Core.EncodeSpec (spec) where
 
 import Core.Dsl as Dsl
 import Core.Dsl.Color
-import Core.Encode (encodeScene, encodeSceneWithOptions)
+import Core.Encode (encodeScene, encodeSceneWithOptions, writeSceneWithOptions)
 import Core.Model as Model
 import qualified Core.Model as Material (Material (..))
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Lazy as BSL
 import Data.Default
 import Data.Map as M
 import Geometry (box)
 import qualified Gltf.Array as Array
-import Gltf.Delivery (deliveryJson)
+import Gltf.Binary.Chunk (readGlbFile, getJsonData, getBinaryData)
+import System.FilePath ((</>))
+import System.IO.Temp (withSystemTempDirectory)
+import Gltf.Delivery (Delivery (..), deliveryJson)
+import qualified Data.Vector as V
 import Gltf.Encode.Types (EncodingOptions (..), setSingleBuffer)
+import qualified Gltf.Json as GltfJson
+import Types (GltfVariant (..))
 import Gltf.Json (Gltf (..))
 import qualified Gltf.Json as Gltf
 import Lib.Base64
@@ -639,3 +646,29 @@ spec = do
                          textures = Array.fromList [Gltf.Texture {name = Nothing, sampler = Just 0, source = Just 0}]
                        }
                    )
+    describe "Binary encoding" $ do
+      let glbOptions = def {outputVariant = GltfBinary}
+          simpleScene =
+            Dsl.scene
+              [ primitive $
+                  Primitive
+                    { attributes = M.fromList [(Position, fromV3List [V3 0 0 0, V3 1 0 0, V3 0 1 0])],
+                      indices = pure $ fromShortList [0, 1, 2],
+                      material = baseColor $ pure 1,
+                      mode = Triangles
+                    }
+              ]
+      it "populates deliveryBuffers with raw bytes" $ do
+        let delivery = encodeSceneWithOptions glbOptions simpleScene
+        V.length (deliveryBuffers delivery) `shouldBe` 1
+      it "sets Buffer uri to Nothing" $ do
+        let delivery = encodeSceneWithOptions glbOptions simpleScene
+            buffers = GltfJson.buffers $ deliveryJson delivery
+        all (\(Gltf.Buffer {uri}) -> uri == Nothing) (Array.toList buffers) `shouldBe` True
+      it "round-trips through GLB file" $ do
+        withSystemTempDirectory "gltf-test" $ \dir -> do
+          let path = dir </> "test.glb"
+          writeSceneWithOptions glbOptions path simpleScene
+          glbFile <- readGlbFile path
+          getBinaryData glbFile `shouldNotBe` Nothing
+          BS.length (getJsonData glbFile) `shouldSatisfy` (> 0)
