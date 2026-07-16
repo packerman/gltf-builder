@@ -19,8 +19,9 @@ import qualified Data.Map as M
 import Data.Vector (Vector)
 import qualified Data.Vector as V
 import Gltf.Accessor (AccessorData (..))
+import Gltf.Encode.Operations (createBufferViewWithByteLength)
 import Gltf.Encode.Types
-import Gltf.Json (Accessor (..), BufferView (..))
+import Gltf.Json (Accessor (..))
 import Lib.Base (isSingleton, mzipMax, mzipMin, sumWith)
 import Lib.Container (groupBy)
 import Linear (V2 (..), V3 (..))
@@ -52,7 +53,7 @@ encodeAttributes attributes =
       let byteSizeSum = sumWith (byteSize . snd) attributeList
       attrs <- forM attributeList (mapM encodeAccessor)
       let bufferViewStride = if isSingleton attributeList then Nothing else Just groupStride
-      createBufferView bufferViewStride (pure 34962) byteSizeSum
+      _ <- createBufferViewWithByteLength bufferViewStride (pure 34962) byteSizeSum
       return $ M.fromList attrs
 
 encodeAttributesInterleaved :: Map String AccessorData -> EncodingM [Map String Int]
@@ -60,11 +61,13 @@ encodeAttributesInterleaved attributes =
   let assocs = M.assocs attributes
       byteSizeSum = sumWith (byteSize . snd) assocs
       totalStride = sumWith (stride . snd) assocs
-      count = elemCount $ snd $ head assocs
+      count = case assocs of
+        ((_ , d) : _) -> elemCount d
+        [] -> error "encodeAttributesInterleaved: no attributes"
    in do
         resetAccessorByteOffset
         attrs <- encodeAccessors assocs count
-        createBufferView (pure totalStride) (pure 34962) byteSizeSum
+        _ <- createBufferViewWithByteLength (pure totalStride) (pure 34962) byteSizeSum
         return [M.fromList attrs]
   where
     putAt :: Int -> AccessorData -> Put
@@ -99,29 +102,8 @@ encodeIndices accessorData =
   do
     resetAccessorByteOffset
     accessor <- encodeAccessor accessorData
-    createBufferView Nothing (pure 34963) (byteSize accessorData)
+    _ <- createBufferViewWithByteLength Nothing (pure 34963) (byteSize accessorData)
     return accessor
-
-createBufferView :: Maybe Int -> Maybe Int -> Int -> EncodingM ()
-createBufferView byteStride target byteLength = do
-  (EncodingState {bufferIndex, bufferViewByteOffset}) <- get
-  modify bufferViewState
-  tell $
-    fromBufferView $
-      BufferView
-        { buffer = bufferIndex,
-          byteOffset = pure bufferViewByteOffset,
-          byteLength,
-          byteStride,
-          name = Nothing,
-          target
-        }
-  where
-    bufferViewState st@(EncodingState {bufferViewByteOffset, bufferViewIndex}) =
-      st
-        { bufferViewIndex = bufferViewIndex + 1,
-          bufferViewByteOffset = bufferViewByteOffset + byteLength
-        }
 
 resetAccessorByteOffset :: EncodingM ()
 resetAccessorByteOffset = modify (\s -> s {accessorByteOffset = 0})

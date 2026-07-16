@@ -166,17 +166,12 @@ instance FromJSON BufferView where
   parseJSON = genericParseJSON readOptions
 
 data Image = Image
-  { name :: Maybe String,
-    uri :: Maybe Text
+  { uri :: Maybe Text,
+    mimeType :: Maybe String,
+    bufferView :: Maybe Index,
+    name :: Maybe String
   }
   deriving (Generic, Eq, Show)
-
-instance Default Image where
-  def =
-    Image
-      { name = Nothing,
-        uri = Nothing
-      }
 
 instance ToJSON Image where
   toJSON = genericToJSON writeOptions

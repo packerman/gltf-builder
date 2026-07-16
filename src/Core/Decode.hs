@@ -1,7 +1,13 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -Wno-name-shadowing #-}
 
-module Core.Decode (decodeScene) where
+module Core.Decode
+  ( decodeScene,
+    readSceneEmbedded,
+    readSceneBinary,
+    compareEmbeddedAndBinary,
+  )
+where
 
 import Control.Monad ((>=>))
 import Core.Model as Model
@@ -14,9 +20,9 @@ import Data.Vector (Vector, (!?))
 import Gltf.Accessor (AccessorData (..))
 import Gltf.Array (Array, toVector)
 import Gltf.Decode
+import Gltf.Delivery (Delivery (..), readGlbFile, readGltfFile)
 import Gltf.Json
-  ( Gltf,
-    Index,
+  ( Index,
     Material (pbrMetallicRoughness),
     Number,
     TextureInfo (..),
@@ -24,7 +30,6 @@ import Gltf.Json
   )
 import qualified Gltf.Json as Gltf
   ( Gltf (..),
-    Image,
     Material (..),
     Mesh (..),
     Node (..),
@@ -36,31 +41,48 @@ import qualified Gltf.Json as Gltf
     TextureInfo (..),
     defaultPbrMetallicRoughness,
   )
+import Lib.Base (eitherFail)
 import Lib.Container (mapPairsM)
 import Linear (M44, V4 (V4), identity)
 
-decodeScene :: Int -> Gltf -> Either String Scene
+readSceneEmbedded :: Int -> FilePath -> IO Scene
+readSceneEmbedded index filePath =
+  readGltfFile filePath
+    >>= (eitherFail . decodeScene index)
+
+readSceneBinary :: Int -> FilePath -> IO Scene
+readSceneBinary index filePath =
+  readGlbFile filePath
+    >>= (eitherFail . decodeScene index)
+
+compareEmbeddedAndBinary :: Int -> FilePath -> FilePath -> IO Bool
+compareEmbeddedAndBinary index embeddedPath binaryPath = do
+  liftA2 (==) (readSceneEmbedded index embeddedPath) (readSceneBinary index binaryPath)
+
+decodeScene :: Int -> Delivery -> Either String Scene
 decodeScene
   index
-  ( Gltf.Gltf
-      { buffers = gltfBuffers,
-        bufferViews = gltfBufferViews,
-        accessors = gltfAcceccors,
-        materials = gltfMaterials,
-        meshes = gltfMeshes,
-        nodes = gltfNodes,
-        scenes = gltfScenes,
-        images = gltfImages,
-        textures = gltfTextures,
-        samplers = gltfSamplers
+  ( Delivery
+      { deliveryJson =
+          Gltf.Gltf
+            { bufferViews = gltfBufferViews,
+              accessors = gltfAccessors,
+              materials = gltfMaterials,
+              meshes = gltfMeshes,
+              nodes = gltfNodes,
+              scenes = gltfScenes,
+              textures = gltfTextures,
+              samplers = gltfSamplers
+            },
+        deliveryBuffers,
+        deliveryImages
       }
     ) = do
     (Gltf.Scene sceneName sceneNodes) <- getIndexed gltfScenes index "scene"
-    buffers <- traverse (fmap BSL.fromStrict . decodeBuffer) $ toVector gltfBuffers
     let bufferViews = toVector gltfBufferViews
-    accessorData <- traverse (decodeAccessor buffers bufferViews) $ toVector gltfAcceccors
+    accessorData <- traverse (decodeAccessor (BSL.fromStrict <$> deliveryBuffers) bufferViews) $ toVector gltfAccessors
     samplers <- traverse decodeSampler $ toVector gltfSamplers
-    images <- traverse decodeImage $ toVector gltfImages
+    let images = dataUrlToImage <$> deliveryImages
     textures <- traverse (decodeTexture images samplers) $ toVector gltfTextures
     materials <- traverse (decodeMaterial textures) $ toVector gltfMaterials
     meshes <- traverse (decodeMesh accessorData materials) $ toVector gltfMeshes
@@ -157,16 +179,6 @@ decodeTexture
     Model.Texture name
       <$> (maybeToEither "Source is not present" source >>= getByIndex images "image")
       <*> maybe (pure def) (getByIndex samplers "sampler") sampler
-
-decodeImage :: Gltf.Image -> Either String Model.Image
-decodeImage image = do
-  DataUrl {getData, mimeType} <- decodeImageData image
-  return
-    Model.Image
-      { name = Nothing,
-        mimeType,
-        imageData = getData
-      }
 
 decodeSampler :: Gltf.Sampler -> Either String Model.Sampler
 decodeSampler

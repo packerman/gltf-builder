@@ -27,7 +27,7 @@ dependencies:
 - text
 - transformers
 - vector
-- aeson # https://hackage.haskell.org/package/aeson
+- aeson
 - aeson-pretty
 - base64
 - directory
@@ -46,7 +46,7 @@ dependencies:
 default-extensions:
 - OverloadedStrings
 - DuplicateRecordFields
-- DisambiguateRecordFields # https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/disambiguate_record_fields.html
+- RecordWildCards
 - NamedFieldPuns
 
 ghc-options:
@@ -86,3 +86,4 @@ tests:
     - gltf-builder
     - hspec
     - hspec-discover
+    - temporary

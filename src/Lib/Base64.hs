@@ -12,7 +12,8 @@ module Lib.Base64
 where
 
 import qualified Data.ByteString as B
-import Data.ByteString.Base64 (decodeBase64, encodeBase64)
+import Data.Base64.Types (extractBase64)
+import Data.ByteString.Base64 (decodeBase64Untyped, encodeBase64)
 import Data.Either.Extra (mapLeft)
 import qualified Data.Text as T
 import Data.Text.Encoding (decodeASCII, encodeUtf8)
@@ -34,7 +35,7 @@ imagePngDataUrl :: B.ByteString -> DataUrl
 imagePngDataUrl = dataUrl "image/png"
 
 decodeBase64Text :: T.Text -> Either String B.ByteString
-decodeBase64Text = mapLeft T.unpack . decodeBase64 . encodeUtf8
+decodeBase64Text = mapLeft T.unpack . decodeBase64Untyped . encodeUtf8
 
 decodeBase64Url :: T.Text -> Either String DataUrl
 decodeBase64Url uri = case T.splitOn "," uri of
@@ -54,7 +55,7 @@ isMediaType acceptedMediaType (DataUrl {mimeType}) =
   if mimeType `elem` acceptedMediaType then Just mimeType else Nothing
 
 encodeBase64Text :: B.ByteString -> T.Text
-encodeBase64Text = encodeBase64
+encodeBase64Text = extractBase64 . encodeBase64
 
 encodeDataUrl :: DataUrl -> T.Text
 encodeDataUrl (DataUrl {mimeType, getData}) =

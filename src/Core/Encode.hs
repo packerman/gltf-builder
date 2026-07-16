@@ -7,7 +7,7 @@ module Core.Encode
 where
 
 import Control.Monad
-import Control.Monad.Trans.RWS (evalRWS, get, modify, tell)
+import Control.Monad.Trans.RWS (get, modify, tell)
 import Core.Model
   ( AttributeData (..),
     IndexData (..),
@@ -16,22 +16,27 @@ import Core.Model
   )
 import qualified Core.Model as Model
 import Core.Translate.Enums
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.Lazy as BSL
 import Data.Default
 import Data.Foldable (toList)
 import Data.Map (Map)
 import Data.Maybe (fromJust)
+import qualified Data.Vector as V
 import Gltf.Accessor (AccessorData (..))
 import qualified Gltf.Array as Array
-import Gltf.Encode (writeGltf, writeGltfPretty)
+import Gltf.Delivery (Delivery (..), writeDelivery)
+import Gltf.Encode.Operations (createBufferViewWithBytes, evalEncoding)
 import Gltf.Encode.Primitive (EncodingM)
 import qualified Gltf.Encode.Primitive as GltfPrimitive (encodePrimitive)
 import Gltf.Encode.Types
-  ( BufferCreate (..),
-    EncodedPrimitive (..),
+  ( EncodedPrimitive (..),
     EncodingOptions (..),
     EncodingState (..),
+    MeshPart,
     fromMaterial,
-    initialEncoding,
+    isBufferImages,
+    isSingleBuffer,
     setMaterialIndex,
     withBuffer,
   )
@@ -40,35 +45,63 @@ import Gltf.Json (Gltf (..), defaultDoubleSided)
 import qualified Gltf.Json as Gltf
 import Gltf.Validate ()
 import Lib.Base (nothingIf)
+import Types (GltfVariant (..))
 import Lib.Base64
 import Lib.Container (indexList, lookupAll, mapPairs)
+import Lib.MimeType (mimeTypeToString)
 import Lib.UniqueList (UniqueList)
 import qualified Lib.UniqueList as UL
 import Linear (identity)
 
 writeScene :: FilePath -> Model.Scene -> IO ()
-writeScene filePath = writeGltf filePath . encodeScene
+writeScene = writeSceneWithOptions def
 
 writeSceneWithOptions :: EncodingOptions -> FilePath -> Model.Scene -> IO ()
-writeSceneWithOptions options@(EncodingOptions {prettyPrint}) filePath =
-  let writeFn = if prettyPrint then writeGltfPretty else writeGltf
-   in writeFn filePath . encodeSceneWithOptions options
+writeSceneWithOptions options filePath =
+  writeDelivery filePath . encodeSceneWithOptions options
 
-encodeScene :: Model.Scene -> Gltf
+encodeScene :: Model.Scene -> Delivery
 encodeScene = encodeSceneWithOptions def
 
 type TextureIndex = UniqueList Model.Texture
 
-encodeSceneWithOptions :: EncodingOptions -> Model.Scene -> Gltf
-encodeSceneWithOptions encodingOptions scene@(Model.Scene {nodes, name = sceneName}) =
+data EncodedScene = EncodedScene
+  { encodedImages :: [Gltf.Image],
+    encodedMeshes :: [Gltf.Mesh]
+  }
+  deriving (Eq, Show)
+
+data SceneIndex = SceneIndex
+  { textureIndex :: UniqueList Model.Texture,
+    imageIndex :: UniqueList Model.Image,
+    samplerIndex :: UniqueList Model.Sampler,
+    meshIndex :: UniqueList Model.Mesh
+  }
+  deriving (Eq, Show)
+
+getTextureList :: SceneIndex -> [Model.Texture]
+getTextureList = UL.toList . textureIndex
+
+getMeshList :: SceneIndex -> [Model.Mesh]
+getMeshList = UL.toList . meshIndex
+
+getImageList :: SceneIndex -> [Model.Image]
+getImageList = UL.toList . imageIndex
+
+createSceneIndex :: Model.Scene -> SceneIndex
+createSceneIndex scene =
   let textureIndex = UL.fromList $ sceneTextures scene
       imageIndex = UL.map Model.image textureIndex
       samplerIndex = UL.map Model.sampler textureIndex
-      encodedImages = encodeImage <$> UL.toList imageIndex
-      encodedSamplers = encodeSampler <$> UL.toList samplerIndex
-      encodedTextures = encodeTexture imageIndex samplerIndex <$> UL.toList textureIndex
       meshIndex = UL.fromList $ sceneMeshes scene
-      (encodedMeshes, meshPart) = encodeMeshes encodingOptions textureIndex $ UL.toList meshIndex
+   in SceneIndex {..}
+
+encodeSceneWithOptions :: EncodingOptions -> Model.Scene -> Delivery
+encodeSceneWithOptions encodingOptions scene@(Model.Scene {nodes, name = sceneName}) =
+  let index = createSceneIndex scene
+      encodedSamplers = encodeSampler <$> UL.toList (samplerIndex index)
+      encodedTextures = encodeTexture (imageIndex index) (samplerIndex index) <$> getTextureList index
+      (encodedScene, meshPart) = encodeBufferRelatedParts index
       ( MeshPart.MeshPart
           { buffers,
             accessors = encodedAccessors,
@@ -78,26 +111,37 @@ encodeSceneWithOptions encodingOptions scene@(Model.Scene {nodes, name = sceneNa
         ) = meshPart
       nodeList = Model.sceneNodes scene
       nodeIndex = indexList nodeList
-      encodedNodes = encodeNodes meshIndex nodeIndex nodeList
-   in Gltf
-        { asset = def,
-          scene = Just 0,
-          scenes =
-            Array.fromList
-              [ Gltf.Scene
-                  { name = sceneName,
-                    nodes = nothingIf null $ lookupAll nodes nodeIndex
-                  }
-              ],
-          accessors = Array.fromList encodedAccessors,
-          buffers = Array.fromList buffers,
-          bufferViews = Array.fromList bufferViews,
-          images = Array.fromList encodedImages,
-          materials = Array.fromList materials,
-          meshes = Array.fromList encodedMeshes,
-          nodes = Array.fromList encodedNodes,
-          samplers = Array.fromList encodedSamplers,
-          textures = Array.fromList encodedTextures
+      encodedNodes = encodeNodes (meshIndex index) nodeIndex nodeList
+   in Delivery
+        { deliveryUri = Nothing,
+          deliveryVariant = outputVariant encodingOptions,
+          deliveryJson =
+            Gltf
+              { asset = def,
+                scene = Just 0,
+                scenes =
+                  Array.fromList
+                    [ Gltf.Scene
+                        { name = sceneName,
+                          nodes = nothingIf null $ lookupAll nodes nodeIndex
+                        }
+                    ],
+                accessors = Array.fromList encodedAccessors,
+                buffers = Array.fromList buffers,
+                bufferViews = Array.fromList bufferViews,
+                images = Array.fromList $ encodedImages encodedScene,
+                materials = Array.fromList materials,
+                meshes = Array.fromList $ encodedMeshes encodedScene,
+                nodes = Array.fromList encodedNodes,
+                samplers = Array.fromList encodedSamplers,
+                textures = Array.fromList encodedTextures
+              },
+          deliveryBuffers =
+            case outputVariant encodingOptions of
+              GltfBinary ->
+                V.singleton $ BSL.toStrict $ BSL.concat $ MeshPart.bytes meshPart
+              _ -> V.empty,
+          deliveryImages = V.empty
         }
   where
     encodeNodes :: UniqueList Model.Mesh -> Map Model.Node Int -> [Model.Node] -> [Gltf.Node]
@@ -113,12 +157,14 @@ encodeSceneWithOptions encodingOptions scene@(Model.Scene {nodes, name = sceneNa
               }
           )
 
-encodeMeshes :: EncodingOptions -> TextureIndex -> [Model.Mesh] -> ([Gltf.Mesh], MeshPart.MeshPart)
-encodeMeshes encodingOptions textureIndex meshes = evalRWS meshAction encodingOptions initialEncoding
-  where
-    meshAction = case bufferCreate encodingOptions of
-      SingleBuffer -> do withBuffer $ forM meshes (encodeMesh textureIndex)
-      OnePerMesh -> forM meshes (withBuffer . encodeMesh textureIndex)
+    encodeBufferRelatedParts :: SceneIndex -> (EncodedScene, MeshPart)
+    encodeBufferRelatedParts index =
+      let singleEncodeMod = if isSingleBuffer encodingOptions then id else withBuffer
+          entireEncodeMod = if isSingleBuffer encodingOptions then withBuffer else id
+       in flip evalEncoding encodingOptions $ entireEncodeMod $ do
+            encodedMeshes <- traverse (singleEncodeMod . encodeMesh (textureIndex index)) $ getMeshList index
+            encodedImages <- traverse (singleEncodeMod . encodeImage encodingOptions) $ getImageList index
+            return EncodedScene {..}
 
 encodeMesh :: TextureIndex -> Model.Mesh -> EncodingM Gltf.Mesh
 encodeMesh
@@ -207,12 +253,28 @@ encodeMesh
             texCoord = pure texCoord
           }
 
-encodeImage :: Model.Image -> Gltf.Image
-encodeImage (Model.Image {name, mimeType, imageData}) =
-  Gltf.Image
-    { name,
-      uri = pure $ encodeDataUrl $ dataUrl mimeType imageData
-    }
+encodeImage :: EncodingOptions -> Model.Image -> EncodingM Gltf.Image
+encodeImage
+  encdodingOptions
+  (Model.Image {name, mimeType, imageData}) =
+    if isBufferImages encdodingOptions
+      then do
+        index <- createBufferViewWithBytes $ BS.fromStrict imageData
+        return
+          Gltf.Image
+            { name,
+              uri = Nothing,
+              mimeType = Just $ mimeTypeToString mimeType,
+              bufferView = Just index
+            }
+      else
+        pure
+          Gltf.Image
+            { name,
+              uri = pure $ encodeDataUrl $ dataUrl mimeType imageData,
+              mimeType = Nothing,
+              bufferView = Nothing
+            }
 
 encodeSampler :: Model.Sampler -> Gltf.Sampler
 encodeSampler

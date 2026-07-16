@@ -6,6 +6,7 @@ import qualified Data.ByteString as BS
 import Data.Default
 import qualified Data.Map as M
 import Gltf.Array as Array
+import Gltf.Delivery (jsonToEmbedded)
 import Gltf.Json as Gltf
 import Linear (V2 (..), V3 (..), V4 (..), identity)
 import Test.Hspec
@@ -15,80 +16,81 @@ spec = do
   describe "Decode" $ do
     it "Decodes triangle without indices" $ do
       let triangleWithoutIndices =
-            Gltf
-              { accessors =
-                  fromList
-                    [ Gltf.Accessor
-                        { bufferView = Just 0,
-                          byteOffset = Just 0,
-                          componentType = 5126,
-                          count = 3,
-                          name = Nothing,
-                          accessorType = "VEC3",
-                          max = Just [1.0, 1.0, 0.0],
-                          min = Just [0.0, 0.0, 0.0]
-                        }
-                    ],
-                asset = def,
-                buffers =
-                  fromList
-                    [ Gltf.Buffer
-                        { byteLength = 36,
-                          name = Nothing,
-                          uri = Just "data:application/octet-stream;base64,AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAA"
-                        }
-                    ],
-                bufferViews =
-                  fromList
-                    [ Gltf.BufferView
-                        { buffer = 0,
-                          byteOffset = Just 0,
-                          byteLength = 36,
-                          byteStride = Nothing,
-                          name = Nothing,
-                          target = Just 34962
-                        }
-                    ],
-                images = Nothing,
-                materials = Nothing,
-                meshes =
-                  fromList
-                    [ Gltf.Mesh
-                        { name = Nothing,
-                          primitives =
-                            [ Gltf.Primitive
-                                { attributes =
-                                    M.fromList
-                                      [ ("POSITION", 0)
-                                      ],
-                                  indices = Nothing,
-                                  material = Nothing,
-                                  mode = Nothing
-                                }
-                            ]
-                        }
-                    ],
-                nodes =
-                  fromList
-                    [ Gltf.Node
-                        { children = Nothing,
-                          matrix = Nothing,
-                          mesh = Just 0,
-                          name = Nothing
-                        }
-                    ],
-                samplers = Nothing,
-                scene = Just 0,
-                scenes =
-                  fromList
-                    [ Gltf.Scene
-                        { name = Nothing,
-                          nodes = Just [0]
-                        }
-                    ],
-                textures = Nothing
-              }
-      let decoded = decodeScene 0 triangleWithoutIndices
+            jsonToEmbedded $
+              Gltf
+                { accessors =
+                    fromList
+                      [ Gltf.Accessor
+                          { bufferView = Just 0,
+                            byteOffset = Just 0,
+                            componentType = 5126,
+                            count = 3,
+                            name = Nothing,
+                            accessorType = "VEC3",
+                            max = Just [1.0, 1.0, 0.0],
+                            min = Just [0.0, 0.0, 0.0]
+                          }
+                      ],
+                  asset = def,
+                  buffers =
+                    fromList
+                      [ Gltf.Buffer
+                          { byteLength = 36,
+                            name = Nothing,
+                            uri = Just "data:application/octet-stream;base64,AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAA"
+                          }
+                      ],
+                  bufferViews =
+                    fromList
+                      [ Gltf.BufferView
+                          { buffer = 0,
+                            byteOffset = Just 0,
+                            byteLength = 36,
+                            byteStride = Nothing,
+                            name = Nothing,
+                            target = Just 34962
+                          }
+                      ],
+                  images = Nothing,
+                  materials = Nothing,
+                  meshes =
+                    fromList
+                      [ Gltf.Mesh
+                          { name = Nothing,
+                            primitives =
+                              [ Gltf.Primitive
+                                  { attributes =
+                                      M.fromList
+                                        [ ("POSITION", 0)
+                                        ],
+                                    indices = Nothing,
+                                    material = Nothing,
+                                    mode = Nothing
+                                  }
+                              ]
+                          }
+                      ],
+                  nodes =
+                    fromList
+                      [ Gltf.Node
+                          { children = Nothing,
+                            matrix = Nothing,
+                            mesh = Just 0,
+                            name = Nothing
+                          }
+                      ],
+                  samplers = Nothing,
+                  scene = Just 0,
+                  scenes =
+                    fromList
+                      [ Gltf.Scene
+                          { name = Nothing,
+                            nodes = Just [0]
+                          }
+                      ],
+                  textures = Nothing
+                }
+      let decoded = decodeScene 0 =<< triangleWithoutIndices
       decoded
         `shouldBe` Right
           ( Model.scene
@@ -122,168 +124,171 @@ spec = do
           )
     it "Decodes textured box" $ do
       let texturedBox =
-            Gltf
-              { accessors =
-                  fromList
-                    [ Accessor
-                        { bufferView = Just 0,
-                          byteOffset = Just 0,
-                          componentType = 5123,
-                          count = 36,
-                          name = Nothing,
-                          accessorType = "SCALAR",
-                          max = Just [23.0],
-                          min = Just [0.0]
-                        },
-                      Accessor
-                        { bufferView = Just 1,
-                          byteOffset = Just 0,
-                          componentType = 5126,
-                          count = 24,
-                          name = Nothing,
-                          accessorType = "VEC3",
-                          max = Just [1.0, 1.0, 1.0],
-                          min = Just [-1.0, -1.0, -1.0]
-                        },
-                      Accessor
-                        { bufferView = Just 1,
-                          byteOffset = Just 288,
-                          componentType = 5126,
-                          count = 24,
-                          name = Nothing,
-                          accessorType = "VEC3",
-                          max = Just [0.5, 0.5, 0.5],
-                          min = Just [-0.5, -0.5, -0.5]
-                        },
-                      Accessor
-                        { bufferView = Just 2,
-                          byteOffset = Just 0,
-                          componentType = 5126,
-                          count = 24,
-                          name = Nothing,
-                          accessorType = "VEC2",
-                          max = Just [6.0, 1.0],
-                          min = Just [0.0, 0.0]
-                        }
-                    ],
-                asset =
-                  Asset
-                    { generator = Just "COLLADA2GLTF",
-                      version = "2.0"
-                    },
-                buffers =
-                  fromList
-                    [ Buffer
-                        { byteLength = 840,
-                          name = Nothing,
-                          uri = Just "data:application/octet-stream;base64,AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAvwAAAL8AAAA/AAAAPwAAAL8AAAA/AAAAvwAAAD8AAAA/AAAAPwAAAD8AAAA/AAAAPwAAAD8AAAA/AAAAPwAAAL8AAAA/AAAAPwAAAD8AAAC/AAAAPwAAAL8AAAC/AAAAvwAAAD8AAAA/AAAAPwAAAD8AAAA/AAAAvwAAAD8AAAC/AAAAPwAAAD8AAAC/AAAAPwAAAL8AAAA/AAAAvwAAAL8AAAA/AAAAPwAAAL8AAAC/AAAAvwAAAL8AAAC/AAAAvwAAAL8AAAA/AAAAvwAAAD8AAAA/AAAAvwAAAL8AAAC/AAAAvwAAAD8AAAC/AAAAvwAAAL8AAAC/AAAAvwAAAD8AAAC/AAAAPwAAAL8AAAC/AAAAPwAAAD8AAAC/AADAQAAAAAAAAKBAAAAAAAAAwED+/38/AACgQP7/fz8AAIBAAAAAAAAAoEAAAAAAAACAQAAAgD8AAKBAAACAPwAAAEAAAAAAAACAPwAAAAAAAABAAACAPwAAgD8AAIA/AABAQAAAAAAAAIBAAAAAAAAAQEAAAIA/AACAQAAAgD8AAEBAAAAAAAAAAEAAAAAAAABAQAAAgD8AAABAAACAPwAAAAAAAAAAAAAAAP7/fz8AAIA/AAAAAAAAgD/+/38/AAABAAIAAwACAAEABAAFAAYABwAGAAUACAAJAAoACwAKAAkADAANAA4ADwAOAA0AEAARABIAEwASABEAFAAVABYAFwAWABUA"
-                        }
-                    ],
-                bufferViews =
-                  fromList
-                    [ BufferView
-                        { buffer = 0,
-                          byteOffset = Just 768,
-                          byteLength = 72,
-                          byteStride = Nothing,
-                          name = Nothing,
-                          target = Just 34963
-                        },
-                      BufferView
-                        { buffer = 0,
-                          byteOffset = Just 0,
-                          byteLength = 576,
-                          byteStride = Just 12,
-                          name = Nothing,
-                          target = Just 34962
-                        },
-                      BufferView
-                        { buffer = 0,
-                          byteOffset = Just 576,
-                          byteLength = 192,
-                          byteStride = Just 8,
-                          name = Nothing,
-                          target = Just 34962
-                        }
-                    ],
-                images =
-                  fromList
-                    [ Gltf.Image
-                        { name = Nothing,
-                          uri = Just "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAEklEQVR4nGP4z8CAB+GTG8HSALfKY52fTcuYAAAAAElFTkSuQmCC"
-                        }
-                    ],
-                materials =
-                  fromList
-                    [ Gltf.Material
-                        { name = Just "Texture",
-                          pbrMetallicRoughness =
-                            Just
-                              ( Gltf.PbrMetallicRoughness
-                                  { baseColorFactor = Nothing,
-                                    baseColorTexture = Just $ Gltf.TextureInfo {index = 0, texCoord = Nothing},
-                                    metallicFactor = Just 0.0,
-                                    roughnessFactor = Nothing,
-                                    metallicRoughnessTexture = Nothing
+            jsonToEmbedded $
+              Gltf
+                { accessors =
+                    fromList
+                      [ Accessor
+                          { bufferView = Just 0,
+                            byteOffset = Just 0,
+                            componentType = 5123,
+                            count = 36,
+                            name = Nothing,
+                            accessorType = "SCALAR",
+                            max = Just [23.0],
+                            min = Just [0.0]
+                          },
+                        Accessor
+                          { bufferView = Just 1,
+                            byteOffset = Just 0,
+                            componentType = 5126,
+                            count = 24,
+                            name = Nothing,
+                            accessorType = "VEC3",
+                            max = Just [1.0, 1.0, 1.0],
+                            min = Just [-1.0, -1.0, -1.0]
+                          },
+                        Accessor
+                          { bufferView = Just 1,
+                            byteOffset = Just 288,
+                            componentType = 5126,
+                            count = 24,
+                            name = Nothing,
+                            accessorType = "VEC3",
+                            max = Just [0.5, 0.5, 0.5],
+                            min = Just [-0.5, -0.5, -0.5]
+                          },
+                        Accessor
+                          { bufferView = Just 2,
+                            byteOffset = Just 0,
+                            componentType = 5126,
+                            count = 24,
+                            name = Nothing,
+                            accessorType = "VEC2",
+                            max = Just [6.0, 1.0],
+                            min = Just [0.0, 0.0]
+                          }
+                      ],
+                  asset =
+                    Asset
+                      { generator = Just "COLLADA2GLTF",
+                        version = "2.0"
+                      },
+                  buffers =
+                    fromList
+                      [ Buffer
+                          { byteLength = 840,
+                            name = Nothing,
+                            uri = Just "data:application/octet-stream;base64,AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAvwAAAL8AAAA/AAAAPwAAAL8AAAA/AAAAvwAAAD8AAAA/AAAAPwAAAD8AAAA/AAAAPwAAAD8AAAA/AAAAPwAAAL8AAAA/AAAAPwAAAD8AAAC/AAAAPwAAAL8AAAC/AAAAvwAAAD8AAAA/AAAAPwAAAD8AAAA/AAAAvwAAAD8AAAC/AAAAPwAAAD8AAAC/AAAAPwAAAL8AAAA/AAAAvwAAAL8AAAA/AAAAPwAAAL8AAAC/AAAAvwAAAL8AAAC/AAAAvwAAAL8AAAA/AAAAvwAAAD8AAAA/AAAAvwAAAL8AAAC/AAAAvwAAAD8AAAC/AAAAvwAAAL8AAAC/AAAAvwAAAD8AAAC/AAAAPwAAAL8AAAC/AAAAPwAAAD8AAAC/AADAQAAAAAAAAKBAAAAAAAAAwED+/38/AACgQP7/fz8AAIBAAAAAAAAAoEAAAAAAAACAQAAAgD8AAKBAAACAPwAAAEAAAAAAAACAPwAAAAAAAABAAACAPwAAgD8AAIA/AABAQAAAAAAAAIBAAAAAAAAAQEAAAIA/AACAQAAAgD8AAEBAAAAAAAAAAEAAAAAAAABAQAAAgD8AAABAAACAPwAAAAAAAAAAAAAAAP7/fz8AAIA/AAAAAAAAgD/+/38/AAABAAIAAwACAAEABAAFAAYABwAGAAUACAAJAAoACwAKAAkADAANAA4ADwAOAA0AEAARABIAEwASABEAFAAVABYAFwAWABUA"
+                          }
+                      ],
+                  bufferViews =
+                    fromList
+                      [ BufferView
+                          { buffer = 0,
+                            byteOffset = Just 768,
+                            byteLength = 72,
+                            byteStride = Nothing,
+                            name = Nothing,
+                            target = Just 34963
+                          },
+                        BufferView
+                          { buffer = 0,
+                            byteOffset = Just 0,
+                            byteLength = 576,
+                            byteStride = Just 12,
+                            name = Nothing,
+                            target = Just 34962
+                          },
+                        BufferView
+                          { buffer = 0,
+                            byteOffset = Just 576,
+                            byteLength = 192,
+                            byteStride = Just 8,
+                            name = Nothing,
+                            target = Just 34962
+                          }
+                      ],
+                  images =
+                    fromList
+                      [ Gltf.Image
+                          { name = Nothing,
+                            uri = Just "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAEklEQVR4nGP4z8CAB+GTG8HSALfKY52fTcuYAAAAAElFTkSuQmCC",
+                            mimeType = Nothing,
+                            bufferView = Nothing
+                          }
+                      ],
+                  materials =
+                    fromList
+                      [ Gltf.Material
+                          { name = Just "Texture",
+                            pbrMetallicRoughness =
+                              Just
+                                ( Gltf.PbrMetallicRoughness
+                                    { baseColorFactor = Nothing,
+                                      baseColorTexture = Just $ Gltf.TextureInfo {index = 0, texCoord = Nothing},
+                                      metallicFactor = Just 0.0,
+                                      roughnessFactor = Nothing,
+                                      metallicRoughnessTexture = Nothing
+                                    }
+                                ),
+                            alphaMode = Nothing,
+                            alphaCutoff = Nothing,
+                            doubleSided = Nothing
+                          }
+                      ],
+                  meshes =
+                    fromList
+                      [ Gltf.Mesh
+                          { name = Just "Mesh",
+                            primitives =
+                              [ Gltf.Primitive
+                                  { attributes = M.fromList [("NORMAL", 1), ("POSITION", 2), ("TEXCOORD_0", 3)],
+                                    indices = Just 0,
+                                    material = Just 0,
+                                    mode = Just 4
                                   }
-                              ),
-                          alphaMode = Nothing,
-                          alphaCutoff = Nothing,
-                          doubleSided = Nothing
-                        }
-                    ],
-                meshes =
-                  fromList
-                    [ Gltf.Mesh
-                        { name = Just "Mesh",
-                          primitives =
-                            [ Gltf.Primitive
-                                { attributes = M.fromList [("NORMAL", 1), ("POSITION", 2), ("TEXCOORD_0", 3)],
-                                  indices = Just 0,
-                                  material = Just 0,
-                                  mode = Just 4
-                                }
-                            ]
-                        }
-                    ],
-                nodes =
-                  fromList
-                    [ Gltf.Node
-                        { children = Just [1],
-                          matrix = Just [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
-                          mesh = Nothing,
-                          name = Nothing
-                        },
-                      Gltf.Node {children = Nothing, matrix = Nothing, mesh = Just 0, name = Nothing}
-                    ],
-                samplers =
-                  fromList
-                    [ Gltf.Sampler
-                        { magFilter = Just 9729,
-                          minFilter = Just 9986,
-                          name = Nothing,
-                          wrapS = Just 10497,
-                          wrapT = Just 10497
-                        }
-                    ],
-                scene = Just 0,
-                scenes =
-                  fromList
-                    [ Gltf.Scene
-                        { name = Nothing,
-                          nodes = Just [0]
-                        }
-                    ],
-                textures =
-                  fromList
-                    [ Gltf.Texture
-                        { name = Nothing,
-                          sampler = Just 0,
-                          source = Just 0
-                        }
-                    ]
-              }
-      let decoded = decodeScene 0 texturedBox
+                              ]
+                          }
+                      ],
+                  nodes =
+                    fromList
+                      [ Gltf.Node
+                          { children = Just [1],
+                            matrix = Just [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
+                            mesh = Nothing,
+                            name = Nothing
+                          },
+                        Gltf.Node {children = Nothing, matrix = Nothing, mesh = Just 0, name = Nothing}
+                      ],
+                  samplers =
+                    fromList
+                      [ Gltf.Sampler
+                          { magFilter = Just 9729,
+                            minFilter = Just 9986,
+                            name = Nothing,
+                            wrapS = Just 10497,
+                            wrapT = Just 10497
+                          }
+                      ],
+                  scene = Just 0,
+                  scenes =
+                    fromList
+                      [ Gltf.Scene
+                          { name = Nothing,
+                            nodes = Just [0]
+                          }
+                      ],
+                  textures =
+                    fromList
+                      [ Gltf.Texture
+                          { name = Nothing,
+                            sampler = Just 0,
+                            source = Just 0
+                          }
+                      ]
+                }
+      let decoded = decodeScene 0 =<< texturedBox
       decoded
         `shouldBe` Right
           ( Model.Scene
@@ -365,51 +370,52 @@ spec = do
           )
     it "Decoded interleaved box" $ do
       let input =
-            Gltf
-              { accessors =
-                  fromList
-                    [ Accessor {bufferView = Just 0, byteOffset = Just 0, componentType = 5123, count = 36, name = Nothing, accessorType = "SCALAR", max = Just [23.0], min = Just [0.0]},
-                      Accessor {bufferView = Just 1, byteOffset = Just 0, componentType = 5126, count = 24, name = Nothing, accessorType = "VEC3", max = Just [1.0, 1.0, 1.0], min = Just [-1.0, -1.0, -1.0]},
-                      Accessor {bufferView = Just 1, byteOffset = Just 12, componentType = 5126, count = 24, name = Nothing, accessorType = "VEC3", max = Just [0.5, 0.5, 0.5], min = Just [-0.5, -0.5, -0.5]}
-                    ],
-                asset = Asset {generator = Just "COLLADA2GLTF", version = "2.0"},
-                buffers =
-                  fromList
-                    [ Buffer {byteLength = 648, name = Nothing, uri = Just "data:application/octet-stream;base64,AAAAAAAAAAAAAIA/AAAAvwAAAL8AAAA/AAAAAAAAAAAAAIA/AAAAPwAAAL8AAAA/AAAAAAAAAAAAAIA/AAAAvwAAAD8AAAA/AAAAAAAAAAAAAIA/AAAAPwAAAD8AAAA/AAAAAAAAgL8AAAAAAAAAPwAAAL8AAAA/AAAAAAAAgL8AAAAAAAAAvwAAAL8AAAA/AAAAAAAAgL8AAAAAAAAAPwAAAL8AAAC/AAAAAAAAgL8AAAAAAAAAvwAAAL8AAAC/AACAPwAAAAAAAAAAAAAAPwAAAD8AAAA/AACAPwAAAAAAAAAAAAAAPwAAAL8AAAA/AACAPwAAAAAAAAAAAAAAPwAAAD8AAAC/AACAPwAAAAAAAAAAAAAAPwAAAL8AAAC/AAAAAAAAgD8AAAAAAAAAvwAAAD8AAAA/AAAAAAAAgD8AAAAAAAAAPwAAAD8AAAA/AAAAAAAAgD8AAAAAAAAAvwAAAD8AAAC/AAAAAAAAgD8AAAAAAAAAPwAAAD8AAAC/AACAvwAAAAAAAAAAAAAAvwAAAL8AAAA/AACAvwAAAAAAAAAAAAAAvwAAAD8AAAA/AACAvwAAAAAAAAAAAAAAvwAAAL8AAAC/AACAvwAAAAAAAAAAAAAAvwAAAD8AAAC/AAAAAAAAAAAAAIC/AAAAvwAAAL8AAAC/AAAAAAAAAAAAAIC/AAAAvwAAAD8AAAC/AAAAAAAAAAAAAIC/AAAAPwAAAL8AAAC/AAAAAAAAAAAAAIC/AAAAPwAAAD8AAAC/AAABAAIAAwACAAEABAAFAAYABwAGAAUACAAJAAoACwAKAAkADAANAA4ADwAOAA0AEAARABIAEwASABEAFAAVABYAFwAWABUA"}
-                    ],
-                bufferViews =
-                  fromList
-                    [ BufferView {buffer = 0, byteOffset = Just 576, byteLength = 72, byteStride = Nothing, name = Nothing, target = Just 34963},
-                      BufferView {buffer = 0, byteOffset = Just 0, byteLength = 576, byteStride = Just 24, name = Nothing, target = Just 34962}
-                    ],
-                images = Nothing,
-                materials =
-                  fromList
-                    [ Gltf.Material {name = Nothing, pbrMetallicRoughness = Just (Gltf.PbrMetallicRoughness {baseColorFactor = Just [0.800000011920929, 0.0, 0.0, 1.0], baseColorTexture = Nothing, metallicFactor = Nothing, roughnessFactor = Nothing, metallicRoughnessTexture = Nothing}), alphaMode = Nothing, alphaCutoff = Nothing, doubleSided = Nothing}
-                    ],
-                meshes =
-                  fromList
-                    [ Gltf.Mesh
-                        { name = Just "Mesh",
-                          primitives =
-                            [ Gltf.Primitive {attributes = M.fromList [("NORMAL", 1), ("POSITION", 2)], indices = Just 0, material = Just 0, mode = Just 4}
-                            ]
-                        }
-                    ],
-                nodes =
-                  fromList
-                    [ Gltf.Node {children = Just [1], matrix = Just [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0], mesh = Nothing, name = Nothing},
-                      Gltf.Node {children = Nothing, matrix = Nothing, mesh = Just 0, name = Nothing}
-                    ],
-                samplers = Nothing,
-                scene = Just 0,
-                scenes =
-                  fromList
-                    [ Gltf.Scene {name = Nothing, nodes = Just [0]}
-                    ],
-                textures = Nothing
-              }
-      let decoded = decodeScene 0 input
+            jsonToEmbedded $
+              Gltf
+                { accessors =
+                    fromList
+                      [ Accessor {bufferView = Just 0, byteOffset = Just 0, componentType = 5123, count = 36, name = Nothing, accessorType = "SCALAR", max = Just [23.0], min = Just [0.0]},
+                        Accessor {bufferView = Just 1, byteOffset = Just 0, componentType = 5126, count = 24, name = Nothing, accessorType = "VEC3", max = Just [1.0, 1.0, 1.0], min = Just [-1.0, -1.0, -1.0]},
+                        Accessor {bufferView = Just 1, byteOffset = Just 12, componentType = 5126, count = 24, name = Nothing, accessorType = "VEC3", max = Just [0.5, 0.5, 0.5], min = Just [-0.5, -0.5, -0.5]}
+                      ],
+                  asset = Asset {generator = Just "COLLADA2GLTF", version = "2.0"},
+                  buffers =
+                    fromList
+                      [ Buffer {byteLength = 648, name = Nothing, uri = Just "data:application/octet-stream;base64,AAAAAAAAAAAAAIA/AAAAvwAAAL8AAAA/AAAAAAAAAAAAAIA/AAAAPwAAAL8AAAA/AAAAAAAAAAAAAIA/AAAAvwAAAD8AAAA/AAAAAAAAAAAAAIA/AAAAPwAAAD8AAAA/AAAAAAAAgL8AAAAAAAAAPwAAAL8AAAA/AAAAAAAAgL8AAAAAAAAAvwAAAL8AAAA/AAAAAAAAgL8AAAAAAAAAPwAAAL8AAAC/AAAAAAAAgL8AAAAAAAAAvwAAAL8AAAC/AACAPwAAAAAAAAAAAAAAPwAAAD8AAAA/AACAPwAAAAAAAAAAAAAAPwAAAL8AAAA/AACAPwAAAAAAAAAAAAAAPwAAAD8AAAC/AACAPwAAAAAAAAAAAAAAPwAAAL8AAAC/AAAAAAAAgD8AAAAAAAAAvwAAAD8AAAA/AAAAAAAAgD8AAAAAAAAAPwAAAD8AAAA/AAAAAAAAgD8AAAAAAAAAvwAAAD8AAAC/AAAAAAAAgD8AAAAAAAAAPwAAAD8AAAC/AACAvwAAAAAAAAAAAAAAvwAAAL8AAAA/AACAvwAAAAAAAAAAAAAAvwAAAD8AAAA/AACAvwAAAAAAAAAAAAAAvwAAAL8AAAC/AACAvwAAAAAAAAAAAAAAvwAAAD8AAAC/AAAAAAAAAAAAAIC/AAAAvwAAAL8AAAC/AAAAAAAAAAAAAIC/AAAAvwAAAD8AAAC/AAAAAAAAAAAAAIC/AAAAPwAAAL8AAAC/AAAAAAAAAAAAAIC/AAAAPwAAAD8AAAC/AAABAAIAAwACAAEABAAFAAYABwAGAAUACAAJAAoACwAKAAkADAANAA4ADwAOAA0AEAARABIAEwASABEAFAAVABYAFwAWABUA"}
+                      ],
+                  bufferViews =
+                    fromList
+                      [ BufferView {buffer = 0, byteOffset = Just 576, byteLength = 72, byteStride = Nothing, name = Nothing, target = Just 34963},
+                        BufferView {buffer = 0, byteOffset = Just 0, byteLength = 576, byteStride = Just 24, name = Nothing, target = Just 34962}
+                      ],
+                  images = Nothing,
+                  materials =
+                    fromList
+                      [ Gltf.Material {name = Nothing, pbrMetallicRoughness = Just (Gltf.PbrMetallicRoughness {baseColorFactor = Just [0.800000011920929, 0.0, 0.0, 1.0], baseColorTexture = Nothing, metallicFactor = Nothing, roughnessFactor = Nothing, metallicRoughnessTexture = Nothing}), alphaMode = Nothing, alphaCutoff = Nothing, doubleSided = Nothing}
+                      ],
+                  meshes =
+                    fromList
+                      [ Gltf.Mesh
+                          { name = Just "Mesh",
+                            primitives =
+                              [ Gltf.Primitive {attributes = M.fromList [("NORMAL", 1), ("POSITION", 2)], indices = Just 0, material = Just 0, mode = Just 4}
+                              ]
+                          }
+                      ],
+                  nodes =
+                    fromList
+                      [ Gltf.Node {children = Just [1], matrix = Just [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0], mesh = Nothing, name = Nothing},
+                        Gltf.Node {children = Nothing, matrix = Nothing, mesh = Just 0, name = Nothing}
+                      ],
+                  samplers = Nothing,
+                  scene = Just 0,
+                  scenes =
+                    fromList
+                      [ Gltf.Scene {name = Nothing, nodes = Just [0]}
+                      ],
+                  textures = Nothing
+                }
+      let decoded = decodeScene 0 =<< input
       decoded
         `shouldBe` Right
           ( Model.Scene

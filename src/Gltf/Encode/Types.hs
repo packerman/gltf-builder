@@ -1,5 +1,25 @@
-module Gltf.Encode.Types (module Gltf.Encode.Types) where
+module Gltf.Encode.Types
+  ( EncodedPrimitive (..),
+    EncodingState (..),
+    initialEncoding,
+    newBuffer,
+    setMaterialIndex,
+    EncodingM,
+    MeshPart (..),
+    meshPartEmpty,
+    fromAccessor,
+    fromAccessors,
+    fromMaterial,
+    withBuffer,
+    EncodingOptions (EncodingOptions, outputVariant, prettyPrint, interleaved),
+    isSingleBuffer,
+    isBufferImages,
+    setSingleBuffer,
+    setBufferImages,
+  )
+where
 
+import Control.Monad
 import Control.Monad.Trans.RWS
 import Data.ByteString.Lazy as BSL
 import Data.Default
@@ -8,6 +28,7 @@ import Data.Map
 import Gltf.Json (Accessor, Buffer (..), BufferView, Material)
 import Lib.Base (sumWith)
 import Lib.Base64 (bytesDataUrl, encodeDataUrl)
+import Types (GltfVariant (..))
 
 data EncodedPrimitive = EncodedPrimitive
   { attributes :: Map String Int,
@@ -51,11 +72,13 @@ data MeshPart = MeshPart
   }
   deriving (Eq, Show)
 
-fromBufferView :: BufferView -> MeshPart
-fromBufferView bufferView =
-  mempty
-    { bufferViews = L.singleton bufferView
-    }
+meshPartEmpty :: MeshPart -> Bool
+meshPartEmpty (MeshPart {..}) =
+  L.null bytes
+    && L.null buffers
+    && L.null accessors
+    && L.null bufferViews
+    && L.null materials
 
 fromAccessor :: Accessor -> ByteString -> MeshPart
 fromAccessor accessor bytes =
@@ -76,27 +99,35 @@ fromMaterial material = mempty {materials = L.singleton material}
 
 withBuffer :: EncodingM a -> EncodingM a
 withBuffer action = do
-  result <- censor collectBytes action
-  markNewBuffer
+  options <- ask
+  (result, meshPart) <- listen $ censor (collectBytes options) action
+  unless (meshPartEmpty meshPart) markNewBuffer
   return result
   where
-    collectBytes :: MeshPart -> MeshPart
-    collectBytes meshPart@(MeshPart {bytes}) =
-      if L.null bytes
-        then meshPart
-        else
-          meshPart
-            { buffers = [encodeBuffer bytes],
-              bytes = []
-            }
-      where
-        encodeBuffer :: [ByteString] -> Buffer
-        encodeBuffer byteStrings =
-          Buffer
-            { byteLength = fromIntegral $ sumWith BSL.length byteStrings,
-              uri = pure $ encodeDataUrl (bytesDataUrl $ BSL.toStrict $ BSL.concat byteStrings),
-              name = Nothing
-            }
+    collectBytes :: EncodingOptions -> MeshPart -> MeshPart
+    collectBytes options meshPart@(MeshPart {bytes})
+      | meshPartEmpty meshPart = meshPart
+      | outputVariant options == GltfBinary =
+          meshPart {buffers = [rawBuffer bytes]}
+      | otherwise =
+          meshPart {buffers = [embeddedBuffer bytes], bytes = []}
+
+    rawBuffer :: [ByteString] -> Buffer
+    rawBuffer byteStrings =
+      Buffer
+        { byteLength = fromIntegral $ sumWith BSL.length byteStrings,
+          uri = Nothing,
+          name = Nothing
+        }
+
+    embeddedBuffer :: [ByteString] -> Buffer
+    embeddedBuffer byteStrings =
+      Buffer
+        { byteLength = fromIntegral $ sumWith BSL.length byteStrings,
+          uri = pure $ encodeDataUrl (bytesDataUrl $ BSL.toStrict $ BSL.concat byteStrings),
+          name = Nothing
+        }
+
     markNewBuffer :: EncodingM ()
     markNewBuffer = do
       (EncodingState {bufferIndex}) <- get
@@ -139,19 +170,38 @@ instance Monoid MeshPart where
       }
 
 data EncodingOptions = EncodingOptions
-  { bufferCreate :: BufferCreate,
+  { outputVariant :: GltfVariant,
+    singleBuffer :: Bool,
     prettyPrint :: Bool,
-    interleaved :: Bool
+    interleaved :: Bool,
+    bufferImages :: Bool
   }
   deriving (Eq, Show)
 
 instance Default EncodingOptions where
   def =
     EncodingOptions
-      { bufferCreate = SingleBuffer,
+      { outputVariant = GltfEmbedded,
+        singleBuffer = True,
         prettyPrint = False,
-        interleaved = False
+        interleaved = False,
+        bufferImages = False
       }
 
-data BufferCreate = SingleBuffer | OnePerMesh
-  deriving (Eq, Show, Enum)
+isSingleBuffer :: EncodingOptions -> Bool
+isSingleBuffer (EncodingOptions {outputVariant, singleBuffer}) =
+  case outputVariant of
+    GltfBinary -> True
+    _ -> singleBuffer
+
+isBufferImages :: EncodingOptions -> Bool
+isBufferImages (EncodingOptions {outputVariant, bufferImages}) =
+  case outputVariant of
+    GltfBinary -> True
+    _ -> bufferImages
+
+setSingleBuffer :: EncodingOptions -> Bool -> EncodingOptions
+setSingleBuffer options singleBuffer = options {singleBuffer}
+
+setBufferImages :: EncodingOptions -> Bool -> EncodingOptions
+setBufferImages options bufferImages = options {bufferImages}

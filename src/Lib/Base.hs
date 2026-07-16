@@ -17,12 +17,8 @@ isSingleton _ = False
 allSameBy :: (Eq b) => (a -> b) -> [a] -> Bool
 allSameBy f = allSame . map f
 
-validateEither :: (a -> Bool) -> b -> Either b a -> Either b a
-validateEither _ _ e@(Left _) = e
-validateEither p d e@(Right x) = if p x then e else Left d
-
-validate :: Bool -> b -> a -> Either b a
-validate p e x = if p then Right x else Left e
+maybeToLeft :: b -> Maybe a -> Either a b
+maybeToLeft x = maybe (Right x) Left
 
 nothingIf :: (a -> Bool) -> a -> Maybe a
 nothingIf p x = if p x then Nothing else Just x
