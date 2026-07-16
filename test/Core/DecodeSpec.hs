@@ -4,6 +4,8 @@ import Core.Decode (decodeScene)
 import Core.Model as Model
 import qualified Data.ByteString as BS
 import Data.Default
+import Data.Either.Extra (maybeToEither)
+import Data.Maybe (listToMaybe)
 import qualified Data.Map as M
 import Gltf.Array as Array
 import Gltf.Delivery (jsonToEmbedded)
@@ -368,6 +370,95 @@ spec = do
                   }
               ]
           )
+    it "Preserves image name on decode" $ do
+      let gltf =
+            Gltf
+              { accessors =
+                  fromList
+                    [ Accessor {bufferView = Just 0, byteOffset = Just 0, componentType = 5126, count = 24, name = Nothing, accessorType = "VEC3", max = Just [1.0, 1.0, 1.0], min = Just [-1.0, -1.0, -1.0]},
+                      Accessor {bufferView = Just 0, byteOffset = Just 288, componentType = 5126, count = 24, name = Nothing, accessorType = "VEC3", max = Just [0.5, 0.5, 0.5], min = Just [-0.5, -0.5, -0.5]},
+                      Accessor {bufferView = Just 1, byteOffset = Just 0, componentType = 5126, count = 24, name = Nothing, accessorType = "VEC2", max = Just [6.0, 1.0], min = Just [0.0, 0.0]},
+                      Accessor {bufferView = Just 2, byteOffset = Just 0, componentType = 5123, count = 36, name = Nothing, accessorType = "SCALAR", max = Just [23.0], min = Just [0.0]}
+                    ],
+                asset = Asset {generator = Just "COLLADA2GLTF", version = "2.0"},
+                buffers =
+                  fromList
+                    [ Buffer {byteLength = 840, name = Nothing, uri = Just "data:application/octet-stream;base64,AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAvwAAAL8AAAA/AAAAPwAAAL8AAAA/AAAAvwAAAD8AAAA/AAAAPwAAAD8AAAA/AAAAPwAAAD8AAAA/AAAAPwAAAL8AAAA/AAAAPwAAAD8AAAC/AAAAPwAAAL8AAAC/AAAAvwAAAD8AAAA/AAAAPwAAAD8AAAA/AAAAvwAAAD8AAAC/AAAAPwAAAD8AAAC/AAAAPwAAAL8AAAA/AAAAvwAAAL8AAAA/AAAAPwAAAL8AAAC/AAAAvwAAAL8AAAC/AAAAvwAAAL8AAAA/AAAAvwAAAD8AAAA/AAAAvwAAAL8AAAC/AAAAvwAAAD8AAAC/AAAAvwAAAL8AAAC/AAAAvwAAAD8AAAC/AAAAPwAAAL8AAAC/AAAAPwAAAD8AAAC/AADAQAAAAAAAAKBAAAAAAAAAwED+/38/AACgQP7/fz8AAIBAAAAAAAAAoEAAAAAAAACAQAAAgD8AAKBAAACAPwAAAEAAAAAAAACAPwAAAAAAAABAAACAPwAAgD8AAIA/AABAQAAAAAAAAIBAAAAAAAAAQEAAAIA/AACAQAAAgD8AAEBAAAAAAAAAAEAAAAAAAABAQAAAgD8AAABAAACAPwAAAAAAAAAAAAAAAP7/fz8AAIA/AAAAAAAAgD/+/38/AAABAAIAAwACAAEABAAFAAYABwAGAAUACAAJAAoACwAKAAkADAANAA4ADwAOAA0AEAARABIAEwASABEAFAAVABYAFwAWABUA"}
+                    ],
+                bufferViews =
+                  fromList
+                    [ BufferView {buffer = 0, byteOffset = Just 0, byteLength = 576, byteStride = Just 12, name = Nothing, target = Just 34962},
+                      BufferView {buffer = 0, byteOffset = Just 576, byteLength = 192, byteStride = Just 8, name = Nothing, target = Just 34962},
+                      BufferView {buffer = 0, byteOffset = Just 768, byteLength = 72, byteStride = Nothing, name = Nothing, target = Just 34963}
+                    ],
+                images =
+                  fromList
+                    [ Gltf.Image
+                        { name = Just "my-image",
+                          uri = Just "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAEklEQVR4nGP4z8CAB+GTG8HSALfKY52fTcuYAAAAAElFTkSuQmCC",
+                          mimeType = Nothing,
+                          bufferView = Nothing
+                        }
+                    ],
+                materials =
+                  fromList
+                    [ Gltf.Material
+                        { name = Nothing,
+                          pbrMetallicRoughness =
+                            Just
+                              ( Gltf.PbrMetallicRoughness
+                                  { baseColorFactor = Nothing,
+                                    baseColorTexture = Just $ Gltf.TextureInfo {index = 0, texCoord = Nothing},
+                                    metallicFactor = Just 0.0,
+                                    roughnessFactor = Nothing,
+                                    metallicRoughnessTexture = Nothing
+                                  }
+                              ),
+                          alphaMode = Nothing,
+                          alphaCutoff = Nothing,
+                          doubleSided = Nothing
+                        }
+                    ],
+                meshes =
+                  fromList
+                    [ Gltf.Mesh
+                        { name = Nothing,
+                          primitives =
+                            [ Gltf.Primitive
+                                { attributes = M.fromList [("NORMAL", 1), ("POSITION", 0), ("TEXCOORD_0", 2)],
+                                  indices = Just 3,
+                                  material = Just 0,
+                                  mode = Just 4
+                                }
+                            ]
+                        }
+                    ],
+                nodes =
+                  fromList
+                    [ Gltf.Node {children = Nothing, matrix = Nothing, mesh = Just 0, name = Nothing}
+                    ],
+                samplers = Nothing,
+                scene = Just 0,
+                scenes =
+                  fromList
+                    [ Gltf.Scene {name = Nothing, nodes = Just [0]}
+                    ],
+                textures =
+                  fromList
+                    [ Gltf.Texture {name = Nothing, sampler = Nothing, source = Just 0}
+                    ]
+              }
+      let result = decodeScene 0 =<< jsonToEmbedded gltf
+      let imageName = do
+            scene <- result
+            node <- maybeToEither "no node" $ listToMaybe $ Model.nodes scene
+            mesh' <- maybeToEither "no mesh" $ Model.mesh node
+            prim <- maybeToEither "no primitive" $ listToMaybe $ Model.primitives mesh'
+            let pbr = Model.pbrMetallicRoughness $ Model.material prim
+            texInfo <- maybeToEither "no base color texture" $ Model.baseColorTexture pbr
+            let Model.Image {name = imageName'} = Model.image $ Model.texture texInfo
+            return imageName'
+      imageName `shouldBe` Right (Just "my-image")
     it "Decoded interleaved box" $ do
       let input =
             jsonToEmbedded $
