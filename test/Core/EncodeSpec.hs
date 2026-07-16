@@ -2,20 +2,20 @@ module Core.EncodeSpec (spec) where
 
 import Core.Dsl as Dsl
 import Core.Dsl.Color
-import Core.Encode (encodeScene, encodeSceneWithOptions, writeSceneWithOptions)
+import Core.Encode (encodeScene, encodeSceneWithOptions)
 import Core.Model as Model
 import qualified Core.Model as Material (Material (..))
+import Data.Binary (decode, encode)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
 import Data.Default
 import Data.Map as M
 import Geometry (box)
 import qualified Gltf.Array as Array
-import Gltf.Binary.Chunk (readGlbFile, getJsonData, getBinaryData)
-import System.FilePath ((</>))
-import System.IO.Temp (withSystemTempDirectory)
+import Gltf.Binary.Chunk (GlbFile, getJsonData, getBinaryData, makeGlbFile)
 import Gltf.Delivery (Delivery (..), deliveryJson)
 import qualified Data.Vector as V
+import Gltf.Encode (encodeJson)
 import Gltf.Encode.Types (EncodingOptions (..), setSingleBuffer)
 import qualified Gltf.Json as GltfJson
 import Types (GltfVariant (..))
@@ -666,9 +666,10 @@ spec = do
             buffers = GltfJson.buffers $ deliveryJson delivery
         all (\(Gltf.Buffer {uri}) -> uri == Nothing) (Array.toList buffers) `shouldBe` True
       it "round-trips through GLB file" $ do
-        withSystemTempDirectory "gltf-test" $ \dir -> do
-          let path = dir </> "test.glb"
-          writeSceneWithOptions glbOptions path simpleScene
-          glbFile <- readGlbFile path
-          getBinaryData glbFile `shouldNotBe` Nothing
-          BS.length (getJsonData glbFile) `shouldSatisfy` (> 0)
+        let delivery = encodeSceneWithOptions glbOptions simpleScene
+            glbFile = makeGlbFile
+              (BSL.toStrict $ encodeJson (deliveryJson delivery))
+              (Just $ V.head (deliveryBuffers delivery))
+            roundTripped = decode (encode glbFile) :: GlbFile
+        getBinaryData roundTripped `shouldNotBe` Nothing
+        BS.length (getJsonData roundTripped) `shouldSatisfy` (> 0)
