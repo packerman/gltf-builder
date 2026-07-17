@@ -17,6 +17,7 @@ import Data.Default
 import Data.Either.Extra (maybeToEither)
 import Data.Maybe
 import Data.Vector (Vector, (!?))
+import qualified Data.Vector as V
 import Gltf.Accessor (AccessorData (..))
 import Gltf.Array (Array, toVector)
 import Gltf.Decode
@@ -30,6 +31,7 @@ import Gltf.Json
   )
 import qualified Gltf.Json as Gltf
   ( Gltf (..),
+    Image (..),
     Material (..),
     Mesh (..),
     Node (..),
@@ -67,6 +69,7 @@ decodeScene
           Gltf.Gltf
             { bufferViews = gltfBufferViews,
               accessors = gltfAccessors,
+              images = gltfImages,
               materials = gltfMaterials,
               meshes = gltfMeshes,
               nodes = gltfNodes,
@@ -82,7 +85,7 @@ decodeScene
     let bufferViews = toVector gltfBufferViews
     accessorData <- traverse (decodeAccessor (BSL.fromStrict <$> deliveryBuffers) bufferViews) $ toVector gltfAccessors
     samplers <- traverse decodeSampler $ toVector gltfSamplers
-    let images = dataUrlToImage <$> deliveryImages
+    let images = V.zipWith imageFromDelivery (toVector gltfImages) deliveryImages
     textures <- traverse (decodeTexture images samplers) $ toVector gltfTextures
     materials <- traverse (decodeMaterial textures) $ toVector gltfMaterials
     meshes <- traverse (decodeMesh accessorData materials) $ toVector gltfMeshes
@@ -195,6 +198,11 @@ decodeSampler
       <*> traverse decodeMinFilter minFilter
       <*> maybe (pure Repeat) decodeWrap wrapS
       <*> maybe (pure Repeat) decodeWrap wrapT
+
+imageFromDelivery :: Gltf.Image -> DataUrl -> Model.Image
+imageFromDelivery (Gltf.Image {name = imageName}) dataUrl =
+  let img = dataUrlToImage dataUrl
+   in Model.Image {name = imageName, mimeType = Model.mimeType img, imageData = Model.imageData img}
 
 decodeV4 :: [Double] -> Either String (V4 Double)
 decodeV4 [a, b, c, d] = Right $ V4 a b c d
